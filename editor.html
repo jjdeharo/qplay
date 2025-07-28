@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Cuestionarios Avanzado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .form-check-input {
+            appearance: none; -webkit-appearance: none; flex-shrink: 0;
+            width: 1.25rem; height: 1.25rem;
+            border: 2px solid #4a5568;
+            display: inline-block; position: relative;
+            cursor: pointer; margin-right: 0.5rem;
+        }
+        .form-check-input:checked { border-color: #4f46e5; background-color: #4f46e5; }
+        .form-check-input.radio { border-radius: 50%; }
+        .form-check-input.radio:checked::after {
+            content: ''; width: 0.5rem; height: 0.5rem;
+            border-radius: 50%; background: white;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .form-check-input.checkbox { border-radius: 0.25rem; }
+        .form-check-input.checkbox:checked::after {
+            content: '✓'; font-size: 0.8rem; color: white;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .hidden-important { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-4xl mx-auto">
+        <div class="bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8">
+            <header class="mb-8 text-center">
+                <h1 class="text-3xl md:text-4xl font-bold text-indigo-400">Editor de Cuestionarios</h1>
+                <p class="text-gray-400 mt-2">Crea, edita, guarda y carga tus preguntas.</p>
+            </header>
+
+            <form id="pregunta-form" class="mb-8 bg-gray-900 p-6 rounded-lg">
+                <input type="hidden" id="edit-index" value="-1">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="tipo-pregunta" class="block text-sm font-medium text-gray-300 mb-1">Tipo de pregunta</label>
+                        <select id="tipo-pregunta" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="quiz">Quiz (4 opciones, 1 correcta)</option>
+                            <option value="multiple">Respuesta Múltiple (varias correctas)</option>
+                            <option value="true-false">Verdadero / Falso</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tiempo-limite" class="block text-sm font-medium text-gray-300 mb-1">Tiempo límite</label>
+                        <select id="tiempo-limite" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="20">20 segundos</option>
+                            <option value="30" selected>30 segundos</option>
+                            <option value="60">1 minuto</option>
+                            <option value="90">1.5 minutos</option>
+                            <option value="120">2 minutos</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="tiempo-personalizado-container" class="grid grid-cols-2 gap-4 mb-4 hidden-important">
+                    <div>
+                        <label for="minutos" class="block text-sm font-medium text-gray-300 mb-1">Minutos</label>
+                        <input type="number" id="minutos" min="0" max="99" placeholder="0" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="segundos" class="block text-sm font-medium text-gray-300 mb-1">Segundos</label>
+                        <input type="number" id="segundos" min="0" max="59" placeholder="45" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="pregunta" class="block text-sm font-medium text-gray-300 mb-1">Pregunta</label>
+                            <textarea id="pregunta" rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Ej: ¿Cuál es la capital de Francia?"></textarea>
+                        </div>
+                        <div>
+                            <label for="imagen_url" class="block text-sm font-medium text-gray-300 mb-1">URL de la Imagen (Opcional)</label>
+                            <input type="url" id="imagen_url" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="https://ejemplo.com/imagen.png">
+                        </div>
+                    </div>
+                    <div class="space-y-3" id="respuestas-container">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Respuestas (Marcar la/s correcta/s)</label>
+                        <div class="flex items-center" id="respuesta-wrapper-1">
+                            <input type="radio" id="correcta-1" name="correcta" value="0" class="form-check-input radio" checked>
+                            <input type="text" id="respuesta-1" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 1">
+                        </div>
+                        <div class="flex items-center" id="respuesta-wrapper-2">
+                            <input type="radio" id="correcta-2" name="correcta" value="1" class="form-check-input radio">
+                            <input type="text" id="respuesta-2" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 2">
+                        </div>
+                        <div class="flex items-center" id="respuesta-wrapper-3">
+                            <input type="radio" id="correcta-3" name="correcta" value="2" class="form-check-input radio">
+                            <input type="text" id="respuesta-3" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 3">
+                        </div>
+                        <div class="flex items-center" id="respuesta-wrapper-4">
+                            <input type="radio" id="correcta-4" name="correcta" value="3" class="form-check-input radio">
+                            <input type="text" id="respuesta-4" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 4">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Añadir Pregunta</button>
+                    <button type="button" id="cancel-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 hidden-important">Cancelar Edición</button>
+                </div>
+            </form>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4 text-indigo-400">Cuestionario Actual</h2>
+                <div id="lista-preguntas" class="space-y-3 bg-gray-900 p-4 rounded-lg max-h-64 overflow-y-auto">
+                    <p class="text-gray-500">Aún no has añadido ninguna pregunta.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4">
+                <button id="guardar-csv" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Guardar en CSV</button>
+                <button id="cargar-csv" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Cargar desde CSV</button>
+                <input type="file" id="csv-file-input" class="hidden" accept=".csv">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM REFERENCES ---
+        const form = document.getElementById('pregunta-form');
+        const tipoPreguntaSelect = document.getElementById('tipo-pregunta');
+        const tiempoLimiteSelect = document.getElementById('tiempo-limite');
+        const tiempoPersonalizadoContainer = document.getElementById('tiempo-personalizado-container');
+        const minutosInput = document.getElementById('minutos');
+        const segundosInput = document.getElementById('segundos');
+        const preguntaInput = document.getElementById('pregunta');
+        const imagenUrlInput = document.getElementById('imagen_url');
+        const respuestasContainer = document.getElementById('respuestas-container');
+        const respuestasInputs = Array.from({ length: 4 }, (_, i) => document.getElementById(`respuesta-${i + 1}`));
+        const correctasInputs = Array.from({ length: 4 }, (_, i) => document.getElementById(`correcta-${i + 1}`));
+        const respuestasWrappers = Array.from({ length: 4 }, (_, i) => document.getElementById(`respuesta-wrapper-${i + 1}`));
+        const editIndexInput = document.getElementById('edit-index');
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const listaPreguntasContainer = document.getElementById('lista-preguntas');
+        const guardarBtn = document.getElementById('guardar-csv');
+        const cargarBtn = document.getElementById('cargar-csv');
+        const fileInput = document.getElementById('csv-file-input');
+
+        // --- APP STATE ---
+        let preguntas = [];
+        let ultimoTiempoSeleccionado = 30; // Guarda el último tiempo usado
+
+        // --- FUNCTIONS ---
+
+        function renderizarPreguntas() {
+            listaPreguntasContainer.innerHTML = '';
+            if (preguntas.length === 0) {
+                listaPreguntasContainer.innerHTML = '<p class="text-gray-500">Aún no has añadido ninguna pregunta.</p>';
+                return;
+            }
+            preguntas.forEach((p, index) => {
+                const el = document.createElement('div');
+                el.className = 'bg-gray-800 p-3 rounded-md flex justify-between items-center';
+                el.innerHTML = `
+                    <p class="truncate text-gray-300" title="${p.pregunta}">${index + 1}. ${p.pregunta}</p>
+                    <div class="flex space-x-2">
+                        <button data-index="${index}" class="editar-btn bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded-md text-sm">Editar</button>
+                        <button data-index="${index}" class="eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm">Eliminar</button>
+                    </div>
+                `;
+                listaPreguntasContainer.appendChild(el);
+            });
+        }
+        
+        function gestionarCambioTipoPregunta() {
+            const tipo = tipoPreguntaSelect.value;
+            const esMultiple = tipo === 'multiple';
+            
+            correctasInputs.forEach((input, i) => {
+                input.type = esMultiple ? 'checkbox' : 'radio';
+                input.name = esMultiple ? `correcta-${i}` : 'correcta';
+                input.classList.toggle('radio', !esMultiple);
+                input.classList.toggle('checkbox', esMultiple);
+            });
+
+            respuestasWrappers.forEach(w => w.classList.remove('hidden-important'));
+            respuestasInputs.forEach(i => i.disabled = false);
+
+            if (tipo === 'true-false') {
+                respuestasInputs[0].value = "Verdadero";
+                respuestasInputs[1].value = "Falso";
+                respuestasInputs[0].disabled = true;
+                respuestasInputs[1].disabled = true;
+                respuestasWrappers[2].classList.add('hidden-important');
+                respuestasWrappers[3].classList.add('hidden-important');
+            }
+        }
+
+        function gestionarCambioTiempo() {
+            if (tiempoLimiteSelect.value === 'custom') {
+                tiempoPersonalizadoContainer.classList.remove('hidden-important');
+            } else {
+                tiempoPersonalizadoContainer.classList.add('hidden-important');
+            }
+        }
+
+        function establecerTiempoFormulario(segundosTotales) {
+            const esTiempoStandard = Array.from(tiempoLimiteSelect.options).some(opt => opt.value == segundosTotales);
+
+            if (esTiempoStandard) {
+                tiempoLimiteSelect.value = segundosTotales;
+            } else {
+                tiempoLimiteSelect.value = 'custom';
+                minutosInput.value = Math.floor(segundosTotales / 60);
+                segundosInput.value = segundosTotales % 60;
+            }
+            gestionarCambioTiempo();
+        }
+
+        function resetearFormulario() {
+            form.reset();
+            editIndexInput.value = "-1";
+            submitBtn.textContent = "Añadir Pregunta";
+            submitBtn.classList.replace('bg-yellow-600', 'bg-indigo-600');
+            submitBtn.classList.replace('hover:bg-yellow-700', 'hover:bg-indigo-700');
+            cancelBtn.classList.add('hidden-important');
+            tipoPreguntaSelect.value = 'quiz';
+            
+            // Usar el último tiempo guardado
+            establecerTiempoFormulario(ultimoTiempoSeleccionado);
+            
+            gestionarCambioTipoPregunta();
+        }
+
+        function iniciarEdicion(index) {
+            const p = preguntas[index];
+            editIndexInput.value = index;
+            
+            tipoPreguntaSelect.value = p.tipo;
+            establecerTiempoFormulario(p.tiempo);
+            
+            gestionarCambioTipoPregunta();
+
+            preguntaInput.value = p.pregunta;
+            imagenUrlInput.value = p.imagen_url;
+
+            respuestasInputs.forEach((input, i) => {
+                input.value = p.respuestas[i] || '';
+            });
+
+            correctasInputs.forEach((input, i) => {
+                if (Array.isArray(p.correcta)) { // Respuesta múltiple
+                    input.checked = p.correcta.includes(i);
+                } else { // Quiz o T/F
+                    input.checked = (p.correcta === i);
+                }
+            });
+
+            submitBtn.textContent = "Actualizar Pregunta";
+            submitBtn.classList.replace('bg-indigo-600', 'bg-yellow-600');
+            submitBtn.classList.replace('hover:bg-indigo-700', 'hover:bg-yellow-700');
+            cancelBtn.classList.remove('hidden-important');
+            window.scrollTo(0, 0);
+        }
+
+        function gestionarSubmitFormulario(event) {
+            event.preventDefault();
+            const index = parseInt(editIndexInput.value);
+            const tipo = tipoPreguntaSelect.value;
+            
+            let correcta;
+            if (tipo === 'multiple') {
+                correcta = correctasInputs.map((input, i) => input.checked ? i : -1).filter(i => i !== -1);
+            } else {
+                correcta = parseInt(document.querySelector('input[name="correcta"]:checked').value);
+            }
+
+            let tiempoFinal;
+            if (tiempoLimiteSelect.value === 'custom') {
+                const minutos = parseInt(minutosInput.value) || 0;
+                const segundos = parseInt(segundosInput.value) || 0;
+                tiempoFinal = (minutos * 60) + segundos;
+            } else {
+                tiempoFinal = parseInt(tiempoLimiteSelect.value);
+            }
+            
+            ultimoTiempoSeleccionado = tiempoFinal; // Actualizar el último tiempo usado
+
+            const nuevaPregunta = {
+                tipo: tipo,
+                pregunta: preguntaInput.value.trim(),
+                respuestas: respuestasInputs.map(input => input.value.trim()),
+                correcta: correcta,
+                tiempo: tiempoFinal,
+                imagen_url: imagenUrlInput.value.trim()
+            };
+
+            if (index > -1) { // Modo edición
+                preguntas[index] = nuevaPregunta;
+            } else { // Modo añadir
+                preguntas.push(nuevaPregunta);
+            }
+
+            renderizarPreguntas();
+            resetearFormulario();
+        }
+
+        function gestionarClickLista(event) {
+            const target = event.target;
+            if (target.classList.contains('editar-btn')) {
+                iniciarEdicion(parseInt(target.dataset.index));
+            } else if (target.classList.contains('eliminar-btn')) {
+                preguntas.splice(parseInt(target.dataset.index), 1);
+                renderizarPreguntas();
+            }
+        }
+
+        function guardarCSV() {
+            if (preguntas.length === 0) { 
+                console.warn('No hay preguntas para guardar.');
+                return; 
+            }
+            const headers = ['Tipo', 'Pregunta', 'R1', 'R2', 'R3', 'R4', 'Tiempo', 'Correcta', 'URL Imagen'];
+            let csvContent = headers.join(';') + '\n';
+
+            preguntas.forEach(p => {
+                const correctaStr = Array.isArray(p.correcta) ? p.correcta.map(c => c + 1).join(',') : p.correcta + 1;
+                const fila = [
+                    p.tipo,
+                    `"${p.pregunta.replace(/"/g, '""')}"`,
+                    `"${p.respuestas[0].replace(/"/g, '""')}"`, `"${p.respuestas[1].replace(/"/g, '""')}"`,
+                    `"${p.respuestas[2].replace(/"/g, '""')}"`, `"${p.respuestas[3].replace(/"/g, '""')}"`,
+                    p.tiempo, correctaStr, `"${p.imagen_url}"`
+                ];
+                csvContent += fila.join(';') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "cuestionario_avanzado.csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function cargarCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const lineas = text.split('\n').filter(l => l.trim() !== '');
+                const regex = /"([^"]*)"|([^;]+)/g;
+                preguntas = [];
+                for (let i = 1; i < lineas.length; i++) {
+                    const campos = Array.from(lineas[i].matchAll(regex), m => m[1] || m[2]);
+                    if (campos.length >= 9) {
+                        let correcta;
+                        if (campos[7].includes(',')) {
+                            correcta = campos[7].split(',').map(n => parseInt(n) - 1);
+                        } else {
+                            correcta = parseInt(campos[7]) - 1;
+                        }
+                        preguntas.push({
+                            tipo: campos[0], 
+                            pregunta: campos[1],
+                            respuestas: [campos[2], campos[3], campos[4], campos[5]],
+                            tiempo: parseInt(campos[6]) || 30,
+                            correcta: correcta, 
+                            imagen_url: campos[8] || ''
+                        });
+                    }
+                }
+                renderizarPreguntas();
+                console.log(`${preguntas.length} preguntas cargadas.`);
+            };
+            reader.readAsText(file);
+            fileInput.value = '';
+        }
+
+        // --- EVENT LISTENERS ---
+        tipoPreguntaSelect.addEventListener('change', gestionarCambioTipoPregunta);
+        tiempoLimiteSelect.addEventListener('change', gestionarCambioTiempo);
+        form.addEventListener('submit', gestionarSubmitFormulario);
+        cancelBtn.addEventListener('click', resetearFormulario);
+        listaPreguntasContainer.addEventListener('click', gestionarClickLista);
+        guardarBtn.addEventListener('click', guardarCSV);
+        cargarBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', cargarCSV);
+
+        // --- INITIALIZATION ---
+        renderizarPreguntas();
+        gestionarCambioTipoPregunta();
+        gestionarCambioTiempo();
+    </script>
+</body>
+</html>
