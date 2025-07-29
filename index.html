@@ -132,7 +132,7 @@
     let cuestionario = [];
     let jugadores = {}; // { 'nombre_jugador': { puntaje: 0, conn: obj, conectado: true } }
     let conexiones = {}; // { 'peerId': 'nombre_jugador' }
-    let respuestasRonda = {}; // { 'nombre_jugador': { indice: 2, tiempo: 25 } }
+    let respuestasRonda = {}; // { 'nombre_jugador': { respuesta: [2], tiempo: 25 } }
     let estadoJuego = 'carga';
     let preguntaActualIndex = -1;
     let temporizadorInterval;
@@ -258,10 +258,15 @@
 
         Object.values(jugadores).forEach(jugador => {
             if (jugador.conectado && jugador.conn) {
-                jugador.conn.send({ tipo: 'pregunta', payload: { numRespuestas: numRespuestasVisibles } });
+                jugador.conn.send({ 
+                    tipo: 'pregunta', 
+                    payload: { 
+                        numRespuestas: numRespuestasVisibles,
+                        tipo: pregunta.tipo 
+                    } 
+                });
             }
         });
-        console.log(`Pregunta enviada a los jugadores: ${pregunta.pregunta}`);
     }
 
     function finalizarRonda() {
@@ -270,18 +275,20 @@
 
         const pregunta = cuestionario[preguntaActualIndex];
 
-        // Calcular puntos para cada jugador que respondió
         Object.keys(respuestasRonda).forEach(nombre => {
-            const respuestaJugador = respuestasRonda[nombre];
-            const esCorrecta = Array.isArray(pregunta.correcta)
-                ? pregunta.correcta.includes(respuestaJugador.indice) // Asumiendo que para múltiple, solo se envía un índice por botón
-                : pregunta.correcta === respuestaJugador.indice;
+            const respJugador = respuestasRonda[nombre].respuesta;
+            const respCorrecta = pregunta.correcta;
             
-            const puntosRonda = esCorrecta ? (500 + respuestaJugador.tiempoRespuesta * 10) : 0;
+            let esCorrecta = false;
+            if (Array.isArray(respCorrecta)) {
+                esCorrecta = respCorrecta.length === respJugador.length && respCorrecta.every(val => respJugador.includes(val));
+            } else {
+                esCorrecta = respCorrecta === respJugador;
+            }
             
+            const puntosRonda = esCorrecta ? (500 + respuestasRonda[nombre].tiempoRespuesta * 10) : 0;
             jugadores[nombre].puntaje += puntosRonda;
 
-            // Enviar resultado individual al jugador
             if (jugadores[nombre].conectado && jugadores[nombre].conn) {
                 jugadores[nombre].conn.send({
                     tipo: 'resultado',
@@ -293,8 +300,7 @@
                 });
             }
         });
-
-        mostrarLeaderboard();
+        setTimeout(mostrarLeaderboard, 1000); // Dar tiempo a ver resultado
     }
 
     function mostrarLeaderboard() {
@@ -321,8 +327,8 @@
         const podioEl = document.getElementById('podio');
         podioEl.innerHTML = '';
         const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
-        const alturas = ['h-48', 'h-64', 'h-32']; // 2do, 1ro, 3ro
-        const ordenPodio = [1, 0, 2]; // Indices para dibujar 2do, 1ro, 3ro
+        const alturas = ['h-48', 'h-64', 'h-32'];
+        const ordenPodio = [1, 0, 2];
 
         for(let i = 0; i < 3; i++) {
             const index = ordenPodio[i];
@@ -365,37 +371,39 @@
             if (data.tipo === 'join' && estadoJuego === 'carga') {
                 gestionarConexionJugador(conn, data.nombre);
             } else if (data.tipo === 'respuesta' && estadoJuego === 'jugando') {
-                gestionarRespuestaJugador(conn.peer, data);
+                gestionarRespuestaJugador(conn.peer, data.payload);
             }
         });
         conn.on('close', () => gestionarDesconexionJugador(conn.peer));
     }
     
     function gestionarConexionJugador(conn, nombre) {
-        if (jugadores[nombre]) {
-             if(jugadores[nombre].conectado) { // Ya existe un jugador activo con ese nombre
-                conn.send({ tipo: 'error', payload: { mensaje: 'Ese nombre ya está en uso.' }});
-                conn.close();
-                return;
-             }
-             // Jugador reconectándose
-             jugadores[nombre].conectado = true;
-             jugadores[nombre].conn = conn;
-        } else {
-             // Nuevo jugador
-            jugadores[nombre] = { nombre: nombre, puntaje: 0, conn: conn, conectado: true };
+        if (Object.values(jugadores).some(j => j.nombre === nombre && j.conectado)) {
+            conn.send({ tipo: 'error', payload: { mensaje: 'Ese nombre ya está en uso.' }});
+            conn.close();
+            return;
+        }
+        
+        let jugador = Object.values(jugadores).find(j => j.nombre === nombre);
+        if (jugador) { // Reconexión
+             jugador.conectado = true;
+             jugador.conn = conn;
+        } else { // Nuevo jugador
+            jugador = { nombre: nombre, puntaje: 0, conn: conn, conectado: true };
+            jugadores[nombre] = jugador;
         }
         conexiones[conn.peer] = nombre;
+        jugador.conn.send({tipo: 'confirmacion_join'});
         console.log(`Jugador conectado: ${nombre} (${conn.peer})`);
         actualizarListaJugadores();
     }
 
-    function gestionarRespuestaJugador(peerId, data) {
+    function gestionarRespuestaJugador(peerId, payload) {
         const nombre = conexiones[peerId];
-        if (!nombre || !jugadores[nombre] || respuestasRonda[nombre]) return; // Ignorar si no existe o ya respondió
+        if (!nombre || !jugadores[nombre] || respuestasRonda[nombre]) return;
 
-        respuestasRonda[nombre] = { indice: data.indice, tiempoRespuesta: tiempoRestante };
-        console.log(`Respuesta recibida de ${nombre}:`, data.indice);
+        respuestasRonda[nombre] = { respuesta: payload.respuesta, tiempoRespuesta: tiempoRestante };
+        console.log(`Respuesta recibida de ${nombre}:`, payload.respuesta);
 
         const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado).length;
         if (Object.keys(respuestasRonda).length === jugadoresActivos) {
@@ -408,7 +416,6 @@
         if (nombre && jugadores[nombre]) {
             console.log(`${nombre} se ha desconectado.`);
             jugadores[nombre].conectado = false;
-            // No eliminamos al jugador, solo lo marcamos como desconectado
             delete conexiones[peerId];
             if(estadoJuego === 'carga') {
                 actualizarListaJugadores();
@@ -433,7 +440,7 @@
                 if (campos.length >= 8) {
                     let correcta;
                     if (campos[7].includes(',')) {
-                        correcta = campos[7].split(',').map(n => parseInt(n) - 1);
+                        correcta = campos[7].split(',').map(n => parseInt(n) - 1).sort();
                     } else {
                         correcta = parseInt(campos[7]) - 1;
                     }
@@ -471,7 +478,6 @@
     iniciarJuegoBtn.addEventListener('click', iniciarJuego);
     siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
     reiniciarBtn.addEventListener('click', () => window.location.reload());
-
 
     // --- Initialization ---
     const savedTheme = localStorage.getItem('theme');
