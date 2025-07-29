@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlayQ - Unirse al Juego</title>
-    <!-- Cargar Tailwind CSS primero -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Luego, configurar Tailwind para modo 'class' -->
     <script>
       tailwind.config = { darkMode: 'class' };
     </script>
-    <!-- Librería PeerJS -->
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -30,6 +27,13 @@
         #emoji-picker {
             transition: opacity 0.3s, transform 0.3s;
         }
+        
+        /* --- ESTILOS AÑADIDOS --- */
+        .respuesta-color-0 { background-color: #e53e3e; } /* Rojo */
+        .respuesta-color-1 { background-color: #3b82f6; } /* Azul */
+        .respuesta-color-2 { background-color: #f59e0b; } /* Amarillo */
+        .respuesta-color-3 { background-color: #10b981; } /* Verde */
+
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
@@ -41,7 +45,6 @@
 
     <div id="app-container" class="w-full min-h-screen flex items-center justify-center p-4">
 
-        <!-- Pantalla de Conexión -->
         <div id="pantalla-conexion" class="pantalla activa w-full max-w-md">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
                 <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-6">PlayQ</h1>
@@ -57,7 +60,6 @@
             </div>
         </div>
 
-        <!-- Pantalla de Espera -->
         <div id="pantalla-espera" class="pantalla text-center">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
                 <h2 class="text-4xl font-bold mb-2">¡Ya estás dentro!</h2>
@@ -65,14 +67,11 @@
             </div>
         </div>
 
-        <!-- Pantalla de Pregunta -->
         <div id="pantalla-pregunta" class="pantalla w-full h-full">
             <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full h-full">
-                <!-- Botones de respuesta se generan aquí -->
-            </div>
+                </div>
         </div>
 
-        <!-- Pantalla de Resultado -->
         <div id="pantalla-resultado" class="pantalla text-center">
              <div id="resultado-contenido" class="w-full max-w-md text-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
                 <h2 id="resultado-texto" class="text-5xl font-extrabold mb-4">¡Correcto!</h2>
@@ -85,7 +84,6 @@
         
     </div>
 
-    <!-- Selector de Emojis (Modal) -->
     <div id="emoji-picker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none scale-95">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col">
             <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
@@ -93,11 +91,9 @@
                 <button id="cerrar-emojis-btn" class="font-bold text-2xl">&times;</button>
             </div>
             <div id="emoji-tabs" class="flex-shrink-0 flex border-b border-gray-200 dark:border-gray-700">
-                <!-- Pestañas se generan aquí -->
-            </div>
+                </div>
             <div id="emoji-content" class="p-4 overflow-y-auto">
-                <!-- Emojis se generan aquí -->
-            </div>
+                </div>
         </div>
     </div>
 
@@ -213,7 +209,7 @@
             
             conn.on('open', () => {
                 conn.send({ tipo: 'join', nombre: nombre });
-                mostrarPantalla('pantalla-espera');
+                // No mostrar pantalla de espera todavía, esperar confirmación o error
             });
 
             conn.on('data', gestionarDatosDelServidor);
@@ -228,13 +224,23 @@
 
         peer.on('error', err => {
             console.error(err);
-            errorConexionEl.textContent = "No se pudo conectar. Revisa el código.";
+            let mensajeError = "No se pudo conectar. Revisa el código.";
+            if (err.type === 'peer-unavailable') {
+                mensajeError = "La partida no existe. Comprueba el código."
+            }
+            errorConexionEl.textContent = mensajeError;
             unirseBtn.disabled = false;
             unirseBtn.textContent = "¡A jugar!";
+            if(peer) peer.destroy();
         });
     }
 
     function gestionarDatosDelServidor(data) {
+        // La primera comunicación del servidor es la confirmación del join
+        if (conn.open && document.getElementById('pantalla-conexion').classList.contains('activa')) {
+            mostrarPantalla('pantalla-espera');
+        }
+
         switch (data.tipo) {
             case 'pregunta':
                 mostrarPantallaPregunta(data.payload);
@@ -242,8 +248,11 @@
             case 'resultado':
                 mostrarPantallaResultado(data.payload);
                 break;
-            case 'fin':
-                // Lógica para el fin del juego
+            case 'error': // Por si el nombre ya está en uso
+                errorConexionEl.textContent = data.payload.mensaje;
+                unirseBtn.disabled = false;
+                unirseBtn.textContent = "¡A jugar!";
+                if(conn) conn.close();
                 break;
         }
     }
