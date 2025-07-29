@@ -332,12 +332,17 @@
 
             preguntas.forEach(p => {
                 const correctaStr = Array.isArray(p.correcta) ? p.correcta.map(c => c + 1).join(',') : p.correcta + 1;
+                // FIX: Ensure every answer is at least an empty string before calling .replace()
                 const fila = [
                     p.tipo,
-                    `"${p.pregunta.replace(/"/g, '""')}"`,
-                    `"${p.respuestas[0].replace(/"/g, '""')}"`, `"${p.respuestas[1].replace(/"/g, '""')}"`,
-                    `"${p.respuestas[2].replace(/"/g, '""')}"`, `"${p.respuestas[3].replace(/"/g, '""')}"`,
-                    p.tiempo, correctaStr, `"${p.imagen_url}"`
+                    `"${(p.pregunta || '').replace(/"/g, '""')}"`,
+                    `"${(p.respuestas[0] || '').replace(/"/g, '""')}"`, 
+                    `"${(p.respuestas[1] || '').replace(/"/g, '""')}"`,
+                    `"${(p.respuestas[2] || '').replace(/"/g, '""')}"`, 
+                    `"${(p.respuestas[3] || '').replace(/"/g, '""')}"`,
+                    p.tiempo, 
+                    correctaStr, 
+                    `"${(p.imagen_url || '').replace(/"/g, '""')}"`
                 ];
                 csvContent += fila.join(';') + '\n';
             });
@@ -362,17 +367,23 @@
                 preguntas = [];
                 for (let i = 1; i < lineas.length; i++) {
                     const campos = Array.from(lineas[i].matchAll(regex), m => m[1] || m[2]);
-                    if (campos.length >= 9) {
+                    if (campos.length >= 8) { // Check for at least 8 fields (up to 'Correcta')
                         let correcta;
                         if (campos[7].includes(',')) {
                             correcta = campos[7].split(',').map(n => parseInt(n) - 1);
                         } else {
                             correcta = parseInt(campos[7]) - 1;
                         }
+                        // FIX: Ensure every answer from CSV is at least an empty string
                         preguntas.push({
-                            tipo: campos[0], 
-                            pregunta: campos[1],
-                            respuestas: [campos[2], campos[3], campos[4], campos[5]],
+                            tipo: campos[0] || 'quiz', 
+                            pregunta: campos[1] || '',
+                            respuestas: [
+                                campos[2] || '', 
+                                campos[3] || '', 
+                                campos[4] || '', 
+                                campos[5] || ''
+                            ],
                             tiempo: parseInt(campos[6]) || 30,
                             correcta: correcta, 
                             imagen_url: campos[8] || ''
