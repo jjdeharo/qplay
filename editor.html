@@ -189,13 +189,8 @@
         }
 
         function toggleTheme() {
-            const currentTheme = localStorage.getItem('theme') || 'system';
-            let newTheme;
-            if (currentTheme === 'system') {
-                newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            } else {
-                newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            }
+            // cambia entre 'dark' y 'light' según el estado actual
+            const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
         }
