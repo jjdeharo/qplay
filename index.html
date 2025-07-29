@@ -131,6 +131,9 @@
     let jugadores = {}; // { 'nombre_jugador': { peerId: '...', puntaje: 0, conn: obj, conectado: true } }
     let conexiones = {}; // { 'peerId': 'nombre_jugador' }
     let estadoJuego = 'carga';
+    let preguntaActualIndex = -1;
+    let temporizadorInterval;
+    let tiempoRestante;
 
     // --- Theme Management ---
     function applyTheme(theme) {
@@ -189,9 +192,80 @@
     function iniciarJuego() {
         console.log("Iniciando el juego...");
         estadoJuego = 'jugando';
-        // Aquí irá la lógica para mostrar la primera pregunta y enviarla a los jugadores
-        mostrarPantalla('pantalla-pregunta');
+        
+        if (document.getElementById('opcion-preguntas-aleatorias').checked) {
+            for (let i = cuestionario.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cuestionario[i], cuestionario[j]] = [cuestionario[j], cuestionario[i]];
+            }
+        }
+
+        preguntaActualIndex = 0;
+        mostrarPregunta();
     }
+
+    function mostrarPregunta() {
+        if (preguntaActualIndex >= cuestionario.length) {
+            console.log("Fin del cuestionario.");
+            // Aquí se mostraría la pantalla final
+            return;
+        }
+
+        const pregunta = cuestionario[preguntaActualIndex];
+        mostrarPantalla('pantalla-pregunta');
+        document.getElementById('contador-pregunta').textContent = `Pregunta ${preguntaActualIndex + 1} / ${cuestionario.length}`;
+        document.getElementById('texto-pregunta').textContent = pregunta.pregunta;
+
+        const imgEl = document.getElementById('imagen-pregunta');
+        if (pregunta.imagen_url) {
+            imgEl.src = pregunta.imagen_url;
+            imgEl.classList.remove('hidden');
+        } else {
+            imgEl.classList.add('hidden');
+        }
+
+        const respuestasGrid = document.getElementById('respuestas-grid');
+        respuestasGrid.innerHTML = '';
+        const simbolos = ['▲', '◆', '●', '■'];
+        let numRespuestasVisibles = 0;
+        pregunta.respuestas.forEach((respuesta, index) => {
+            if (respuesta.trim() !== '') {
+                 numRespuestasVisibles++;
+                 const respuestaDiv = document.createElement('div');
+                 respuestaDiv.className = `respuesta-color-${index} text-white p-4 rounded-lg flex items-center text-2xl`;
+                 respuestaDiv.innerHTML = `<span class="mr-4 text-4xl">${simbolos[index]}</span> <p>${respuesta}</p>`;
+                 respuestasGrid.appendChild(respuestaDiv);
+            }
+        });
+
+        tiempoRestante = pregunta.tiempo;
+        const temporizadorEl = document.getElementById('temporizador');
+        temporizadorEl.textContent = tiempoRestante;
+        clearInterval(temporizadorInterval);
+
+        temporizadorInterval = setInterval(() => {
+            tiempoRestante--;
+            temporizadorEl.textContent = tiempoRestante;
+            if (tiempoRestante <= 0) {
+                clearInterval(temporizadorInterval);
+                console.log("Se acabó el tiempo.");
+                // Aquí iría la lógica para mostrar el leaderboard
+            }
+        }, 1000);
+
+        const payload = {
+            tipo: 'pregunta',
+            payload: { numRespuestas: numRespuestasVisibles }
+        };
+
+        Object.values(jugadores).forEach(jugador => {
+            if (jugador.conectado && jugador.conn) {
+                jugador.conn.send(payload);
+            }
+        });
+        console.log(`Pregunta enviada a los jugadores: ${pregunta.pregunta}`);
+    }
+
 
     // --- PeerJS Logic ---
     function inicializarPeer() {
@@ -201,11 +275,9 @@
         peer.on('open', id => {
             codigoPartidaEl.textContent = id;
             
-            // CORRECCIÓN: Crear y mostrar la URL completa para el jugador
             const urlUnion = new URL('jugador.html', window.location.href);
             urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
-
-            // Añadir el ID de la partida a la URL para el código QR
+            
             urlUnion.searchParams.set('partida', id);
             
             qrCodeEl.innerHTML = "";
@@ -310,7 +382,6 @@
         }
     });
 
-    // CORRECCIÓN: Añadir el listener para el botón de iniciar juego
     iniciarJuegoBtn.addEventListener('click', iniciarJuego);
 
     // --- Initialization ---
