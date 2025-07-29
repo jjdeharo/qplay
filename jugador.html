@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayQ - Unirse al Juego</title>
+    <!-- Cargar Tailwind CSS primero -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Luego, configurar Tailwind para modo 'class' -->
+    <script>
+      tailwind.config = { darkMode: 'class' };
+    </script>
+    <!-- Librería PeerJS -->
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .pantalla { display: none; }
+        .pantalla.activa { display: flex; }
+        .respuesta-btn {
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+        }
+        .respuesta-btn:active {
+            transform: scale(0.95);
+        }
+        .respuesta-btn.seleccionada {
+            box-shadow: 0 0 0 4px white, 0 0 0 8px #4f46e5;
+            transform: scale(1.05);
+        }
+        #emoji-picker {
+            transition: opacity 0.3s, transform 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
+
+    <button id="theme-toggle" class="fixed top-4 right-4 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-50">
+        <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+        <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+    </button>
+
+    <div id="app-container" class="w-full min-h-screen flex items-center justify-center p-4">
+
+        <!-- Pantalla de Conexión -->
+        <div id="pantalla-conexion" class="pantalla activa w-full max-w-md">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
+                <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-6">PlayQ</h1>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="nombre-input" placeholder="Tu nombre" class="w-full text-xl p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500">
+                        <button id="abrir-emojis-btn" class="p-3 border border-gray-300 dark:border-gray-600 rounded-lg text-2xl">😀</button>
+                    </div>
+                    <input type="text" id="codigo-input" placeholder="Código del juego" maxlength="5" class="w-full text-center text-3xl p-3 tracking-[.25em] uppercase border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500">
+                    <button id="unirse-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 text-xl rounded-lg transition-colors">¡A jugar!</button>
+                </div>
+                 <p id="error-conexion" class="text-red-500 mt-4 h-6"></p>
+            </div>
+        </div>
+
+        <!-- Pantalla de Espera -->
+        <div id="pantalla-espera" class="pantalla text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+                <h2 class="text-4xl font-bold mb-2">¡Ya estás dentro!</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400">Espera a que el presentador inicie el juego...</p>
+            </div>
+        </div>
+
+        <!-- Pantalla de Pregunta -->
+        <div id="pantalla-pregunta" class="pantalla w-full h-full">
+            <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full h-full">
+                <!-- Botones de respuesta se generan aquí -->
+            </div>
+        </div>
+
+        <!-- Pantalla de Resultado -->
+        <div id="pantalla-resultado" class="pantalla text-center">
+             <div id="resultado-contenido" class="w-full max-w-md text-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
+                <h2 id="resultado-texto" class="text-5xl font-extrabold mb-4">¡Correcto!</h2>
+                <p class="text-2xl mb-2">Puntos ganados:</p>
+                <p id="resultado-puntos-ronda" class="text-4xl font-bold mb-6">+1234</p>
+                <p class="text-xl">Puntuación total:</p>
+                <p id="resultado-puntos-total" class="text-3xl font-bold">5678</p>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Selector de Emojis (Modal) -->
+    <div id="emoji-picker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none scale-95">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="font-bold text-lg">Elige un emoticono</h3>
+                <button id="cerrar-emojis-btn" class="font-bold text-2xl">&times;</button>
+            </div>
+            <div id="emoji-tabs" class="flex-shrink-0 flex border-b border-gray-200 dark:border-gray-700">
+                <!-- Pestañas se generan aquí -->
+            </div>
+            <div id="emoji-content" class="p-4 overflow-y-auto">
+                <!-- Emojis se generan aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // --- DOM References ---
+    const pantallas = document.querySelectorAll('.pantalla');
+    const nombreInput = document.getElementById('nombre-input');
+    const codigoInput = document.getElementById('codigo-input');
+    const unirseBtn = document.getElementById('unirse-btn');
+    const errorConexionEl = document.getElementById('error-conexion');
+
+    // --- State ---
+    let peer;
+    let conn;
+
+    // --- Theme Management ---
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon-sun').classList.remove('hidden');
+            document.getElementById('theme-icon-moon').classList.add('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.getElementById('theme-icon-sun').classList.add('hidden');
+            document.getElementById('theme-icon-moon').classList.remove('hidden');
+        }
+    }
+    function toggleTheme() {
+      const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+      localStorage.setItem('theme', newTheme);
+      applyTheme(newTheme);
+    }
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    // --- UI Functions ---
+    function mostrarPantalla(id) {
+        pantallas.forEach(p => p.classList.remove('activa'));
+        document.getElementById(id).classList.add('activa');
+    }
+
+    // --- Emoji Picker Logic ---
+    const emojiPicker = document.getElementById('emoji-picker');
+    const emojiTabsContainer = document.getElementById('emoji-tabs');
+    const emojiContentContainer = document.getElementById('emoji-content');
+    const emojis = {
+        '😀': ['😀', '😂', '😍', '🤔', '😎', '😭', '🤯', '🥳', '😴', '👍', '👎', '💪'],
+        '🐻': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊'],
+        '🍔': ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🌽', '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🥪', '🥙', '🧆', '🌮', '🌯', '🥗', '🥘', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '☕', '🍵', '🧃', '🥤', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊', '🥄', '🍴', '🍽️', '🥣', '🥡', '🥢', '🧂'],
+        '⚽': ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🥅', '🏒', '🏑', '🏏', '🥍', '⛳', '🏹', '🎣', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🏋️‍♀️', '🏋️‍♂️', '🤼‍♀️', '🤼‍♂️', '🤸‍♀️', '🤸‍♂️', '🤺', '🤾‍♀️', '🤾‍♂️', '🏌️‍♀️', '🏌️‍♂️', '🏇', '🧘‍♀️', '🧘‍♂️', '🏄‍♀️', '🏄‍♂️', '🏊‍♀️', '🏊‍♂️', '🤽‍♀️', '🤽‍♂️', '🚣‍♀️', '🚣‍♂️', '🧗‍♀️', '🧗‍♂️', '🚵‍♀️', '🚵‍♂️', '🚴‍♀️', '🚴‍♂️', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🤹‍♀️', '🤹‍♂️', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰'],
+        '💡': ['💡', '💻', '📱', '⌚', '🔬', '🔭', '🚀', '🛸', '🛰️', '✈️', '🚗', '🚲', '🤖', '👑', '💎', '💰', '📚', '✏️', '🔬', '🧬', '🧪', '💣', '🎉', '🎁', '🎈']
+    };
+
+    function inicializarEmojiPicker() {
+        Object.keys(emojis).forEach((categoria, index) => {
+            const tab = document.createElement('button');
+            tab.className = 'px-4 py-2 text-2xl border-b-2 transition-colors';
+            tab.textContent = categoria;
+            tab.dataset.categoria = categoria;
+            if (index === 0) {
+                tab.classList.add('border-indigo-500', 'text-indigo-600', 'dark:text-indigo-400');
+            } else {
+                tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'dark:hover:text-gray-300');
+            }
+            tab.onclick = () => cambiarTabEmoji(categoria);
+            emojiTabsContainer.appendChild(tab);
+        });
+        cambiarTabEmoji(Object.keys(emojis)[0]);
+    }
+
+    function cambiarTabEmoji(categoria) {
+        Array.from(emojiTabsContainer.children).forEach(tab => {
+            tab.classList.toggle('border-indigo-500', tab.dataset.categoria === categoria);
+            tab.classList.toggle('text-indigo-600', tab.dataset.categoria === categoria);
+            tab.classList.toggle('dark:text-indigo-400', tab.dataset.categoria === categoria);
+            tab.classList.toggle('border-transparent', tab.dataset.categoria !== categoria);
+            tab.classList.toggle('text-gray-500', tab.dataset.categoria !== categoria);
+        });
+        emojiContentContainer.innerHTML = '';
+        emojis[categoria].forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.className = 'text-3xl p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700';
+            btn.textContent = emoji;
+            btn.onclick = () => {
+                nombreInput.value += emoji;
+                emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+            };
+            emojiContentContainer.appendChild(btn);
+        });
+    }
+
+    document.getElementById('abrir-emojis-btn').onclick = () => emojiPicker.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+    document.getElementById('cerrar-emojis-btn').onclick = () => emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+
+
+    // --- Game Logic ---
+    function unirseAlJuego() {
+        const nombre = nombreInput.value.trim();
+        const codigo = codigoInput.value.trim().toUpperCase();
+
+        if (!nombre || !codigo) {
+            errorConexionEl.textContent = "Nombre y código son obligatorios.";
+            return;
+        }
+
+        errorConexionEl.textContent = "";
+        unirseBtn.disabled = true;
+        unirseBtn.textContent = "Conectando...";
+
+        peer = new Peer();
+
+        peer.on('open', id => {
+            conn = peer.connect(codigo);
+            
+            conn.on('open', () => {
+                conn.send({ tipo: 'join', nombre: nombre });
+                mostrarPantalla('pantalla-espera');
+            });
+
+            conn.on('data', gestionarDatosDelServidor);
+
+            conn.on('close', () => {
+                errorConexionEl.textContent = "Desconectado del presentador.";
+                mostrarPantalla('pantalla-conexion');
+                unirseBtn.disabled = false;
+                unirseBtn.textContent = "¡A jugar!";
+            });
+        });
+
+        peer.on('error', err => {
+            console.error(err);
+            errorConexionEl.textContent = "No se pudo conectar. Revisa el código.";
+            unirseBtn.disabled = false;
+            unirseBtn.textContent = "¡A jugar!";
+        });
+    }
+
+    function gestionarDatosDelServidor(data) {
+        switch (data.tipo) {
+            case 'pregunta':
+                mostrarPantallaPregunta(data.payload);
+                break;
+            case 'resultado':
+                mostrarPantallaResultado(data.payload);
+                break;
+            case 'fin':
+                // Lógica para el fin del juego
+                break;
+        }
+    }
+
+    function mostrarPantallaPregunta(pregunta) {
+        const grid = document.getElementById('respuestas-grid');
+        grid.innerHTML = '';
+        const simbolos = ['▲', '◆', '●', '■'];
+        
+        for (let i = 0; i < pregunta.numRespuestas; i++) {
+            const btn = document.createElement('button');
+            btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center justify-center rounded-lg shadow-lg`;
+            btn.innerHTML = `<span class="text-6xl">${simbolos[i]}</span>`;
+            btn.onclick = () => enviarRespuesta(i, btn);
+            grid.appendChild(btn);
+        }
+        mostrarPantalla('pantalla-pregunta');
+    }
+    
+    function enviarRespuesta(indice, btnElement) {
+        // Deshabilitar todos los botones y marcar el seleccionado
+        document.querySelectorAll('.respuesta-btn').forEach(btn => {
+            btn.disabled = true;
+            btn.classList.remove('seleccionada');
+        });
+        btnElement.classList.add('seleccionada');
+
+        if (conn && conn.open) {
+            conn.send({ tipo: 'respuesta', indice: indice });
+        }
+    }
+
+    function mostrarPantallaResultado(resultado) {
+        const contenido = document.getElementById('resultado-contenido');
+        const texto = document.getElementById('resultado-texto');
+        
+        if (resultado.esCorrecta) {
+            texto.textContent = "¡Correcto!";
+            contenido.className = "w-full max-w-md bg-green-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
+        } else {
+            texto.textContent = "Incorrecto";
+            contenido.className = "w-full max-w-md bg-red-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
+        }
+        
+        document.getElementById('resultado-puntos-ronda').textContent = `+${resultado.puntosRonda}`;
+        document.getElementById('resultado-puntos-total').textContent = resultado.puntosTotal;
+        
+        mostrarPantalla('pantalla-resultado');
+    }
+
+    // --- Initialization ---
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+    
+    // Rellenar código desde URL
+    const params = new URLSearchParams(window.location.search);
+    const codigoPartidaURL = params.get('partida');
+    if (codigoPartidaURL) {
+        codigoInput.value = codigoPartidaURL.toUpperCase();
+    }
+
+    unirseBtn.addEventListener('click', unirseAlJuego);
+    inicializarEmojiPicker();
+
+    </script>
+</body>
+</html>
