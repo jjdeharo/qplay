@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presentador del Juego</title>
+    <title>PlayQ - Presentador</title>
     <!-- Cargar Tailwind CSS primero -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Luego, configurar Tailwind para modo 'class' -->
@@ -33,11 +33,14 @@
 
     <!-- Pantalla de Carga Inicial -->
     <div id="pantalla-carga" class="pantalla activa min-h-screen w-full flex-col items-center justify-center text-center p-8">
-        <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-4">Kahoot! WebRTC</h1>
+        <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-4">PlayQ</h1>
         <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">Carga tu cuestionario para empezar a jugar.</p>
-        <button id="cargar-cuestionario-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl transition-transform hover:scale-105">
-            Cargar Cuestionario (.csv)
-        </button>
+        <div class="flex flex-col items-center">
+            <button id="cargar-cuestionario-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl transition-transform hover:scale-105">
+                Cargar Cuestionario (.csv)
+            </button>
+            <a href="editor.html" class="mt-4 text-gray-500 dark:text-gray-400 hover:underline">o crea un PlayQ con el editor</a>
+        </div>
         <input type="file" id="csv-file-input" class="hidden" accept=".csv">
     </div>
 
@@ -199,10 +202,13 @@
 
         peer.on('open', id => {
             codigoPartidaEl.textContent = id;
-            const urlUnion = `${window.location.origin}/jugador.html?partida=${id}`;
+            // Asumiendo que jugador.html está en el mismo directorio
+            const urlUnion = new URL('jugador.html', window.location.href);
+            urlUnion.searchParams.set('partida', id);
+            
             qrCodeEl.innerHTML = "";
             new QRCode(qrCodeEl, {
-                text: urlUnion,
+                text: urlUnion.href,
                 width: 200,
                 height: 200,
             });
@@ -242,7 +248,9 @@
         
         conn.on('close', () => {
             console.log(`${nombre} se ha desconectado.`);
-            jugadores[nombre].conectado = false;
+            if(jugadores[nombre]) {
+                jugadores[nombre].conectado = false;
+            }
             actualizarListaJugadores();
         });
         
