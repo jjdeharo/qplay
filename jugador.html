@@ -24,9 +24,6 @@
             box-shadow: 0 0 0 4px white, 0 0 0 8px #4f46e5; /* Borde índigo para selección */
             transform: scale(1.05);
         }
-        #emoji-picker {
-            transition: opacity 0.3s, transform 0.3s;
-        }
         .respuesta-color-0 { background-color: #e53e3e; } /* Rojo */
         .respuesta-color-1 { background-color: #3b82f6; } /* Azul */
         .respuesta-color-2 { background-color: #f59e0b; } /* Amarillo */
@@ -106,15 +103,10 @@
 
     // --- Theme Management ---
     function applyTheme(theme) {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.getElementById('theme-icon-sun').classList.remove('hidden');
-            document.getElementById('theme-icon-moon').classList.add('hidden');
-        } else {
-            document.documentElement.classList.remove('dark');
-            document.getElementById('theme-icon-sun').classList.add('hidden');
-            document.getElementById('theme-icon-moon').classList.remove('hidden');
-        }
+        const isDark = theme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        document.getElementById('theme-icon-sun').classList.toggle('hidden', !isDark);
+        document.getElementById('theme-icon-moon').classList.toggle('hidden', isDark);
     }
     function toggleTheme() {
       const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
@@ -163,12 +155,16 @@
                 unirseBtn.disabled = false;
                 unirseBtn.textContent = "¡A jugar!";
             });
+             conn.on('error', (err) => {
+                console.error("Error de conexión:", err);
+                errorConexionEl.textContent = "Error de conexión con el presentador.";
+            });
         });
 
         peer.on('error', err => {
             let mensajeError = "No se pudo conectar. Revisa el código.";
             if (err.type === 'peer-unavailable') {
-                mensajeError = "La partida no existe o ya ha empezado. Comprueba el código."
+                mensajeError = "La partida no existe. Comprueba el código."
             }
             errorConexionEl.textContent = mensajeError;
             unirseBtn.disabled = false;
@@ -198,11 +194,15 @@
             case 'expulsado':
                 errorConexionEl.textContent = "Has sido expulsado de la partida.";
                 mostrarPantalla('pantalla-conexion');
+                unirseBtn.disabled = false;
+                unirseBtn.textContent = "¡A jugar!";
                 if(conn) conn.close();
                 break;
             case 'error':
                 errorConexionEl.textContent = data.payload.mensaje;
                 mostrarPantalla('pantalla-conexion');
+                unirseBtn.disabled = false;
+                unirseBtn.textContent = "¡A jugar!";
                 if(conn) conn.close();
                 break;
         }
@@ -227,14 +227,14 @@
             if (esMultiple) {
                 btn.onclick = () => seleccionarRespuestaMultiple(btn);
             } else {
-                btn.onclick = () => enviarRespuestaUnica(i, btn);
+                btn.onclick = () => enviarRespuestaUnica(i);
             }
             grid.appendChild(btn);
         }
         mostrarPantalla('pantalla-pregunta');
     }
     
-    function enviarRespuestaUnica(indice, btnElement) {
+    function enviarRespuestaUnica(indice) {
         if (conn && conn.open) {
             conn.send({ tipo: 'respuesta', payload: { respuesta: indice } });
             mostrarPantalla('pantalla-esperando-jugadores');
