@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Cuestionarios Avanzado</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Configuración para que Tailwind CDN use el modo 'class' para el tema oscuro
+      tailwind.config = {
+        darkMode: 'class',
+      };
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -189,10 +195,9 @@
         }
 
         function toggleTheme() {
-            // cambia entre 'dark' y 'light' según el estado actual
-            const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyTheme(newTheme);
+          const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+          localStorage.setItem('theme', newTheme);
+          applyTheme(newTheme);
         }
 
         // --- FUNCTIONS ---
