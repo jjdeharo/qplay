@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlayQ - Presentador</title>
-    <!-- Cargar Tailwind CSS primero -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Luego, configurar Tailwind para modo 'class' -->
     <script>
       tailwind.config = { darkMode: 'class' };
     </script>
-    <!-- Librerías para PeerJS (URL actualizada) y QR Code -->
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -31,7 +28,6 @@
         <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
     </button>
 
-    <!-- Pantalla de Carga Inicial -->
     <div id="pantalla-carga" class="pantalla activa min-h-screen w-full flex-col items-center justify-center text-center p-8">
         <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-4">PlayQ</h1>
         <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">Carga tu cuestionario para empezar a jugar.</p>
@@ -44,10 +40,8 @@
         <input type="file" id="csv-file-input" class="hidden" accept=".csv">
     </div>
 
-    <!-- Pantalla de Sala de Espera (Lobby) -->
     <div id="pantalla-lobby" class="pantalla min-h-screen w-full flex-col p-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 flex-grow">
-            <!-- Columna de Opciones -->
             <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
                 <h2 class="text-2xl font-bold mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Opciones de la Partida</h2>
                 <div class="space-y-4">
@@ -67,18 +61,15 @@
                     </label>
                 </div>
             </div>
-            <!-- Columna Central: Código y QR -->
             <div class="flex flex-col items-center justify-center text-center">
                 <p class="text-lg mb-4">Ve a <span id="url-sitio" class="font-bold text-indigo-600 dark:text-indigo-400"></span> e introduce el código:</p>
                 <div id="codigo-partida" class="text-8xl font-extrabold tracking-widest mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">...</div>
                 <div id="qrcode" class="p-4 bg-white rounded-lg shadow-lg"></div>
             </div>
-            <!-- Columna Derecha: Jugadores -->
             <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
                  <h2 class="text-2xl font-bold mb-4">Jugadores (<span id="contador-jugadores">0</span>)</h2>
                  <ul id="lista-jugadores" class="space-y-2 h-full overflow-y-auto">
-                    <!-- Jugadores se añadirán aquí -->
-                 </ul>
+                    </ul>
             </div>
         </div>
         <button id="iniciar-juego-btn" class="w-full mt-8 bg-green-600 hover:bg-green-700 text-white font-bold py-4 text-3xl rounded-lg disabled:bg-gray-500 disabled:cursor-not-allowed" disabled>
@@ -86,43 +77,34 @@
         </button>
     </div>
 
-    <!-- Pantalla de Pregunta -->
     <div id="pantalla-pregunta" class="pantalla min-h-screen w-full flex-col items-center justify-between p-8">
         <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white hidden">JUEGO EN PAUSA</div>
-        <!-- Header: Contador y Pausa -->
         <div class="w-full flex justify-between items-center">
             <span id="contador-pregunta" class="text-2xl font-bold">Pregunta 1 / 10</span>
             <button id="pausa-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">Pausar</button>
         </div>
-        <!-- Cuerpo: Pregunta, Imagen y Tiempo -->
         <div class="flex flex-col items-center text-center">
             <h2 id="texto-pregunta" class="text-4xl font-bold mb-6">¿Cuál es la capital de España?</h2>
             <img id="imagen-pregunta" src="" alt="Imagen de la pregunta" class="max-h-96 rounded-lg shadow-lg mb-6 hidden">
         </div>
-        <!-- Footer: Tiempo y Respuestas -->
         <div class="w-full flex items-end justify-between">
             <div id="temporizador" class="text-6xl font-bold bg-white dark:bg-gray-800 p-4 rounded-full shadow-lg">30</div>
             <div id="respuestas-grid" class="grid grid-cols-2 gap-4 w-3/4">
-                <!-- Respuestas se generan aquí -->
-            </div>
+                </div>
         </div>
     </div>
     
-    <!-- Pantalla de Leaderboard -->
     <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <h1 class="text-5xl font-extrabold mb-8">Puntuaciones</h1>
         <ol id="lista-puntuaciones" class="w-full max-w-2xl text-2xl space-y-4">
-            <!-- Puntuaciones se generan aquí -->
-        </ol>
+            </ol>
         <button id="siguiente-pregunta-btn" class="mt-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Siguiente</button>
     </div>
 
-    <!-- Pantalla Final -->
     <div id="pantalla-final" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <h1 class="text-6xl font-extrabold mb-8">¡Fin del Juego!</h1>
         <div id="podio" class="w-full max-w-3xl flex justify-around items-end">
-            <!-- Podio se genera aquí -->
-        </div>
+            </div>
         <div class="mt-12 space-x-4">
             <button id="descargar-resultados-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Descargar Resultados</button>
             <button id="reiniciar-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Jugar de Nuevo</button>
@@ -203,6 +185,14 @@
         return result;
     }
 
+    // --- Game Logic ---
+    function iniciarJuego() {
+        console.log("Iniciando el juego...");
+        estadoJuego = 'jugando';
+        // Aquí irá la lógica para mostrar la primera pregunta y enviarla a los jugadores
+        mostrarPantalla('pantalla-pregunta');
+    }
+
     // --- PeerJS Logic ---
     function inicializarPeer() {
         const idPartida = generarCodigoCorto(5);
@@ -210,9 +200,12 @@
 
         peer.on('open', id => {
             codigoPartidaEl.textContent = id;
-            urlSitioEl.textContent = window.location.host;
             
+            // CORRECCIÓN: Crear y mostrar la URL completa para el jugador
             const urlUnion = new URL('jugador.html', window.location.href);
+            urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
+
+            // Añadir el ID de la partida a la URL para el código QR
             urlUnion.searchParams.set('partida', id);
             
             qrCodeEl.innerHTML = "";
@@ -316,6 +309,9 @@
             console.log(`Jugador ${nombre} eliminado.`);
         }
     });
+
+    // CORRECCIÓN: Añadir el listener para el botón de iniciar juego
+    iniciarJuegoBtn.addEventListener('click', iniciarJuego);
 
     // --- Initialization ---
     const savedTheme = localStorage.getItem('theme');
