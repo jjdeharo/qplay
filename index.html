@@ -124,12 +124,15 @@
     const iniciarJuegoBtn = document.getElementById('iniciar-juego-btn');
     const pausaBtn = document.getElementById('pausa-btn');
     const pausaOverlay = document.getElementById('pausa-overlay');
-
+    const siguientePreguntaBtn = document.getElementById('siguiente-pregunta-btn');
+    const reiniciarBtn = document.getElementById('reiniciar-btn');
+    
     // --- State ---
     let peer;
     let cuestionario = [];
-    let jugadores = {}; // { 'nombre_jugador': { peerId: '...', puntaje: 0, conn: obj, conectado: true } }
+    let jugadores = {}; // { 'nombre_jugador': { puntaje: 0, conn: obj, conectado: true } }
     let conexiones = {}; // { 'peerId': 'nombre_jugador' }
+    let respuestasRonda = {}; // { 'nombre_jugador': { indice: 2, tiempo: 25 } }
     let estadoJuego = 'carga';
     let preguntaActualIndex = -1;
     let temporizadorInterval;
@@ -144,7 +147,7 @@
         } else {
             document.documentElement.classList.remove('dark');
             document.getElementById('theme-icon-sun').classList.add('hidden');
-            document.getElementById('theme-icon-moon').classList.remove('hidden');
+            document.getElementById('theme-icon-moon').remove('hidden');
         }
     }
     function toggleTheme() {
@@ -168,7 +171,7 @@
                 li.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded';
                 li.innerHTML = `
                     <span class="font-medium">${jugador.nombre}</span>
-                    <button data-nombre="${jugador.nombre}" class="eliminar-jugador-btn text-red-500 hover:text-red-700 font-bold">✖</button>
+                    <button data-peer-id="${jugador.conn.peer}" class="eliminar-jugador-btn text-red-500 hover:text-red-700 font-bold">✖</button>
                 `;
                 listaJugadoresEl.appendChild(li);
                 contador++;
@@ -192,25 +195,27 @@
     function iniciarJuego() {
         console.log("Iniciando el juego...");
         estadoJuego = 'jugando';
-        
         if (document.getElementById('opcion-preguntas-aleatorias').checked) {
             for (let i = cuestionario.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [cuestionario[i], cuestionario[j]] = [cuestionario[j], cuestionario[i]];
             }
         }
+        preguntaActualIndex = -1;
+        avanzarPregunta();
+    }
 
-        preguntaActualIndex = 0;
+    function avanzarPregunta() {
+        preguntaActualIndex++;
+        if (preguntaActualIndex >= cuestionario.length) {
+            finalizarJuego();
+            return;
+        }
+        respuestasRonda = {};
         mostrarPregunta();
     }
 
     function mostrarPregunta() {
-        if (preguntaActualIndex >= cuestionario.length) {
-            console.log("Fin del cuestionario.");
-            // Aquí se mostraría la pantalla final
-            return;
-        }
-
         const pregunta = cuestionario[preguntaActualIndex];
         mostrarPantalla('pantalla-pregunta');
         document.getElementById('contador-pregunta').textContent = `Pregunta ${preguntaActualIndex + 1} / ${cuestionario.length}`;
@@ -247,25 +252,95 @@
             tiempoRestante--;
             temporizadorEl.textContent = tiempoRestante;
             if (tiempoRestante <= 0) {
-                clearInterval(temporizadorInterval);
-                console.log("Se acabó el tiempo.");
-                // Aquí iría la lógica para mostrar el leaderboard
+                finalizarRonda();
             }
         }, 1000);
 
-        const payload = {
-            tipo: 'pregunta',
-            payload: { numRespuestas: numRespuestasVisibles }
-        };
-
         Object.values(jugadores).forEach(jugador => {
             if (jugador.conectado && jugador.conn) {
-                jugador.conn.send(payload);
+                jugador.conn.send({ tipo: 'pregunta', payload: { numRespuestas: numRespuestasVisibles } });
             }
         });
         console.log(`Pregunta enviada a los jugadores: ${pregunta.pregunta}`);
     }
 
+    function finalizarRonda() {
+        clearInterval(temporizadorInterval);
+        console.log("Ronda finalizada. Calculando puntos...");
+
+        const pregunta = cuestionario[preguntaActualIndex];
+
+        // Calcular puntos para cada jugador que respondió
+        Object.keys(respuestasRonda).forEach(nombre => {
+            const respuestaJugador = respuestasRonda[nombre];
+            const esCorrecta = Array.isArray(pregunta.correcta)
+                ? pregunta.correcta.includes(respuestaJugador.indice) // Asumiendo que para múltiple, solo se envía un índice por botón
+                : pregunta.correcta === respuestaJugador.indice;
+            
+            const puntosRonda = esCorrecta ? (500 + respuestaJugador.tiempoRespuesta * 10) : 0;
+            
+            jugadores[nombre].puntaje += puntosRonda;
+
+            // Enviar resultado individual al jugador
+            if (jugadores[nombre].conectado && jugadores[nombre].conn) {
+                jugadores[nombre].conn.send({
+                    tipo: 'resultado',
+                    payload: {
+                        esCorrecta: esCorrecta,
+                        puntosRonda: puntosRonda,
+                        puntosTotal: jugadores[nombre].puntaje
+                    }
+                });
+            }
+        });
+
+        mostrarLeaderboard();
+    }
+
+    function mostrarLeaderboard() {
+        mostrarPantalla('pantalla-leaderboard');
+        const listaPuntuaciones = document.getElementById('lista-puntuaciones');
+        listaPuntuaciones.innerHTML = '';
+
+        const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
+
+        jugadoresOrdenados.forEach((jugador, index) => {
+            const li = document.createElement('li');
+            li.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-lg';
+            li.innerHTML = `
+                <span class="font-bold">${index + 1}. ${jugador.nombre}</span>
+                <span class="font-semibold text-indigo-600 dark:text-indigo-400">${jugador.puntaje}</span>
+            `;
+            listaPuntuaciones.appendChild(li);
+        });
+    }
+
+    function finalizarJuego() {
+        console.log("Fin del juego.");
+        mostrarPantalla('pantalla-final');
+        const podioEl = document.getElementById('podio');
+        podioEl.innerHTML = '';
+        const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
+        const alturas = ['h-48', 'h-64', 'h-32']; // 2do, 1ro, 3ro
+        const ordenPodio = [1, 0, 2]; // Indices para dibujar 2do, 1ro, 3ro
+
+        for(let i = 0; i < 3; i++) {
+            const index = ordenPodio[i];
+            const jugador = jugadoresOrdenados[index];
+            if(!jugador) continue;
+
+            const podioDiv = document.createElement('div');
+            podioDiv.className = 'flex flex-col items-center';
+            podioDiv.innerHTML = `
+                <p class="text-3xl font-bold">${jugador.nombre}</p>
+                <div class="bg-indigo-500 text-white w-48 text-center p-4 rounded-t-lg ${alturas[i]} flex flex-col justify-end">
+                    <p class="text-5xl font-extrabold">${index + 1}</p>
+                    <p class="text-2xl">${jugador.puntaje} pts</p>
+                </div>
+            `;
+            podioEl.appendChild(podioDiv);
+        }
+    }
 
     // --- PeerJS Logic ---
     function inicializarPeer() {
@@ -274,61 +349,71 @@
 
         peer.on('open', id => {
             codigoPartidaEl.textContent = id;
-            
             const urlUnion = new URL('jugador.html', window.location.href);
             urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
-            
             urlUnion.searchParams.set('partida', id);
-            
             qrCodeEl.innerHTML = "";
-            new QRCode(qrCodeEl, {
-                text: urlUnion.href,
-                width: 200,
-                height: 200,
-            });
-            
+            new QRCode(qrCodeEl, { text: urlUnion.href, width: 200, height: 200 });
             mostrarPantalla('pantalla-lobby');
         });
 
-        peer.on('connection', conn => {
-            conn.on('open', () => {
-                conn.on('data', data => {
-                    if (data.tipo === 'join') {
-                        gestionarConexionJugador(conn, data.nombre);
-                    }
-                });
-            });
+        peer.on('connection', configurarNuevaConexion);
+    }
+
+    function configurarNuevaConexion(conn) {
+        conn.on('data', (data) => {
+            if (data.tipo === 'join' && estadoJuego === 'carga') {
+                gestionarConexionJugador(conn, data.nombre);
+            } else if (data.tipo === 'respuesta' && estadoJuego === 'jugando') {
+                gestionarRespuestaJugador(conn.peer, data);
+            }
         });
+        conn.on('close', () => gestionarDesconexionJugador(conn.peer));
     }
     
     function gestionarConexionJugador(conn, nombre) {
         if (jugadores[nombre]) {
-            jugadores[nombre].conectado = true;
-            jugadores[nombre].conn = conn;
-            conexiones[conn.peer] = nombre;
-            console.log(`Jugador reconectado: ${nombre}`);
+             if(jugadores[nombre].conectado) { // Ya existe un jugador activo con ese nombre
+                conn.send({ tipo: 'error', payload: { mensaje: 'Ese nombre ya está en uso.' }});
+                conn.close();
+                return;
+             }
+             // Jugador reconectándose
+             jugadores[nombre].conectado = true;
+             jugadores[nombre].conn = conn;
         } else {
-            jugadores[nombre] = {
-                nombre: nombre,
-                puntaje: 0,
-                conn: conn,
-                conectado: true
-            };
-            conexiones[conn.peer] = nombre;
-            console.log(`Nuevo jugador: ${nombre}`);
+             // Nuevo jugador
+            jugadores[nombre] = { nombre: nombre, puntaje: 0, conn: conn, conectado: true };
         }
-        
-        conn.on('close', () => {
-            const nombreJugador = conexiones[conn.peer];
-            if (nombreJugador && jugadores[nombreJugador]) {
-                console.log(`${nombreJugador} se ha desconectado.`);
-                jugadores[nombreJugador].conectado = false;
-                delete conexiones[conn.peer];
+        conexiones[conn.peer] = nombre;
+        console.log(`Jugador conectado: ${nombre} (${conn.peer})`);
+        actualizarListaJugadores();
+    }
+
+    function gestionarRespuestaJugador(peerId, data) {
+        const nombre = conexiones[peerId];
+        if (!nombre || !jugadores[nombre] || respuestasRonda[nombre]) return; // Ignorar si no existe o ya respondió
+
+        respuestasRonda[nombre] = { indice: data.indice, tiempoRespuesta: tiempoRestante };
+        console.log(`Respuesta recibida de ${nombre}:`, data.indice);
+
+        const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado).length;
+        if (Object.keys(respuestasRonda).length === jugadoresActivos) {
+            finalizarRonda();
+        }
+    }
+
+    function gestionarDesconexionJugador(peerId) {
+        const nombre = conexiones[peerId];
+        if (nombre && jugadores[nombre]) {
+            console.log(`${nombre} se ha desconectado.`);
+            jugadores[nombre].conectado = false;
+            // No eliminamos al jugador, solo lo marcamos como desconectado
+            delete conexiones[peerId];
+            if(estadoJuego === 'carga') {
                 actualizarListaJugadores();
             }
-        });
-        
-        actualizarListaJugadores();
+        }
     }
 
     // --- Event Listeners ---
@@ -372,17 +457,21 @@
 
     listaJugadoresEl.addEventListener('click', e => {
         if (e.target.classList.contains('eliminar-jugador-btn')) {
-            const nombre = e.target.dataset.nombre;
-            if (jugadores[nombre] && jugadores[nombre].conn) {
-                jugadores[nombre].conn.close();
+            const peerId = e.target.dataset.peerId;
+            const nombre = conexiones[peerId];
+            if(nombre && jugadores[nombre] && jugadores[nombre].conn) {
+                 jugadores[nombre].conn.close();
             }
             delete jugadores[nombre];
+            delete conexiones[peerId];
             actualizarListaJugadores();
-            console.log(`Jugador ${nombre} eliminado.`);
         }
     });
 
     iniciarJuegoBtn.addEventListener('click', iniciarJuego);
+    siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
+    reiniciarBtn.addEventListener('click', () => window.location.reload());
+
 
     // --- Initialization ---
     const savedTheme = localStorage.getItem('theme');
