@@ -21,19 +21,16 @@
             transform: scale(0.95);
         }
         .respuesta-btn.seleccionada {
-            box-shadow: 0 0 0 4px white, 0 0 0 8px #4f46e5;
+            box-shadow: 0 0 0 4px white, 0 0 0 8px #4f46e5; /* Borde índigo para selección */
             transform: scale(1.05);
         }
         #emoji-picker {
             transition: opacity 0.3s, transform 0.3s;
         }
-        
-        /* --- ESTILOS AÑADIDOS --- */
         .respuesta-color-0 { background-color: #e53e3e; } /* Rojo */
         .respuesta-color-1 { background-color: #3b82f6; } /* Azul */
         .respuesta-color-2 { background-color: #f59e0b; } /* Amarillo */
         .respuesta-color-3 { background-color: #10b981; } /* Verde */
-
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
@@ -49,7 +46,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
                 <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-6">PlayQ</h1>
                 <div class="space-y-4">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-row-reverse">
                         <input type="text" id="nombre-input" placeholder="Tu nombre" class="w-full text-xl p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500">
                         <button id="abrir-emojis-btn" class="p-3 border border-gray-300 dark:border-gray-600 rounded-lg text-2xl">😀</button>
                     </div>
@@ -67,9 +64,12 @@
             </div>
         </div>
 
-        <div id="pantalla-pregunta" class="pantalla w-full h-full">
-            <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full h-full">
+        <div id="pantalla-pregunta" class="pantalla w-full h-full flex-col">
+            <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full flex-grow">
                 </div>
+            <button id="confirmar-respuesta-btn" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-4 text-xl rounded-lg transition-colors hidden">
+                Confirmar
+            </button>
         </div>
 
         <div id="pantalla-resultado" class="pantalla text-center">
@@ -104,10 +104,12 @@
     const codigoInput = document.getElementById('codigo-input');
     const unirseBtn = document.getElementById('unirse-btn');
     const errorConexionEl = document.getElementById('error-conexion');
+    const confirmarRespuestaBtn = document.getElementById('confirmar-respuesta-btn');
 
     // --- State ---
     let peer;
     let conn;
+    let respuestasSeleccionadas = [];
 
     // --- Theme Management ---
     function applyTheme(theme) {
@@ -177,7 +179,7 @@
             btn.className = 'text-3xl p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700';
             btn.textContent = emoji;
             btn.onclick = () => {
-                nombreInput.value += emoji;
+                nombreInput.value += emoji + ' ';
                 emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
             };
             emojiContentContainer.appendChild(btn);
@@ -209,7 +211,6 @@
             
             conn.on('open', () => {
                 conn.send({ tipo: 'join', nombre: nombre });
-                // No mostrar pantalla de espera todavía, esperar confirmación o error
             });
 
             conn.on('data', gestionarDatosDelServidor);
@@ -226,7 +227,7 @@
             console.error(err);
             let mensajeError = "No se pudo conectar. Revisa el código.";
             if (err.type === 'peer-unavailable') {
-                mensajeError = "La partida no existe. Comprueba el código."
+                mensajeError = "La partida no existe o ya ha empezado. Comprueba el código."
             }
             errorConexionEl.textContent = mensajeError;
             unirseBtn.disabled = false;
@@ -236,9 +237,9 @@
     }
 
     function gestionarDatosDelServidor(data) {
-        // La primera comunicación del servidor es la confirmación del join
-        if (conn.open && document.getElementById('pantalla-conexion').classList.contains('activa')) {
+        if (data.tipo === 'confirmacion_join') {
             mostrarPantalla('pantalla-espera');
+            return;
         }
 
         switch (data.tipo) {
@@ -248,7 +249,7 @@
             case 'resultado':
                 mostrarPantallaResultado(data.payload);
                 break;
-            case 'error': // Por si el nombre ya está en uso
+            case 'error':
                 errorConexionEl.textContent = data.payload.mensaje;
                 unirseBtn.disabled = false;
                 unirseBtn.textContent = "¡A jugar!";
@@ -261,19 +262,28 @@
         const grid = document.getElementById('respuestas-grid');
         grid.innerHTML = '';
         const simbolos = ['▲', '◆', '●', '■'];
+        respuestasSeleccionadas = [];
         
+        const esMultiple = pregunta.tipo === 'multiple';
+        confirmarRespuestaBtn.classList.toggle('hidden', !esMultiple);
+
         for (let i = 0; i < pregunta.numRespuestas; i++) {
             const btn = document.createElement('button');
             btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center justify-center rounded-lg shadow-lg`;
             btn.innerHTML = `<span class="text-6xl">${simbolos[i]}</span>`;
-            btn.onclick = () => enviarRespuesta(i, btn);
+            btn.dataset.indice = i;
+
+            if (esMultiple) {
+                btn.onclick = () => seleccionarRespuestaMultiple(btn);
+            } else {
+                btn.onclick = () => enviarRespuestaUnica(i, btn);
+            }
             grid.appendChild(btn);
         }
         mostrarPantalla('pantalla-pregunta');
     }
     
-    function enviarRespuesta(indice, btnElement) {
-        // Deshabilitar todos los botones y marcar el seleccionado
+    function enviarRespuestaUnica(indice, btnElement) {
         document.querySelectorAll('.respuesta-btn').forEach(btn => {
             btn.disabled = true;
             btn.classList.remove('seleccionada');
@@ -281,9 +291,30 @@
         btnElement.classList.add('seleccionada');
 
         if (conn && conn.open) {
-            conn.send({ tipo: 'respuesta', indice: indice });
+            conn.send({ tipo: 'respuesta', payload: { respuesta: indice } });
         }
     }
+
+    function seleccionarRespuestaMultiple(btnElement) {
+        const indice = parseInt(btnElement.dataset.indice);
+        btnElement.classList.toggle('seleccionada');
+        
+        if (respuestasSeleccionadas.includes(indice)) {
+            respuestasSeleccionadas = respuestasSeleccionadas.filter(i => i !== indice);
+        } else {
+            respuestasSeleccionadas.push(indice);
+        }
+    }
+
+    function confirmarRespuestasMultiples() {
+        document.querySelectorAll('.respuesta-btn').forEach(btn => btn.disabled = true);
+        confirmarRespuestaBtn.classList.add('hidden');
+
+        if (conn && conn.open) {
+            conn.send({ tipo: 'respuesta', payload: { respuesta: respuestasSeleccionadas.sort() } });
+        }
+    }
+
 
     function mostrarPantallaResultado(resultado) {
         const contenido = document.getElementById('resultado-contenido');
@@ -308,7 +339,6 @@
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
     
-    // Rellenar código desde URL
     const params = new URLSearchParams(window.location.search);
     const codigoPartidaURL = params.get('partida');
     if (codigoPartidaURL) {
@@ -316,6 +346,7 @@
     }
 
     unirseBtn.addEventListener('click', unirseAlJuego);
+    confirmarRespuestaBtn.addEventListener('click', confirmarRespuestasMultiples);
     inicializarEmojiPicker();
 
     </script>
