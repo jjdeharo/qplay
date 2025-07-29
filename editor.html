@@ -9,13 +9,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* Configuración para el modo oscuro de Tailwind */
+        .dark {
+            /* Variables de color para modo oscuro si fueran necesarias */
+        }
         .form-check-input {
             appearance: none; -webkit-appearance: none; flex-shrink: 0;
             width: 1.25rem; height: 1.25rem;
-            border: 2px solid #4a5568;
+            border: 2px solid #9ca3af; /* Gris claro para borde */
             display: inline-block; position: relative;
             cursor: pointer; margin-right: 0.5rem;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .dark .form-check-input {
+             border-color: #4b5563; /* Gris oscuro para borde */
         }
         .form-check-input:checked { border-color: #4f46e5; background-color: #4f46e5; }
         .form-check-input.radio { border-radius: 50%; }
@@ -34,30 +45,34 @@
         .hidden-important { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white">
 
-    <div class="w-full max-w-4xl mx-auto">
-        <div class="bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8">
+    <div class="w-full max-w-4xl mx-auto p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 relative">
+            <button id="theme-toggle" class="absolute top-6 right-6 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            </button>
             <header class="mb-8 text-center">
-                <h1 class="text-3xl md:text-4xl font-bold text-indigo-400">Editor de Cuestionarios</h1>
-                <p class="text-gray-400 mt-2">Crea, edita, guarda y carga tus preguntas.</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Editor de Cuestionarios</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Crea, edita, guarda y carga tus preguntas.</p>
             </header>
 
-            <form id="pregunta-form" class="mb-8 bg-gray-900 p-6 rounded-lg">
+            <form id="pregunta-form" class="mb-8 bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
                 <input type="hidden" id="edit-index" value="-1">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label for="tipo-pregunta" class="block text-sm font-medium text-gray-300 mb-1">Tipo de pregunta</label>
-                        <select id="tipo-pregunta" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500">
+                        <label for="tipo-pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de pregunta</label>
+                        <select id="tipo-pregunta" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                             <option value="quiz">Quiz (4 opciones, 1 correcta)</option>
                             <option value="multiple">Respuesta Múltiple (varias correctas)</option>
                             <option value="true-false">Verdadero / Falso</option>
                         </select>
                     </div>
                     <div>
-                        <label for="tiempo-limite" class="block text-sm font-medium text-gray-300 mb-1">Tiempo límite</label>
-                        <select id="tiempo-limite" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500">
+                        <label for="tiempo-limite" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tiempo límite</label>
+                        <select id="tiempo-limite" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                             <option value="20">20 segundos</option>
                             <option value="30" selected>30 segundos</option>
                             <option value="60">1 minuto</option>
@@ -70,43 +85,43 @@
                 
                 <div id="tiempo-personalizado-container" class="grid grid-cols-2 gap-4 mb-4 hidden-important">
                     <div>
-                        <label for="minutos" class="block text-sm font-medium text-gray-300 mb-1">Minutos</label>
-                        <input type="number" id="minutos" min="0" max="99" placeholder="0" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500">
+                        <label for="minutos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Minutos</label>
+                        <input type="number" id="minutos" min="0" max="99" placeholder="0" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label for="segundos" class="block text-sm font-medium text-gray-300 mb-1">Segundos</label>
-                        <input type="number" id="segundos" min="0" max="59" placeholder="45" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500">
+                        <label for="segundos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Segundos</label>
+                        <input type="number" id="segundos" min="0" max="59" placeholder="45" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4">
                         <div>
-                            <label for="pregunta" class="block text-sm font-medium text-gray-300 mb-1">Pregunta</label>
-                            <textarea id="pregunta" rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Ej: ¿Cuál es la capital de Francia?"></textarea>
+                            <label for="pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregunta</label>
+                            <textarea id="pregunta" rows="4" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Ej: ¿Cuál es la capital de Francia?"></textarea>
                         </div>
                         <div>
-                            <label for="imagen_url" class="block text-sm font-medium text-gray-300 mb-1">URL de la Imagen (Opcional)</label>
-                            <input type="url" id="imagen_url" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="https://ejemplo.com/imagen.png">
+                            <label for="imagen_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL de la Imagen (Opcional)</label>
+                            <input type="url" id="imagen_url" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="https://ejemplo.com/imagen.png">
                         </div>
                     </div>
                     <div class="space-y-3" id="respuestas-container">
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Respuestas (Marcar la/s correcta/s)</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Respuestas (Marcar la/s correcta/s)</label>
                         <div class="flex items-center" id="respuesta-wrapper-1">
                             <input type="radio" id="correcta-1" name="correcta" value="0" class="form-check-input radio" checked>
-                            <input type="text" id="respuesta-1" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 1">
+                            <input type="text" id="respuesta-1" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 1">
                         </div>
                         <div class="flex items-center" id="respuesta-wrapper-2">
                             <input type="radio" id="correcta-2" name="correcta" value="1" class="form-check-input radio">
-                            <input type="text" id="respuesta-2" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 2">
+                            <input type="text" id="respuesta-2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 2">
                         </div>
                         <div class="flex items-center" id="respuesta-wrapper-3">
                             <input type="radio" id="correcta-3" name="correcta" value="2" class="form-check-input radio">
-                            <input type="text" id="respuesta-3" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 3">
+                            <input type="text" id="respuesta-3" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 3">
                         </div>
                         <div class="flex items-center" id="respuesta-wrapper-4">
                             <input type="radio" id="correcta-4" name="correcta" value="3" class="form-check-input radio">
-                            <input type="text" id="respuesta-4" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 4">
+                            <input type="text" id="respuesta-4" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 4">
                         </div>
                     </div>
                 </div>
@@ -117,9 +132,9 @@
             </form>
 
             <div class="mb-8">
-                <h2 class="text-2xl font-bold mb-4 text-indigo-400">Cuestionario Actual</h2>
-                <div id="lista-preguntas" class="space-y-3 bg-gray-900 p-4 rounded-lg max-h-64 overflow-y-auto">
-                    <p class="text-gray-500">Aún no has añadido ninguna pregunta.</p>
+                <h2 class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">Cuestionario Actual</h2>
+                <div id="lista-preguntas" class="space-y-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg max-h-72 overflow-y-auto">
+                    <p class="text-gray-500 dark:text-gray-400">Aún no has añadido ninguna pregunta.</p>
                 </div>
             </div>
 
@@ -141,7 +156,6 @@
         const segundosInput = document.getElementById('segundos');
         const preguntaInput = document.getElementById('pregunta');
         const imagenUrlInput = document.getElementById('imagen_url');
-        const respuestasContainer = document.getElementById('respuestas-container');
         const respuestasInputs = Array.from({ length: 4 }, (_, i) => document.getElementById(`respuesta-${i + 1}`));
         const correctasInputs = Array.from({ length: 4 }, (_, i) => document.getElementById(`correcta-${i + 1}`));
         const respuestasWrappers = Array.from({ length: 4 }, (_, i) => document.getElementById(`respuesta-wrapper-${i + 1}`));
@@ -152,27 +166,77 @@
         const guardarBtn = document.getElementById('guardar-csv');
         const cargarBtn = document.getElementById('cargar-csv');
         const fileInput = document.getElementById('csv-file-input');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+
 
         // --- APP STATE ---
         let preguntas = [];
-        let ultimoTiempoSeleccionado = 30; // Guarda el último tiempo usado
+        let ultimoTiempoSeleccionado = 30;
+
+        // --- THEME MANAGEMENT ---
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem('theme') || 'system';
+            let newTheme;
+            if (currentTheme === 'system') {
+                newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+            } else {
+                newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+            }
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
 
         // --- FUNCTIONS ---
+        function formatTipo(tipo) {
+            switch(tipo) {
+                case 'quiz': return 'Quiz';
+                case 'multiple': return 'Múltiple';
+                case 'true-false': return 'V/F';
+                default: return 'Desconocido';
+            }
+        }
+
+        function formatTiempo(segundos) {
+            if (segundos < 60) return `${segundos}s`;
+            const min = Math.floor(segundos / 60);
+            const sec = segundos % 60;
+            return sec === 0 ? `${min}m` : `${min}m ${sec}s`;
+        }
 
         function renderizarPreguntas() {
             listaPreguntasContainer.innerHTML = '';
             if (preguntas.length === 0) {
-                listaPreguntasContainer.innerHTML = '<p class="text-gray-500">Aún no has añadido ninguna pregunta.</p>';
+                listaPreguntasContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">Aún no has añadido ninguna pregunta.</p>';
                 return;
             }
             preguntas.forEach((p, index) => {
                 const el = document.createElement('div');
-                el.className = 'bg-gray-800 p-3 rounded-md flex justify-between items-center';
+                el.className = 'bg-gray-100 dark:bg-gray-800 p-3 rounded-md flex justify-between items-center';
                 el.innerHTML = `
-                    <p class="truncate text-gray-300" title="${p.pregunta}">${index + 1}. ${p.pregunta}</p>
-                    <div class="flex space-x-2">
-                        <button data-index="${index}" class="editar-btn bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded-md text-sm">Editar</button>
-                        <button data-index="${index}" class="eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm">Eliminar</button>
+                    <div class="flex-grow truncate mr-4">
+                        <p class="truncate text-gray-800 dark:text-gray-200" title="${p.pregunta}">${index + 1}. ${p.pregunta}</p>
+                        <div class="flex items-center space-x-2 mt-1 text-xs">
+                            <span class="bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">${formatTipo(p.tipo)}</span>
+                            <span class="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full font-medium">${formatTiempo(p.tiempo)}</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 flex-shrink-0">
+                        <button data-index="${index}" class="editar-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md text-sm transition-colors">Editar</button>
+                        <button data-index="${index}" class="eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm transition-colors">Eliminar</button>
                     </div>
                 `;
                 listaPreguntasContainer.appendChild(el);
@@ -233,7 +297,6 @@
             cancelBtn.classList.add('hidden-important');
             tipoPreguntaSelect.value = 'quiz';
             
-            // Usar el último tiempo guardado
             establecerTiempoFormulario(ultimoTiempoSeleccionado);
             
             gestionarCambioTipoPregunta();
@@ -256,9 +319,9 @@
             });
 
             correctasInputs.forEach((input, i) => {
-                if (Array.isArray(p.correcta)) { // Respuesta múltiple
+                if (Array.isArray(p.correcta)) {
                     input.checked = p.correcta.includes(i);
-                } else { // Quiz o T/F
+                } else {
                     input.checked = (p.correcta === i);
                 }
             });
@@ -291,7 +354,7 @@
                 tiempoFinal = parseInt(tiempoLimiteSelect.value);
             }
             
-            ultimoTiempoSeleccionado = tiempoFinal; // Actualizar el último tiempo usado
+            ultimoTiempoSeleccionado = tiempoFinal;
 
             const nuevaPregunta = {
                 tipo: tipo,
@@ -302,9 +365,9 @@
                 imagen_url: imagenUrlInput.value.trim()
             };
 
-            if (index > -1) { // Modo edición
+            if (index > -1) {
                 preguntas[index] = nuevaPregunta;
-            } else { // Modo añadir
+            } else {
                 preguntas.push(nuevaPregunta);
             }
 
@@ -332,7 +395,6 @@
 
             preguntas.forEach(p => {
                 const correctaStr = Array.isArray(p.correcta) ? p.correcta.map(c => c + 1).join(',') : p.correcta + 1;
-                // FIX: Ensure every answer is at least an empty string before calling .replace()
                 const fila = [
                     p.tipo,
                     `"${(p.pregunta || '').replace(/"/g, '""')}"`,
@@ -367,23 +429,17 @@
                 preguntas = [];
                 for (let i = 1; i < lineas.length; i++) {
                     const campos = Array.from(lineas[i].matchAll(regex), m => m[1] || m[2]);
-                    if (campos.length >= 8) { // Check for at least 8 fields (up to 'Correcta')
+                    if (campos.length >= 8) {
                         let correcta;
                         if (campos[7].includes(',')) {
                             correcta = campos[7].split(',').map(n => parseInt(n) - 1);
                         } else {
                             correcta = parseInt(campos[7]) - 1;
                         }
-                        // FIX: Ensure every answer from CSV is at least an empty string
                         preguntas.push({
                             tipo: campos[0] || 'quiz', 
                             pregunta: campos[1] || '',
-                            respuestas: [
-                                campos[2] || '', 
-                                campos[3] || '', 
-                                campos[4] || '', 
-                                campos[5] || ''
-                            ],
+                            respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''],
                             tiempo: parseInt(campos[6]) || 30,
                             correcta: correcta, 
                             imagen_url: campos[8] || ''
@@ -406,8 +462,18 @@
         guardarBtn.addEventListener('click', guardarCSV);
         cargarBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', cargarCSV);
-
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        
         // --- INITIALIZATION ---
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme) {
+            applyTheme(savedTheme);
+        } else {
+            applyTheme(systemPrefersDark ? 'dark' : 'light');
+        }
+        
         renderizarPreguntas();
         gestionarCambioTipoPregunta();
         gestionarCambioTiempo();
