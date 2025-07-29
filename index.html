@@ -69,8 +69,8 @@
             </div>
             <!-- Columna Central: Código y QR -->
             <div class="flex flex-col items-center justify-center text-center">
-                <p class="text-2xl mb-2">Únete con el código:</p>
-                <div id="codigo-partida" class="text-7xl font-extrabold tracking-widest mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">Cargando...</div>
+                <p class="text-lg mb-4">Ve a <span id="url-sitio" class="font-bold text-indigo-600 dark:text-indigo-400"></span> e introduce el código:</p>
+                <div id="codigo-partida" class="text-8xl font-extrabold tracking-widest mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">...</div>
                 <div id="qrcode" class="p-4 bg-white rounded-lg shadow-lg"></div>
             </div>
             <!-- Columna Derecha: Jugadores -->
@@ -135,6 +135,7 @@
     const cargarBtn = document.getElementById('cargar-cuestionario-btn');
     const fileInput = document.getElementById('csv-file-input');
     const codigoPartidaEl = document.getElementById('codigo-partida');
+    const urlSitioEl = document.getElementById('url-sitio');
     const qrCodeEl = document.getElementById('qrcode');
     const contadorJugadoresEl = document.getElementById('contador-jugadores');
     const listaJugadoresEl = document.getElementById('lista-jugadores');
@@ -192,14 +193,25 @@
         iniciarJuegoBtn.disabled = contador === 0;
     }
 
+    // --- Helper Functions ---
+    function generarCodigoCorto(longitud = 5) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < longitud; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
     // --- PeerJS Logic ---
     function inicializarPeer() {
-        const idPartida = `partida-${Math.random().toString(36).substr(2, 6)}`;
+        const idPartida = generarCodigoCorto(5);
         peer = new Peer(idPartida);
 
         peer.on('open', id => {
             codigoPartidaEl.textContent = id;
-            // Asumiendo que jugador.html está en el mismo directorio
+            urlSitioEl.textContent = window.location.host;
+            
             const urlUnion = new URL('jugador.html', window.location.href);
             urlUnion.searchParams.set('partida', id);
             
@@ -216,7 +228,6 @@
         peer.on('connection', conn => {
             conn.on('open', () => {
                 conn.on('data', data => {
-                    // El primer mensaje debe ser para unirse
                     if (data.tipo === 'join') {
                         gestionarConexionJugador(conn, data.nombre);
                     }
@@ -226,13 +237,12 @@
     }
     
     function gestionarConexionJugador(conn, nombre) {
-        // Si el jugador ya existe (reconexión)
         if (jugadores[nombre]) {
             jugadores[nombre].conectado = true;
             jugadores[nombre].conn = conn;
             conexiones[conn.peer] = nombre;
             console.log(`Jugador reconectado: ${nombre}`);
-        } else { // Nuevo jugador
+        } else {
             jugadores[nombre] = {
                 nombre: nombre,
                 puntaje: 0,
