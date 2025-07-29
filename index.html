@@ -19,6 +19,15 @@
         .respuesta-color-1 { background-color: #3b82f6; } /* Azul */
         .respuesta-color-2 { background-color: #f59e0b; } /* Amarillo */
         .respuesta-color-3 { background-color: #10b981; } /* Verde */
+        .respuesta-correcta {
+            box-shadow: 0 0 0 4px white, 0 0 0 8px #22c55e; /* Borde verde para la correcta */
+            transform: scale(1.05);
+        }
+        #temporizador-circulo {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
@@ -31,18 +40,21 @@
     <div id="pantalla-carga" class="pantalla activa min-h-screen w-full flex-col items-center justify-center text-center p-8">
         <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-4">PlayQ</h1>
         <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">Carga tu cuestionario para empezar a jugar.</p>
-        <div class="flex flex-col items-center">
-            <button id="cargar-cuestionario-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl transition-transform hover:scale-105">
-                Cargar Cuestionario (.csv)
+        <div class="flex flex-col items-center space-y-4">
+            <button id="cargar-cuestionario-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl transition-transform hover:scale-105 flex items-center space-x-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6h.1a5 5 0 011 9.9M12 15v-6m0 0l-3 3m3-3l3 3" /></svg>
+                <span>Cargar Cuestionario (.csv)</span>
             </button>
-            <a href="editor.html" class="mt-4 text-gray-500 dark:text-gray-400 hover:underline">o crea un PlayQ con el editor</a>
+            <a href="editor.html" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-6 rounded-lg text-lg transition-transform hover:scale-105">
+                o crea un PlayQ con el editor
+            </a>
         </div>
         <input type="file" id="csv-file-input" class="hidden" accept=".csv">
     </div>
 
     <div id="pantalla-lobby" class="pantalla min-h-screen w-full flex-col p-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 flex-grow">
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
                 <h2 class="text-2xl font-bold mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Opciones de la Partida</h2>
                 <div class="space-y-4">
                     <label class="flex items-center justify-between cursor-pointer">
@@ -62,11 +74,12 @@
                 </div>
             </div>
             <div class="flex flex-col items-center justify-center text-center">
-                <p class="text-lg mb-4">Ve a <span id="url-sitio" class="font-bold text-indigo-600 dark:text-indigo-400"></span> e introduce el código:</p>
+                <p class="text-lg mb-2">Ve a <span id="url-sitio" class="font-bold text-indigo-600 dark:text-indigo-400"></span></p>
+                <p class="text-lg mb-4">e introduce el código:</p>
                 <div id="codigo-partida" class="text-8xl font-extrabold tracking-widest mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">...</div>
                 <div id="qrcode" class="p-4 bg-white rounded-lg shadow-lg"></div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md flex flex-col">
                  <h2 class="text-2xl font-bold mb-4">Jugadores (<span id="contador-jugadores">0</span>)</h2>
                  <ul id="lista-jugadores" class="space-y-2 h-full overflow-y-auto">
                     </ul>
@@ -88,13 +101,24 @@
             <img id="imagen-pregunta" src="" alt="Imagen de la pregunta" class="max-h-96 rounded-lg shadow-lg mb-6 hidden">
         </div>
         <div class="w-full flex items-end justify-between">
-            <div id="temporizador" class="text-6xl font-bold bg-white dark:bg-gray-800 p-4 rounded-full shadow-lg">30</div>
+            <div class="relative w-24 h-24">
+                 <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                    <circle class="text-gray-200 dark:text-gray-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                    <circle id="temporizador-circulo" class="text-indigo-600" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" transform="rotate(-90 50 50)" />
+                 </svg>
+                <div id="temporizador" class="absolute inset-0 flex items-center justify-center text-4xl font-bold bg-white dark:bg-gray-800 rounded-full shadow-lg">30</div>
+            </div>
             <div id="respuestas-grid" class="grid grid-cols-2 gap-4 w-3/4">
                 </div>
         </div>
+        <button id="mostrar-correcta-btn" class="mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl hidden">Mostrar Respuesta Correcta</button>
     </div>
-    
+
     <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
+        <div id="info-pregunta-anterior" class="w-full max-w-2xl mb-8 p-4 bg-white dark:bg-gray-800 rounded-lg text-center">
+            <h3 class="text-xl font-bold">Respuesta correcta a la pregunta anterior:</h3>
+            <p id="texto-respuesta-correcta" class="text-2xl text-green-600 dark:text-green-400 font-semibold"></p>
+        </div>
         <h1 class="text-5xl font-extrabold mb-8">Puntuaciones</h1>
         <ol id="lista-puntuaciones" class="w-full max-w-2xl text-2xl space-y-4">
             </ol>
@@ -127,17 +151,22 @@
     const siguientePreguntaBtn = document.getElementById('siguiente-pregunta-btn');
     const reiniciarBtn = document.getElementById('reiniciar-btn');
     const descargarResultadosBtn = document.getElementById('descargar-resultados-btn');
-    
+    const mostrarCorrectaBtn = document.getElementById('mostrar-correcta-btn');
+    const temporizadorCirculo = document.getElementById('temporizador-circulo');
+    const FULL_DASH_ARRAY = 283;
+
+
     // --- State ---
     let peer;
     let cuestionario = [];
-    let jugadores = {}; // { 'nombre_jugador': { puntaje: 0, conn: obj, conectado: true } }
-    let conexiones = {}; // { 'peerId': 'nombre_jugador' }
-    let respuestasRonda = {}; // { 'nombre_jugador': { respuesta: [2], tiempo: 25 } }
+    let jugadores = {};
+    let conexiones = {};
+    let respuestasRonda = {};
     let estadoJuego = 'carga';
     let preguntaActualIndex = -1;
     let temporizadorInterval;
     let tiempoRestante;
+    let tiempoPregunta;
 
     // --- Theme Management ---
     function applyTheme(theme) {
@@ -148,7 +177,7 @@
         } else {
             document.documentElement.classList.remove('dark');
             document.getElementById('theme-icon-sun').classList.add('hidden');
-            document.getElementById('theme-icon-moon').remove('hidden');
+            document.getElementById('theme-icon-moon').classList.remove('hidden');
         }
     }
     function toggleTheme() {
@@ -156,23 +185,28 @@
       localStorage.setItem('theme', newTheme);
       applyTheme(newTheme);
     }
-    
+
     // --- UI Functions ---
     function mostrarPantalla(id) {
         pantallas.forEach(p => p.classList.remove('activa'));
         document.getElementById(id).classList.add('activa');
     }
-    
+
     function actualizarListaJugadores() {
         listaJugadoresEl.innerHTML = '';
         let contador = 0;
         Object.values(jugadores).forEach(jugador => {
             if(jugador.conectado && jugador.conn) {
                 const li = document.createElement('li');
-                li.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded';
+                li.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded-lg';
                 li.innerHTML = `
-                    <span class="font-medium">${jugador.nombre}</span>
-                    <button data-peer-id="${jugador.conn.peer}" class="eliminar-jugador-btn text-red-500 hover:text-red-700 font-bold">✖</button>
+                    <div class="flex items-center space-x-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                        <span class="font-medium">${jugador.nombre}</span>
+                    </div>
+                    <button data-peer-id="${jugador.conn.peer}" class="eliminar-jugador-btn text-red-500 hover:text-red-700 font-bold p-2 rounded-full hover:bg-red-100 dark:hover:bg-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
                 `;
                 listaJugadoresEl.appendChild(li);
                 contador++;
@@ -219,6 +253,7 @@
     function mostrarPregunta() {
         const pregunta = cuestionario[preguntaActualIndex];
         mostrarPantalla('pantalla-pregunta');
+        mostrarCorrectaBtn.classList.add('hidden');
         document.getElementById('contador-pregunta').textContent = `Pregunta ${preguntaActualIndex + 1} / ${cuestionario.length}`;
         document.getElementById('texto-pregunta').textContent = pregunta.pregunta;
 
@@ -244,14 +279,17 @@
             }
         });
 
-        tiempoRestante = pregunta.tiempo;
+        tiempoPregunta = pregunta.tiempo;
+        tiempoRestante = tiempoPregunta;
         const temporizadorEl = document.getElementById('temporizador');
         temporizadorEl.textContent = tiempoRestante;
+        setCircleDashoffset();
         clearInterval(temporizadorInterval);
 
         temporizadorInterval = setInterval(() => {
             tiempoRestante--;
             temporizadorEl.textContent = tiempoRestante;
+            setCircleDashoffset();
             if (tiempoRestante <= 0) {
                 finalizarRonda();
             }
@@ -259,34 +297,41 @@
 
         Object.values(jugadores).forEach(jugador => {
             if (jugador.conectado && jugador.conn) {
-                jugador.conn.send({ 
-                    tipo: 'pregunta', 
-                    payload: { 
+                jugador.conn.send({
+                    tipo: 'pregunta',
+                    payload: {
                         numRespuestas: numRespuestasVisibles,
-                        tipo: pregunta.tipo 
-                    } 
+                        tipo: pregunta.tipo
+                    }
                 });
             }
         });
     }
 
+    function setCircleDashoffset() {
+        const rawTimeFraction = tiempoRestante / tiempoPregunta;
+        const dashoffset = (1 - rawTimeFraction) * FULL_DASH_ARRAY;
+        temporizadorCirculo.style.strokeDashoffset = dashoffset;
+    }
+
     function finalizarRonda() {
         clearInterval(temporizadorInterval);
         console.log("Ronda finalizada. Calculando puntos...");
+        mostrarCorrectaBtn.classList.remove('hidden');
 
         const pregunta = cuestionario[preguntaActualIndex];
 
         Object.keys(respuestasRonda).forEach(nombre => {
             const respJugador = respuestasRonda[nombre].respuesta;
             const respCorrecta = pregunta.correcta;
-            
+
             let esCorrecta = false;
             if (Array.isArray(respCorrecta)) {
                 esCorrecta = respCorrecta.length === respJugador.length && respCorrecta.every(val => respJugador.includes(val));
             } else {
                 esCorrecta = respCorrecta === respJugador;
             }
-            
+
             const puntosRonda = esCorrecta ? (500 + respuestasRonda[nombre].tiempoRespuesta * 10) : 0;
             jugadores[nombre].puntaje += puntosRonda;
 
@@ -301,11 +346,44 @@
                 });
             }
         });
-        setTimeout(mostrarLeaderboard, 1000); 
+        // No mostramos el leaderboard inmediatamente. Esperamos al click del botón.
+    }
+
+    function revelarRespuestaCorrecta() {
+        const pregunta = cuestionario[preguntaActualIndex];
+        const respuestasGrid = document.getElementById('respuestas-grid');
+        
+        let correctaIndices = [];
+        if(Array.isArray(pregunta.correcta)){
+            correctaIndices = pregunta.correcta;
+        } else {
+            correctaIndices.push(pregunta.correcta);
+        }
+
+        Array.from(respuestasGrid.children).forEach((el, index) => {
+            if (correctaIndices.includes(index)) {
+                el.classList.add('respuesta-correcta');
+            }
+        });
+
+        mostrarCorrectaBtn.classList.add('hidden');
+        setTimeout(mostrarLeaderboard, 2000); // Esperar 2 segundos antes de mostrar puntuaciones
     }
 
     function mostrarLeaderboard() {
         mostrarPantalla('pantalla-leaderboard');
+        const pregunta = cuestionario[preguntaActualIndex];
+        const respuestas = pregunta.respuestas;
+        let correctasTexto = [];
+
+        if(Array.isArray(pregunta.correcta)) {
+            correctasTexto = pregunta.correcta.map(i => respuestas[i]);
+        } else {
+            correctasTexto.push(respuestas[pregunta.correcta]);
+        }
+        document.getElementById('texto-respuesta-correcta').textContent = correctasTexto.join(', ');
+
+
         const listaPuntuaciones = document.getElementById('lista-puntuaciones');
         listaPuntuaciones.innerHTML = '';
 
@@ -330,6 +408,7 @@
         const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
         const alturas = ['h-48', 'h-64', 'h-32'];
         const ordenPodio = [1, 0, 2];
+        const medallas = ['🥈', '🥇', '🥉'];
 
         for(let i = 0; i < 3; i++) {
             const index = ordenPodio[i];
@@ -339,6 +418,7 @@
             const podioDiv = document.createElement('div');
             podioDiv.className = 'flex flex-col items-center';
             podioDiv.innerHTML = `
+                <p class="text-4xl mb-2">${medallas[i]}</p>
                 <p class="text-3xl font-bold">${jugador.nombre}</p>
                 <div class="bg-indigo-500 text-white w-48 text-center p-4 rounded-t-lg ${alturas[i]} flex flex-col justify-end">
                     <p class="text-5xl font-extrabold">${index + 1}</p>
@@ -348,11 +428,11 @@
             podioEl.appendChild(podioDiv);
         }
     }
-    
+
     function descargarResultados() {
         const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
         let csvContent = 'Puesto;Nombre;Puntuacion\n';
-        
+
         jugadoresOrdenados.forEach((jugador, index) => {
             const fila = `${index + 1};"${jugador.nombre}";${jugador.puntaje}`;
             csvContent += fila + '\n';
@@ -395,14 +475,14 @@
         });
         conn.on('close', () => gestionarDesconexionJugador(conn.peer));
     }
-    
+
     function gestionarConexionJugador(conn, nombre) {
         if (Object.values(jugadores).some(j => j.nombre === nombre && j.conectado)) {
             conn.send({ tipo: 'error', payload: { mensaje: 'Ese nombre ya está en uso.' }});
             conn.close();
             return;
         }
-        
+
         let jugador = Object.values(jugadores).find(j => j.nombre === nombre);
         if (jugador) {
              jugador.conectado = true;
@@ -447,7 +527,7 @@
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
+
         const reader = new FileReader();
         reader.onload = (event) => {
             const text = event.target.result;
@@ -464,11 +544,11 @@
                         correcta = parseInt(campos[7]) - 1;
                     }
                     cuestionario.push({
-                        tipo: campos[0] || 'quiz', 
+                        tipo: campos[0] || 'quiz',
                         pregunta: campos[1] || '',
                         respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''],
                         tiempo: parseInt(campos[6]) || 30,
-                        correcta: correcta, 
+                        correcta: correcta,
                         imagen_url: campos[8] || ''
                     });
                 }
@@ -478,15 +558,17 @@
         };
         reader.readAsText(file);
     });
-    
+
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
     listaJugadoresEl.addEventListener('click', e => {
-        if (e.target.classList.contains('eliminar-jugador-btn')) {
-            const peerId = e.target.dataset.peerId;
+        const boton = e.target.closest('.eliminar-jugador-btn');
+        if (boton) {
+            const peerId = boton.dataset.peerId;
             const nombre = conexiones[peerId];
             if(nombre && jugadores[nombre] && jugadores[nombre].conn) {
-                 jugadores[nombre].conn.close();
+                 jugadores[nombre].conn.send({ tipo: 'expulsado' });
+                 setTimeout(() => jugadores[nombre].conn.close(), 100);
             }
             delete jugadores[nombre];
             delete conexiones[peerId];
@@ -496,6 +578,7 @@
 
     iniciarJuegoBtn.addEventListener('click', iniciarJuego);
     siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
+    mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
     reiniciarBtn.addEventListener('click', () => window.location.reload());
     descargarResultadosBtn.addEventListener('click', descargarResultados);
 
