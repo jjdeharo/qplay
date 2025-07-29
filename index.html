@@ -10,8 +10,8 @@
     <script>
       tailwind.config = { darkMode: 'class' };
     </script>
-    <!-- Librerías para PeerJS y QR Code -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peer.min.js"></script>
+    <!-- Librerías para PeerJS (URL corregida) y QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -102,7 +102,7 @@
         <!-- Footer: Tiempo y Respuestas -->
         <div class="w-full flex items-end justify-between">
             <div id="temporizador" class="text-6xl font-bold bg-white dark:bg-gray-800 p-4 rounded-full shadow-lg">30</div>
-            <div class="grid grid-cols-2 gap-4 w-3/4">
+            <div id="respuestas-grid" class="grid grid-cols-2 gap-4 w-3/4">
                 <!-- Respuestas se generan aquí -->
             </div>
         </div>
@@ -130,9 +130,6 @@
     </div>
 
     <script>
-    // --- Lógica del Presentador (simplificada para demostración) ---
-    // En una implementación real, esta sección sería mucho más extensa.
-    
     // --- DOM References ---
     const pantallas = document.querySelectorAll('.pantalla');
     const cargarBtn = document.getElementById('cargar-cuestionario-btn');
@@ -247,11 +244,13 @@
         }
         
         conn.on('close', () => {
-            console.log(`${nombre} se ha desconectado.`);
-            if(jugadores[nombre]) {
-                jugadores[nombre].conectado = false;
+            const nombreJugador = conexiones[conn.peer];
+            if (nombreJugador && jugadores[nombreJugador]) {
+                console.log(`${nombreJugador} se ha desconectado.`);
+                jugadores[nombreJugador].conectado = false;
+                delete conexiones[conn.peer];
+                actualizarListaJugadores();
             }
-            actualizarListaJugadores();
         });
         
         actualizarListaJugadores();
@@ -260,12 +259,38 @@
     // --- Event Listeners ---
     cargarBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', (e) => {
-        // Aquí iría la lógica de parseo del CSV
         const file = e.target.files[0];
         if (!file) return;
-        // ... parsear y guardar en `cuestionario`
-        console.log("Cuestionario cargado (simulado).");
-        inicializarPeer();
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const text = event.target.result;
+            const lineas = text.split('\n').filter(l => l.trim() !== '');
+            const regex = /"([^"]*)"|([^;]+)/g;
+            cuestionario = [];
+            for (let i = 1; i < lineas.length; i++) {
+                const campos = Array.from(lineas[i].matchAll(regex), m => m[1] || m[2]);
+                if (campos.length >= 8) {
+                    let correcta;
+                    if (campos[7].includes(',')) {
+                        correcta = campos[7].split(',').map(n => parseInt(n) - 1);
+                    } else {
+                        correcta = parseInt(campos[7]) - 1;
+                    }
+                    cuestionario.push({
+                        tipo: campos[0] || 'quiz', 
+                        pregunta: campos[1] || '',
+                        respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''],
+                        tiempo: parseInt(campos[6]) || 30,
+                        correcta: correcta, 
+                        imagen_url: campos[8] || ''
+                    });
+                }
+            }
+            console.log(`${cuestionario.length} preguntas cargadas.`);
+            inicializarPeer();
+        };
+        reader.readAsText(file);
     });
     
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
@@ -273,12 +298,12 @@
     listaJugadoresEl.addEventListener('click', e => {
         if (e.target.classList.contains('eliminar-jugador-btn')) {
             const nombre = e.target.dataset.nombre;
-            if (jugadores[nombre]) {
-                jugadores[nombre].conn.close(); // Cierra la conexión
-                delete jugadores[nombre];
-                actualizarListaJugadores();
-                console.log(`Jugador ${nombre} eliminado.`);
+            if (jugadores[nombre] && jugadores[nombre].conn) {
+                jugadores[nombre].conn.close();
             }
+            delete jugadores[nombre];
+            actualizarListaJugadores();
+            console.log(`Jugador ${nombre} eliminado.`);
         }
     });
 
