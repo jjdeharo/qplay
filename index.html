@@ -93,10 +93,20 @@
         </button>
     </div>
 
-    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
-        <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white hidden">JUEGO EN PAUSA</div>
+    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full flex-col items-center justify-between p-8">
+        <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white z-20 hidden">JUEGO EN PAUSA</div>
         
-        <div class="w-full flex justify-between items-start absolute top-8 px-8">
+        <div id="estado-jugadores-panel" class="absolute left-8 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg max-h-96 w-64 hidden">
+            <h3 class="font-bold text-lg mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">Estado de Jugadores</h3>
+            <div class="overflow-y-auto max-h-80">
+                <h4 class="font-semibold mt-2 text-green-600 dark:text-green-400">Han Votado:</h4>
+                <ul id="jugadores-votado" class="list-disc list-inside"></ul>
+                <h4 class="font-semibold mt-4 text-red-600 dark:text-red-400">Pendientes:</h4>
+                <ul id="jugadores-pendientes" class="list-disc list-inside"></ul>
+            </div>
+        </div>
+
+        <div class="w-full flex justify-between items-start absolute top-8 px-8 z-10">
             <div class="flex items-center space-x-4">
                 <span id="contador-pregunta" class="text-2xl font-bold">Pregunta 1 / 10</span>
                 <div class="relative w-24 h-24">
@@ -107,10 +117,13 @@
                     <div id="temporizador" class="absolute inset-0 flex items-center justify-center text-4xl font-bold">30</div>
                 </div>
             </div>
-            <button id="pausa-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">Pausar</button>
+            <div class="flex space-x-2">
+                <button id="pausa-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">Pausar</button>
+                <button id="saltar-tiempo-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Finalizar Ronda</button>
+            </div>
         </div>
 
-        <div class="w-full max-w-6xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+        <div class="w-full max-w-6xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mt-32 mb-24">
             <div class="flex flex-col items-center text-center">
                 <h2 id="texto-pregunta" class="text-5xl font-bold mb-6">¿Cuál es la capital de España?</h2>
                 <img id="imagen-pregunta" src="" alt="Imagen de la pregunta" class="max-h-80 rounded-lg shadow-lg mb-8 hidden">
@@ -119,7 +132,7 @@
             </div>
         </div>
         
-        <div id="controles-post-pregunta" class="mt-8 space-x-4 hidden">
+        <div id="controles-post-pregunta" class="space-x-4 hidden">
             <button id="mostrar-correcta-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Mostrar Respuesta Correcta</button>
             <button id="ir-a-puntuaciones-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Ver Puntuaciones</button>
         </div>
@@ -154,6 +167,7 @@
     const listaJugadoresEl = document.getElementById('lista-jugadores');
     const iniciarJuegoBtn = document.getElementById('iniciar-juego-btn');
     const pausaBtn = document.getElementById('pausa-btn');
+    const saltarTiempoBtn = document.getElementById('saltar-tiempo-btn');
     const pausaOverlay = document.getElementById('pausa-overlay');
     const siguientePreguntaBtn = document.getElementById('siguiente-pregunta-btn');
     const reiniciarBtn = document.getElementById('reiniciar-btn');
@@ -162,13 +176,15 @@
     const mostrarCorrectaBtn = document.getElementById('mostrar-correcta-btn');
     const irAPuntuacionesBtn = document.getElementById('ir-a-puntuaciones-btn');
     const temporizadorCirculo = document.getElementById('temporizador-circulo');
+    const estadoJugadoresPanel = document.getElementById('estado-jugadores-panel');
+    const jugadoresVotadoLista = document.getElementById('jugadores-votado');
+    const jugadoresPendientesLista = document.getElementById('jugadores-pendientes');
     const FULL_DASH_ARRAY = 283;
-
 
     // --- State ---
     let peer;
     let cuestionario = [];
-    let jugadores = {};
+    let jugadores = {}; // { nombre: { puntaje, conn, conectado, haVotado } }
     let conexiones = {};
     let respuestasRonda = {};
     let estadoJuego = 'carga';
@@ -176,18 +192,14 @@
     let temporizadorInterval;
     let tiempoRestante;
     let tiempoPregunta;
+    let isPaused = false;
 
     // --- Theme Management ---
     function applyTheme(theme) {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.getElementById('theme-icon-sun').classList.remove('hidden');
-            document.getElementById('theme-icon-moon').classList.add('hidden');
-        } else {
-            document.documentElement.classList.remove('dark');
-            document.getElementById('theme-icon-sun').classList.add('hidden');
-            document.getElementById('theme-icon-moon').classList.remove('hidden');
-        }
+        const isDark = theme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        document.getElementById('theme-icon-sun').classList.toggle('hidden', !isDark);
+        document.getElementById('theme-icon-moon').classList.toggle('hidden', isDark);
     }
     function toggleTheme() {
       const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
@@ -199,6 +211,7 @@
     function mostrarPantalla(id) {
         pantallas.forEach(p => p.classList.remove('activa'));
         document.getElementById(id).classList.add('activa');
+        estadoJugadoresPanel.style.display = (id === 'pantalla-pregunta' && estadoJuego === 'jugando') ? 'block' : 'none';
     }
 
     function actualizarListaJugadores() {
@@ -223,6 +236,24 @@
         });
         contadorJugadoresEl.textContent = contador;
         iniciarJuegoBtn.disabled = contador === 0;
+    }
+
+    function actualizarEstadoJugadoresDisplay() {
+        jugadoresVotadoLista.innerHTML = '';
+        jugadoresPendientesLista.innerHTML = '';
+        const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado);
+        if (jugadoresActivos.length === 0) return;
+
+        jugadoresActivos.forEach(jugador => {
+            const li = document.createElement('li');
+            li.textContent = jugador.nombre;
+            if (jugador.haVotado) {
+                li.textContent += ' ✔️';
+                jugadoresVotadoLista.appendChild(li);
+            } else {
+                jugadoresPendientesLista.appendChild(li);
+            }
+        });
     }
 
     // --- Helper Functions ---
@@ -255,15 +286,22 @@
             return;
         }
         respuestasRonda = {};
+        Object.values(jugadores).forEach(j => j.haVotado = false); // Reiniciar estado de voto
         mostrarPregunta();
     }
 
     function mostrarPregunta() {
         const pregunta = cuestionario[preguntaActualIndex];
+        isPaused = false;
+        pausaBtn.textContent = 'Pausar';
+        pausaOverlay.style.display = 'none';
         mostrarPantalla('pantalla-pregunta');
         controlesPostPregunta.classList.add('hidden');
         mostrarCorrectaBtn.disabled = false;
+        saltarTiempoBtn.style.display = 'inline-block';
 
+        actualizarEstadoJugadoresDisplay();
+        
         document.getElementById('contador-pregunta').textContent = `Pregunta ${preguntaActualIndex + 1} / ${cuestionario.length}`;
         document.getElementById('texto-pregunta').textContent = pregunta.pregunta;
 
@@ -297,6 +335,7 @@
         clearInterval(temporizadorInterval);
 
         temporizadorInterval = setInterval(() => {
+            if(isPaused) return;
             tiempoRestante--;
             temporizadorEl.textContent = tiempoRestante;
             setCircleDashoffset();
@@ -327,6 +366,7 @@
     function finalizarRonda() {
         clearInterval(temporizadorInterval);
         controlesPostPregunta.classList.remove('hidden');
+        saltarTiempoBtn.style.display = 'none';
 
         const pregunta = cuestionario[preguntaActualIndex];
         Object.keys(respuestasRonda).forEach(nombre => {
@@ -354,6 +394,25 @@
                 });
             }
         });
+    }
+    
+    function gestionarPausa() {
+        isPaused = !isPaused;
+        const tipoMensaje = isPaused ? 'pausa' : 'resume';
+
+        Object.values(jugadores).forEach(j => {
+            if(j.conectado && j.conn) {
+                j.conn.send({ tipo: tipoMensaje });
+            }
+        });
+
+        if (isPaused) {
+            pausaBtn.textContent = 'Reanudar';
+            pausaOverlay.style.display = 'flex';
+        } else {
+            pausaBtn.textContent = 'Pausar';
+            pausaOverlay.style.display = 'none';
+        }
     }
 
     function revelarRespuestaCorrecta() {
@@ -450,6 +509,7 @@
         });
 
         peer.on('connection', configurarNuevaConexion);
+        peer.on('error', (err) => console.error("Error en PeerJS: ", err));
     }
 
     function configurarNuevaConexion(conn) {
@@ -475,7 +535,7 @@
              jugador.conectado = true;
              jugador.conn = conn;
         } else {
-            jugador = { nombre: nombre, puntaje: 0, conn: conn, conectado: true };
+            jugador = { nombre: nombre, puntaje: 0, conn: conn, conectado: true, haVotado: false };
             jugadores[nombre] = jugador;
         }
         conexiones[conn.peer] = nombre;
@@ -488,6 +548,8 @@
         if (!nombre || !jugadores[nombre] || respuestasRonda[nombre]) return;
 
         respuestasRonda[nombre] = { respuesta: payload.respuesta, tiempoRespuesta: tiempoRestante };
+        jugadores[nombre].haVotado = true;
+        actualizarEstadoJugadoresDisplay();
 
         const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado).length;
         if (Object.keys(respuestasRonda).length === jugadoresActivos) {
@@ -502,6 +564,8 @@
             delete conexiones[peerId];
             if(estadoJuego === 'carga') {
                 actualizarListaJugadores();
+            } else {
+                actualizarEstadoJugadoresDisplay();
             }
         }
     }
@@ -561,6 +625,8 @@
 
     iniciarJuegoBtn.addEventListener('click', iniciarJuego);
     siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
+    pausaBtn.addEventListener('click', gestionarPausa);
+    saltarTiempoBtn.addEventListener('click', finalizarRonda);
     mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
     irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
     reiniciarBtn.addEventListener('click', () => window.location.reload());
