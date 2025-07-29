@@ -17,8 +17,11 @@
         .pantalla.activa { display: flex; }
         .respuesta-color-0 { background-color: #e53e3e; } /* Rojo */
         .respuesta-color-1 { background-color: #3b82f6; } /* Azul */
-        .respuesta-color-2 { background-color: #f59e0b; } /* Amarillo */
+        .respuesta-color-2 { background-color: #d97706; } /* Amarillo más oscuro */
         .respuesta-color-3 { background-color: #10b981; } /* Verde */
+        
+        .text-shadow { text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4); }
+
         .respuesta-correcta {
             box-shadow: 0 0 0 4px white, 0 0 0 8px #22c55e; /* Borde verde para la correcta */
             transform: scale(1.05);
@@ -58,14 +61,14 @@
                 <h2 class="text-2xl font-bold mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Opciones de la Partida</h2>
                 <div class="space-y-4">
                     <label class="flex items-center justify-between cursor-pointer">
-                        <span class="text-lg">Orden aleatorio de preguntas</span>
+                        <span class="text-xl">Orden aleatorio de preguntas</span>
                         <div class="relative">
                             <input type="checkbox" id="opcion-preguntas-aleatorias" class="sr-only peer">
                             <div class="w-14 h-8 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
                         </div>
                     </label>
                     <label class="flex items-center justify-between cursor-pointer">
-                        <span class="text-lg">Orden aleatorio de respuestas</span>
+                        <span class="text-xl">Orden aleatorio de respuestas</span>
                         <div class="relative">
                             <input type="checkbox" id="opcion-respuestas-aleatorias" class="sr-only peer">
                             <div class="w-14 h-8 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
@@ -74,8 +77,8 @@
                 </div>
             </div>
             <div class="flex flex-col items-center justify-center text-center">
-                <p class="text-lg mb-2">Ve a <span id="url-sitio" class="font-bold text-indigo-600 dark:text-indigo-400"></span></p>
-                <p class="text-lg mb-4">e introduce el código:</p>
+                <p class="text-xl mb-2">Ve a <span id="url-sitio" class="font-bold text-indigo-600 dark:text-indigo-400"></span></p>
+                <p class="text-xl mb-4">e introduce el código:</p>
                 <div id="codigo-partida" class="text-8xl font-extrabold tracking-widest mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">...</div>
                 <div id="qrcode" class="p-4 bg-white rounded-lg shadow-lg"></div>
             </div>
@@ -90,45 +93,49 @@
         </button>
     </div>
 
-    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full flex-col items-center justify-between p-8">
+    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white hidden">JUEGO EN PAUSA</div>
-        <div class="w-full flex justify-between items-center">
-            <span id="contador-pregunta" class="text-2xl font-bold">Pregunta 1 / 10</span>
+        
+        <div class="w-full flex justify-between items-start absolute top-8 px-8">
+            <div class="flex items-center space-x-4">
+                <span id="contador-pregunta" class="text-2xl font-bold">Pregunta 1 / 10</span>
+                <div class="relative w-24 h-24">
+                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                        <circle class="text-gray-200 dark:text-gray-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                        <circle id="temporizador-circulo" class="text-indigo-600" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" transform="rotate(-90 50 50)" />
+                     </svg>
+                    <div id="temporizador" class="absolute inset-0 flex items-center justify-center text-4xl font-bold">30</div>
+                </div>
+            </div>
             <button id="pausa-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">Pausar</button>
         </div>
-        <div class="flex flex-col items-center text-center">
-            <h2 id="texto-pregunta" class="text-4xl font-bold mb-6">¿Cuál es la capital de España?</h2>
-            <img id="imagen-pregunta" src="" alt="Imagen de la pregunta" class="max-h-96 rounded-lg shadow-lg mb-6 hidden">
-        </div>
-        <div class="w-full flex items-end justify-between">
-            <div class="relative w-24 h-24">
-                 <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                    <circle class="text-gray-200 dark:text-gray-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                    <circle id="temporizador-circulo" class="text-indigo-600" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" transform="rotate(-90 50 50)" />
-                 </svg>
-                <div id="temporizador" class="absolute inset-0 flex items-center justify-center text-4xl font-bold bg-white dark:bg-gray-800 rounded-full shadow-lg">30</div>
-            </div>
-            <div id="respuestas-grid" class="grid grid-cols-2 gap-4 w-3/4">
-                </div>
-        </div>
-        <button id="mostrar-correcta-btn" class="mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl hidden">Mostrar Respuesta Correcta</button>
-    </div>
 
-    <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
-        <div id="info-pregunta-anterior" class="w-full max-w-2xl mb-8 p-4 bg-white dark:bg-gray-800 rounded-lg text-center">
-            <h3 class="text-xl font-bold">Respuesta correcta a la pregunta anterior:</h3>
-            <p id="texto-respuesta-correcta" class="text-2xl text-green-600 dark:text-green-400 font-semibold"></p>
+        <div class="w-full max-w-6xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+            <div class="flex flex-col items-center text-center">
+                <h2 id="texto-pregunta" class="text-5xl font-bold mb-6">¿Cuál es la capital de España?</h2>
+                <img id="imagen-pregunta" src="" alt="Imagen de la pregunta" class="max-h-80 rounded-lg shadow-lg mb-8 hidden">
+            </div>
+            <div id="respuestas-grid" class="grid grid-cols-2 gap-4 w-full">
+            </div>
         </div>
+        
+        <div id="controles-post-pregunta" class="mt-8 space-x-4 hidden">
+            <button id="mostrar-correcta-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Mostrar Respuesta Correcta</button>
+            <button id="ir-a-puntuaciones-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Ver Puntuaciones</button>
+        </div>
+    </div>
+    
+    <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <h1 class="text-5xl font-extrabold mb-8">Puntuaciones</h1>
-        <ol id="lista-puntuaciones" class="w-full max-w-2xl text-2xl space-y-4">
-            </ol>
+        <ol id="lista-puntuaciones" class="w-full max-w-3xl text-3xl space-y-4">
+        </ol>
         <button id="siguiente-pregunta-btn" class="mt-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Siguiente</button>
     </div>
 
     <div id="pantalla-final" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <h1 class="text-6xl font-extrabold mb-8">¡Fin del Juego!</h1>
         <div id="podio" class="w-full max-w-3xl flex justify-around items-end">
-            </div>
+        </div>
         <div class="mt-12 space-x-4">
             <button id="descargar-resultados-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Descargar Resultados</button>
             <button id="reiniciar-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Jugar de Nuevo</button>
@@ -151,7 +158,9 @@
     const siguientePreguntaBtn = document.getElementById('siguiente-pregunta-btn');
     const reiniciarBtn = document.getElementById('reiniciar-btn');
     const descargarResultadosBtn = document.getElementById('descargar-resultados-btn');
+    const controlesPostPregunta = document.getElementById('controles-post-pregunta');
     const mostrarCorrectaBtn = document.getElementById('mostrar-correcta-btn');
+    const irAPuntuacionesBtn = document.getElementById('ir-a-puntuaciones-btn');
     const temporizadorCirculo = document.getElementById('temporizador-circulo');
     const FULL_DASH_ARRAY = 283;
 
@@ -202,7 +211,7 @@
                 li.innerHTML = `
                     <div class="flex items-center space-x-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
-                        <span class="font-medium">${jugador.nombre}</span>
+                        <span class="font-bold text-xl">${jugador.nombre}</span>
                     </div>
                     <button data-peer-id="${jugador.conn.peer}" class="eliminar-jugador-btn text-red-500 hover:text-red-700 font-bold p-2 rounded-full hover:bg-red-100 dark:hover:bg-gray-600">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -228,7 +237,6 @@
 
     // --- Game Logic ---
     function iniciarJuego() {
-        console.log("Iniciando el juego...");
         estadoJuego = 'jugando';
         if (document.getElementById('opcion-preguntas-aleatorias').checked) {
             for (let i = cuestionario.length - 1; i > 0; i--) {
@@ -253,7 +261,9 @@
     function mostrarPregunta() {
         const pregunta = cuestionario[preguntaActualIndex];
         mostrarPantalla('pantalla-pregunta');
-        mostrarCorrectaBtn.classList.add('hidden');
+        controlesPostPregunta.classList.add('hidden');
+        mostrarCorrectaBtn.disabled = false;
+
         document.getElementById('contador-pregunta').textContent = `Pregunta ${preguntaActualIndex + 1} / ${cuestionario.length}`;
         document.getElementById('texto-pregunta').textContent = pregunta.pregunta;
 
@@ -273,8 +283,8 @@
             if (respuesta.trim() !== '') {
                  numRespuestasVisibles++;
                  const respuestaDiv = document.createElement('div');
-                 respuestaDiv.className = `respuesta-color-${index} text-white p-4 rounded-lg flex items-center text-2xl`;
-                 respuestaDiv.innerHTML = `<span class="mr-4 text-4xl">${simbolos[index]}</span> <p>${respuesta}</p>`;
+                 respuestaDiv.className = `respuesta-color-${index} text-white p-6 rounded-lg flex items-center`;
+                 respuestaDiv.innerHTML = `<span class="mr-4 text-4xl text-shadow">${simbolos[index]}</span> <p class="text-3xl text-shadow">${respuesta}</p>`;
                  respuestasGrid.appendChild(respuestaDiv);
             }
         });
@@ -316,11 +326,9 @@
 
     function finalizarRonda() {
         clearInterval(temporizadorInterval);
-        console.log("Ronda finalizada. Calculando puntos...");
-        mostrarCorrectaBtn.classList.remove('hidden');
+        controlesPostPregunta.classList.remove('hidden');
 
         const pregunta = cuestionario[preguntaActualIndex];
-
         Object.keys(respuestasRonda).forEach(nombre => {
             const respJugador = respuestasRonda[nombre].respuesta;
             const respCorrecta = pregunta.correcta;
@@ -346,44 +354,24 @@
                 });
             }
         });
-        // No mostramos el leaderboard inmediatamente. Esperamos al click del botón.
     }
 
     function revelarRespuestaCorrecta() {
+        mostrarCorrectaBtn.disabled = true;
         const pregunta = cuestionario[preguntaActualIndex];
         const respuestasGrid = document.getElementById('respuestas-grid');
         
-        let correctaIndices = [];
-        if(Array.isArray(pregunta.correcta)){
-            correctaIndices = pregunta.correcta;
-        } else {
-            correctaIndices.push(pregunta.correcta);
-        }
+        let correctaIndices = Array.isArray(pregunta.correcta) ? pregunta.correcta : [pregunta.correcta];
 
         Array.from(respuestasGrid.children).forEach((el, index) => {
             if (correctaIndices.includes(index)) {
                 el.classList.add('respuesta-correcta');
             }
         });
-
-        mostrarCorrectaBtn.classList.add('hidden');
-        setTimeout(mostrarLeaderboard, 2000); // Esperar 2 segundos antes de mostrar puntuaciones
     }
 
     function mostrarLeaderboard() {
         mostrarPantalla('pantalla-leaderboard');
-        const pregunta = cuestionario[preguntaActualIndex];
-        const respuestas = pregunta.respuestas;
-        let correctasTexto = [];
-
-        if(Array.isArray(pregunta.correcta)) {
-            correctasTexto = pregunta.correcta.map(i => respuestas[i]);
-        } else {
-            correctasTexto.push(respuestas[pregunta.correcta]);
-        }
-        document.getElementById('texto-respuesta-correcta').textContent = correctasTexto.join(', ');
-
-
         const listaPuntuaciones = document.getElementById('lista-puntuaciones');
         listaPuntuaciones.innerHTML = '';
 
@@ -391,7 +379,7 @@
 
         jugadoresOrdenados.forEach((jugador, index) => {
             const li = document.createElement('li');
-            li.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-lg';
+            li.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-4 rounded-lg';
             li.innerHTML = `
                 <span class="font-bold">${index + 1}. ${jugador.nombre}</span>
                 <span class="font-semibold text-indigo-600 dark:text-indigo-400">${jugador.puntaje}</span>
@@ -401,7 +389,6 @@
     }
 
     function finalizarJuego() {
-        console.log("Fin del juego.");
         mostrarPantalla('pantalla-final');
         const podioEl = document.getElementById('podio');
         podioEl.innerHTML = '';
@@ -428,11 +415,11 @@
             podioEl.appendChild(podioDiv);
         }
     }
-
+    
     function descargarResultados() {
         const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
         let csvContent = 'Puesto;Nombre;Puntuacion\n';
-
+        
         jugadoresOrdenados.forEach((jugador, index) => {
             const fila = `${index + 1};"${jugador.nombre}";${jugador.puntaje}`;
             csvContent += fila + '\n';
@@ -475,14 +462,14 @@
         });
         conn.on('close', () => gestionarDesconexionJugador(conn.peer));
     }
-
+    
     function gestionarConexionJugador(conn, nombre) {
         if (Object.values(jugadores).some(j => j.nombre === nombre && j.conectado)) {
             conn.send({ tipo: 'error', payload: { mensaje: 'Ese nombre ya está en uso.' }});
             conn.close();
             return;
         }
-
+        
         let jugador = Object.values(jugadores).find(j => j.nombre === nombre);
         if (jugador) {
              jugador.conectado = true;
@@ -493,7 +480,6 @@
         }
         conexiones[conn.peer] = nombre;
         jugador.conn.send({tipo: 'confirmacion_join'});
-        console.log(`Jugador conectado: ${nombre} (${conn.peer})`);
         actualizarListaJugadores();
     }
 
@@ -502,7 +488,6 @@
         if (!nombre || !jugadores[nombre] || respuestasRonda[nombre]) return;
 
         respuestasRonda[nombre] = { respuesta: payload.respuesta, tiempoRespuesta: tiempoRestante };
-        console.log(`Respuesta recibida de ${nombre}:`, payload.respuesta);
 
         const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado).length;
         if (Object.keys(respuestasRonda).length === jugadoresActivos) {
@@ -513,7 +498,6 @@
     function gestionarDesconexionJugador(peerId) {
         const nombre = conexiones[peerId];
         if (nombre && jugadores[nombre]) {
-            console.log(`${nombre} se ha desconectado.`);
             jugadores[nombre].conectado = false;
             delete conexiones[peerId];
             if(estadoJuego === 'carga') {
@@ -527,7 +511,7 @@
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
+        
         const reader = new FileReader();
         reader.onload = (event) => {
             const text = event.target.result;
@@ -544,21 +528,20 @@
                         correcta = parseInt(campos[7]) - 1;
                     }
                     cuestionario.push({
-                        tipo: campos[0] || 'quiz',
+                        tipo: campos[0] || 'quiz', 
                         pregunta: campos[1] || '',
                         respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''],
                         tiempo: parseInt(campos[6]) || 30,
-                        correcta: correcta,
+                        correcta: correcta, 
                         imagen_url: campos[8] || ''
                     });
                 }
             }
-            console.log(`${cuestionario.length} preguntas cargadas.`);
             inicializarPeer();
         };
         reader.readAsText(file);
     });
-
+    
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
     listaJugadoresEl.addEventListener('click', e => {
@@ -579,6 +562,7 @@
     iniciarJuegoBtn.addEventListener('click', iniciarJuego);
     siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
     mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
+    irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
     reiniciarBtn.addEventListener('click', () => window.location.reload());
     descargarResultadosBtn.addEventListener('click', descargarResultados);
 
