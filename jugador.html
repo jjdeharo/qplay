@@ -267,20 +267,27 @@
         if (peer) peer.destroy();
 
         const peerConfig = {
-          secure: true,          // GitHub Pages está en https
+          secure: true,
           config: {
             iceServers: [
-              // STUN
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' },
-        
-              // TURN propio
+              { urls: 'stun:stun.relay.metered.ca:80' },
               {
-                urls: [
-                  'turn:jjdeharo.metered.live:80',
-                  'turn:jjdeharo.metered.live:443?transport=udp',
-                  'turn:jjdeharo.metered.live:443?transport=tcp'
-                ],
+                urls: 'turn:standard.relay.metered.ca:80',
+                username: '9745e21b303bdaea589c29bc',
+                credential: 'UgG56tBqCEGNjzLY'
+              },
+              {
+                urls: 'turn:standard.relay.metered.ca:80?transport=tcp',
+                username: '9745e21b303bdaea589c29bc',
+                credential: 'UgG56tBqCEGNjzLY'
+              },
+              {
+                urls: 'turn:standard.relay.metered.ca:443',
+                username: '9745e21b303bdaea589c29bc',
+                credential: 'UgG56tBqCEGNjzLY'
+              },
+              {
+                urls: 'turns:standard.relay.metered.ca:443?transport=tcp',
                 username: '9745e21b303bdaea589c29bc',
                 credential: 'UgG56tBqCEGNjzLY'
               }
@@ -288,6 +295,7 @@
             iceTransportPolicy: 'all'
           }
         };
+
         
         peer = new Peer(peerConfig);
 
