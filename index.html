@@ -254,6 +254,7 @@
 
     // --- LocalStorage Logic ---
     function guardarEstadoJuego() {
+        if (!gameId) return; // No guardar si no hay partida
         const jugadoresParaGuardar = {};
         for (const nombre in jugadores) {
             jugadoresParaGuardar[nombre] = {
@@ -380,6 +381,29 @@
         }
         return result;
     }
+    
+    // --- NUEVA FUNCIÓN ---
+    function reenviarEstadoActual(conn) {
+        const pregunta = cuestionario[preguntaActualIndex];
+        if (!pregunta) return;
+
+        if (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta') {
+             let numRespuestasVisibles = 0;
+             pregunta.respuestas.forEach((respuesta) => {
+                if (respuesta.trim() !== '') numRespuestasVisibles++;
+             });
+            conn.send({
+                tipo: 'pregunta',
+                payload: {
+                    numRespuestas: numRespuestasVisibles,
+                    tipo: pregunta.tipo
+                }
+            });
+        } else if (estadoJuego === 'leaderboard') {
+            conn.send({ tipo: 'partida_iniciada' }); // Le dice que espere al siguiente
+        }
+    }
+
 
     // --- Game Logic ---
     function iniciarJuego() {
@@ -633,7 +657,6 @@
         }
         gameId = existingGameId || generarCodigoCorto(5);
 
-        // --- Bloque peerConfig actualizado ---
         const peerConfig = {
             host: '0.peerjs.com',
             port: 443,
@@ -742,18 +765,16 @@
             jugadores[nombre] = jugador;
         }
         conexiones[conn.peer] = nombre;
-        if (estadoJuego === 'jugando' || estadoJuego === 'leaderboard') {
-            jugador.conn.send({
-                tipo: 'partida_iniciada'
-            });
-            actualizarListaJugadores();
-            actualizarEstadoJugadoresDisplay();
+        // INVOCACIÓN A LA NUEVA LÓGICA
+        if (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta' || estadoJuego === 'leaderboard') {
+            reenviarEstadoActual(jugador.conn);
         } else {
             jugador.conn.send({
                 tipo: 'confirmacion_join'
             });
-            actualizarListaJugadores();
         }
+        actualizarListaJugadores();
+        actualizarEstadoJugadoresDisplay();
         guardarEstadoJuego();
     }
 
@@ -883,11 +904,13 @@
         }
     });
     if(descargarResultadosBtn) descargarResultadosBtn.addEventListener('click', descargarResultados);
+    
+    window.addEventListener('beforeunload', guardarEstadoJuego);
 
     // --- Initialization ---
     function reanudarPartida() {
         console.log("Restaurando partida...");
-        inicializarPeer();
+        inicializarPeer(gameId); // <-- CAMBIO 1
         if (estadoJuego === 'lobby') {
             mostrarPantalla('pantalla-lobby');
             actualizarListaJugadores();
