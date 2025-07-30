@@ -124,8 +124,20 @@
         </button>
     </div>
     
-    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8 bg-gray-800 relative">
+    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-center justify-between p-8 bg-gray-800">
         <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white z-20 hidden">JUEGO EN PAUSA</div>
+        
+        <div id="estado-jugadores-panel" class="absolute left-8 top-1/2 -translate-y-1/2 glass-card p-4 rounded-lg w-64 hidden max-h-[80vh] overflow-y-auto">
+            <div>
+                <h3 class="font-bold text-lg mb-2 text-green-300">Han votado (<span id="contador-votado">0</span>)</h3>
+                <ul id="jugadores-votado" class="space-y-1 text-sm"></ul>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-bold text-lg mb-2 text-yellow-300">Pendientes (<span id="contador-pendientes">0</span>)</h3>
+                <ul id="jugadores-pendientes" class="space-y-1 text-sm"></ul>
+            </div>
+        </div>
+
         <div class="w-full flex justify-between items-start absolute top-8 px-8 z-10">
             <div class="flex items-center space-x-4">
                 <span id="contador-pregunta" class="text-2xl font-bold">Pregunta 1 / 10</span>
@@ -142,13 +154,15 @@
                 <button id="saltar-tiempo-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Saltar Tiempo</button>
             </div>
         </div>
-        <div class="w-full max-w-6xl glass-card rounded-2xl p-8 mt-32">
+
+        <div class="w-full max-w-6xl glass-card rounded-2xl p-8 ml-auto mr-auto">
             <div class="flex flex-col items-center text-center">
                 <h2 id="texto-pregunta" class="text-5xl font-bold mb-6">¿Cuál es la capital de España?</h2>
                 <img id="imagen-pregunta" src="" alt="Imagen de la pregunta" class="max-h-80 rounded-lg shadow-lg mb-8 hidden">
             </div>
             <div id="respuestas-grid" class="grid grid-cols-2 gap-4 w-full"></div>
         </div>
+
         <div id="controles-post-pregunta" class="absolute bottom-8 right-8 space-x-4 hidden">
             <button id="mostrar-correcta-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Mostrar Correcta</button>
             <button id="ir-a-puntuaciones-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Ver Puntuaciones</button>
@@ -202,6 +216,8 @@
     const estadoJugadoresPanel = document.getElementById('estado-jugadores-panel');
     const jugadoresVotadoLista = document.getElementById('jugadores-votado');
     const jugadoresPendientesLista = document.getElementById('jugadores-pendientes');
+    const contadorVotado = document.getElementById('contador-votado');
+    const contadorPendientes = document.getElementById('contador-pendientes');
     const añadirJugadorBtn = document.getElementById('añadir-jugador-btn');
     const reiniciarPartidaBtn = document.getElementById('reiniciar-partida-btn');
     const podioEl = document.getElementById('podio');
@@ -274,7 +290,12 @@
         const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard');
         if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
         if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-lobby') ? 'flex' : 'none';
-        if(estadoJugadoresPanel) estadoJugadoresPanel.style.display = (id === 'pantalla-pregunta' && estadoJuego === 'jugando') ? 'block' : 'none';
+        
+        if (id === 'pantalla-pregunta' && (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta')) {
+            estadoJugadoresPanel.style.display = 'block';
+        } else {
+            estadoJugadoresPanel.style.display = 'none';
+        }
     }
 
     function actualizarListaJugadores() {
@@ -297,6 +318,28 @@
             listaJugadoresEl.appendChild(li);
         });
         iniciarJuegoBtn.disabled = jugadoresActivos.length === 0;
+    }
+
+    function actualizarEstadoJugadoresDisplay() {
+        const jugadoresConectados = Object.values(jugadores).filter(j => j.conectado);
+        const votado = jugadoresConectados.filter(j => j.haVotado);
+        const pendientes = jugadoresConectados.filter(j => !j.haVotado);
+
+        jugadoresVotadoLista.innerHTML = '';
+        votado.forEach(j => {
+            const li = document.createElement('li');
+            li.textContent = j.nombre;
+            jugadoresVotadoLista.appendChild(li);
+        });
+        contadorVotado.textContent = votado.length;
+
+        jugadoresPendientesLista.innerHTML = '';
+        pendientes.forEach(j => {
+            const li = document.createElement('li');
+            li.textContent = j.nombre;
+            jugadoresPendientesLista.appendChild(li);
+        });
+        contadorPendientes.textContent = pendientes.length;
     }
 
     // --- Helper Functions ---
@@ -334,6 +377,7 @@
         estadoJuego = 'jugando';
         guardarEstadoJuego();
         mostrarPregunta();
+        actualizarEstadoJugadoresDisplay();
     }
 
     function mostrarPregunta() {
@@ -395,6 +439,7 @@
                 });
             }
         });
+        actualizarEstadoJugadoresDisplay();
     }
 
     function setCircleDashoffset() {
@@ -408,6 +453,7 @@
             clearInterval(temporizadorInterval);
             temporizadorInterval = null;
         }
+        estadoJuego = 'mostrando_correcta';
         controlesPostPregunta.classList.remove('hidden');
         saltarTiempoBtn.style.display = 'none';
         const pregunta = cuestionario[preguntaActualIndex];
@@ -631,6 +677,7 @@
                 tipo: 'partida_iniciada'
             });
             actualizarListaJugadores();
+            actualizarEstadoJugadoresDisplay();
         } else {
             jugador.conn.send({
                 tipo: 'confirmacion_join'
@@ -648,7 +695,7 @@
             tiempoRespuesta: tiempoRestante
         };
         jugadores[nombre].haVotado = true;
-        // actualizarEstadoJugadoresDisplay(); // Esta función podría ser útil aquí
+        actualizarEstadoJugadoresDisplay();
         guardarEstadoJuego();
         const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado).length;
         if (Object.keys(respuestasRonda).length === jugadoresActivos) {
@@ -666,7 +713,7 @@
             if (estadoJuego === 'carga' || estadoJuego === 'lobby') {
                 actualizarListaJugadores();
             } else {
-                // actualizarEstadoJugadoresDisplay(); // Y aquí
+                actualizarEstadoJugadoresDisplay();
             }
         }
         guardarEstadoJuego();
@@ -766,8 +813,9 @@
         if (estadoJuego === 'lobby') {
             mostrarPantalla('pantalla-lobby');
             actualizarListaJugadores();
-        } else if (estadoJuego === 'jugando') {
+        } else if (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta') {
             mostrarPregunta();
+            actualizarEstadoJugadoresDisplay();
         } else if (estadoJuego === 'leaderboard') {
             mostrarLeaderboard();
         }
