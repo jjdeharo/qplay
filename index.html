@@ -632,13 +632,27 @@
             peer.destroy();
         }
         gameId = existingGameId || generarCodigoCorto(5);
-        const peerConfig = {
-            config: {
-                'iceServers': [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                ]
-            }
+                const peerConfig = {
+          secure: true,          // GitHub Pages está en https
+          config: {
+            iceServers: [
+              // STUN
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+        
+              // TURN propio
+              {
+                urls: [
+                  'turn:jjdeharo.metered.live:80',
+                  'turn:jjdeharo.metered.live:443?transport=udp',
+                  'turn:jjdeharo.metered.live:443?transport=tcp'
+                ],
+                username: '9745e21b303bdaea589c29bc',
+                credential: 'UgG56tBqCEGNjzLY'
+              }
+            ],
+            iceTransportPolicy: 'all'
+          }
         };
         peer = new Peer(gameId, peerConfig);
         
