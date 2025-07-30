@@ -192,6 +192,16 @@
         </div>
     </div>
     
+    <div id="modal-añadir-jugador" class="fixed inset-0 bg-black bg-opacity-70 items-center justify-center z-50 hidden">
+        <div class="glass-card rounded-2xl p-8 text-center relative w-full max-w-lg">
+            <button id="cerrar-modal-btn" class="absolute top-4 right-4 text-white text-3xl font-bold hover:text-gray-300">&times;</button>
+            <h2 class="text-3xl font-bold mb-4">Añadir más jugadores</h2>
+            <p class="text-2xl mb-2 text-shadow">Únete en <span id="modal-url-sitio" class="font-bold"></span></p>
+            <div id="modal-codigo-partida" class="text-8xl font-extrabold tracking-widest my-4 p-4 rounded-lg game-code-text">...</div>
+            <div id="modal-qrcode" class="p-4 bg-white rounded-lg shadow-lg mx-auto w-fit"></div>
+        </div>
+    </div>
+
     <script>
     // --- DOM References ---
     const pantallas = document.querySelectorAll('.pantalla');
@@ -221,6 +231,11 @@
     const añadirJugadorBtn = document.getElementById('añadir-jugador-btn');
     const reiniciarPartidaBtn = document.getElementById('reiniciar-partida-btn');
     const podioEl = document.getElementById('podio');
+    const modalAñadirJugador = document.getElementById('modal-añadir-jugador');
+    const cerrarModalBtn = document.getElementById('cerrar-modal-btn');
+    const modalUrlSitioEl = document.getElementById('modal-url-sitio');
+    const modalCodigoPartidaEl = document.getElementById('modal-codigo-partida');
+    const modalQrCodeEl = document.getElementById('modal-qrcode');
     const FULL_DASH_ARRAY = 283;
 
     // --- State ---
@@ -289,7 +304,7 @@
         document.getElementById(id).classList.add('activa');
         const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard');
         if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
-        if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-lobby') ? 'flex' : 'none';
+        if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-lobby' || id === 'pantalla-pregunta') ? 'flex' : 'none';
         
         if (id === 'pantalla-pregunta' && (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta')) {
             estadoJugadoresPanel.style.display = 'block';
@@ -340,6 +355,20 @@
             jugadoresPendientesLista.appendChild(li);
         });
         contadorPendientes.textContent = pendientes.length;
+    }
+
+    function mostrarModalAñadirJugador() {
+        if(modalAñadirJugador) {
+             modalAñadirJugador.classList.remove('hidden');
+             modalAñadirJugador.classList.add('flex');
+        }
+    }
+
+    function cerrarModalAñadirJugador() {
+        if(modalAñadirJugador) {
+             modalAñadirJugador.classList.add('hidden');
+             modalAñadirJugador.classList.remove('flex');
+        }
     }
 
     // --- Helper Functions ---
@@ -619,6 +648,20 @@
                     colorLight: "#ffffff",
                 });
             }
+            // Poblar el nuevo modal
+            if(modalUrlSitioEl) modalUrlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
+            if(modalCodigoPartidaEl) modalCodigoPartidaEl.textContent = id;
+            if (modalQrCodeEl) {
+                modalQrCodeEl.innerHTML = "";
+                new QRCode(modalQrCodeEl, {
+                    text: urlUnion.href,
+                    width: 320,
+                    height: 320,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                });
+            }
+
             if (!existingGameId) {
                 mostrarPantalla('pantalla-lobby');
                 guardarEstadoJuego();
@@ -785,6 +828,14 @@
             delete conexiones[peerId];
             actualizarListaJugadores();
             guardarEstadoJuego();
+        }
+    });
+    
+    if(añadirJugadorBtn) añadirJugadorBtn.addEventListener('click', mostrarModalAñadirJugador);
+    if(cerrarModalBtn) cerrarModalBtn.addEventListener('click', cerrarModalAñadirJugador);
+    if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
+        if (e.target.id === 'modal-añadir-jugador') {
+            cerrarModalAñadirJugador();
         }
     });
 
