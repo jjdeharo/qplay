@@ -66,6 +66,13 @@
                 <p class="text-xl text-gray-600 dark:text-gray-400">Espera a que el presentador inicie el juego...</p>
             </div>
         </div>
+        
+        <div id="pantalla-espera-partida-iniciada" class="pantalla text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+                <h2 class="text-4xl font-bold mb-2">¡Partida en curso!</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400">Te unirás en la siguiente pregunta...</p>
+            </div>
+        </div>
 
         <div id="pantalla-pregunta" class="pantalla w-full h-full flex-col">
             <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full flex-grow">
@@ -247,6 +254,9 @@
         switch (data.tipo) {
             case 'confirmacion_join':
                 mostrarPantalla('pantalla-espera-inicio');
+                break;
+            case 'partida_iniciada':
+                mostrarPantalla('pantalla-espera-partida-iniciada');
                 break;
             case 'pregunta':
                 pausaOverlay.style.display = 'none';
