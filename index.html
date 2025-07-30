@@ -402,6 +402,27 @@
             conn.send({ tipo: 'partida_iniciada' }); 
         }
     }
+    
+    // --- FUNCIÓN DE REINICIO MEJORADA ---
+    function reiniciarJuegoCompleto() {
+        // 1. Destruir la conexión de red
+        if (peer && !peer.destroyed) {
+            peer.destroy();
+        }
+        // 2. Borrar los datos guardados
+        limpiarEstadoJuego();
+        // 3. Reiniciar las variables de estado en memoria
+        cuestionario = [];
+        jugadores = {};
+        conexiones = {};
+        respuestasRonda = {};
+        estadoJuego = 'carga';
+        preguntaActualIndex = -1;
+        gameId = '';
+        peer = null;
+        // 4. Mostrar la pantalla de inicio
+        mostrarPantalla('pantalla-carga');
+    }
 
 
     // --- Game Logic ---
@@ -892,18 +913,18 @@
     if(saltarTiempoBtn) saltarTiempoBtn.addEventListener('click', finalizarRonda);
     if(mostrarCorrectaBtn) mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
     if(irAPuntuacionesBtn) irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
+    
+    // --- LÓGICA DE REINICIO CORREGIDA ---
     if(reiniciarBtn) reiniciarBtn.addEventListener('click', () => {
-        if (confirm('¿Estás seguro de que quieres reiniciar la partida? Se perderá todo el progreso actual.')) {
-            limpiarEstadoJuego();
-            window.location.reload();
-        }
+        reiniciarJuegoCompleto();
     });
+
     if(reiniciarPartidaBtn) reiniciarPartidaBtn.addEventListener('click', () => {
         if (confirm('¿Estás seguro de que quieres reiniciar la partida? Se perderá todo el progreso actual.')) {
-            limpiarEstadoJuego();
-            window.location.reload();
+            reiniciarJuegoCompleto();
         }
     });
+    
     if(descargarResultadosBtn) descargarResultadosBtn.addEventListener('click', descargarResultados);
     
     window.addEventListener('beforeunload', guardarEstadoJuego);
@@ -911,7 +932,7 @@
     // --- Initialization ---
     function reanudarPartida() {
         console.log("Restaurando partida...");
-        inicializarPeer(gameId); // <-- CAMBIO 1
+        inicializarPeer(gameId);
         if (estadoJuego === 'lobby') {
             mostrarPantalla('pantalla-lobby');
             actualizarListaJugadores();
