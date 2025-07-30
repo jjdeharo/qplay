@@ -247,17 +247,15 @@
 
     // --- Game Logic ---
     function unirseAlJuego() {
-        const nombreTexto = nombreInput.value.trim(); // Solo el texto del nombre
+        const nombreTexto = nombreInput.value.trim();
         const codigo = codigoInput.value.trim().toUpperCase();
         codigoInput.value = codigo;
 
-        // Validar el texto del nombre en lugar del icono
         if (!nombreTexto || !codigo) {
             errorConexionEl.textContent = "El nombre y el código son obligatorios.";
             return;
         }
         
-        // Combinar el icono y el nombre para el envío
         const nombreCompleto = `${iconoSeleccionado} ${nombreTexto}`;
 
         errorConexionEl.textContent = "";
@@ -266,7 +264,7 @@
 
         if (peer) peer.destroy();
 
-        // --- Bloque peerConfig actualizado y llamada a new Peer corregida ---
+        // --- CONFIGURACIÓN CORREGIDA ---
         const peerConfig = {
             host: '0.peerjs.com',
             port: 443,
@@ -291,13 +289,14 @@
             }
         };
 
+        // --- LLAMADA CORREGIDA a new Peer() ---
         peer = new Peer(null, peerConfig);
 
         peer.on('open', id => {
             conn = peer.connect(codigo, { reliable: true });
 
             conn.on('open', () => {
-                // Enviar el nombre completo
+                // Ahora esta sección sí se ejecutará correctamente.
                 conn.send({ tipo: 'join', nombre: nombreCompleto });
             });
 
