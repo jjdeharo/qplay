@@ -154,7 +154,6 @@
             <button id="ir-a-puntuaciones-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Ver Puntuaciones</button>
         </div>
     </div>
-    
     <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <div class="w-full max-w-4xl glass-card rounded-2xl shadow-xl p-8 text-center">
             <h1 class="text-5xl font-extrabold mb-8">Puntuaciones</h1>
@@ -162,15 +161,12 @@
             <button id="siguiente-pregunta-btn" class="mt-12 font-bold py-4 text-2xl rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">Siguiente</button>
         </div>
     </div>
-
     <button id="añadir-jugador-btn" class="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white font-bold p-4 rounded-full shadow-lg transition-transform hover:scale-110 items-center z-10 hidden">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
     </button>
-    
     <button id="reiniciar-partida-btn" class="fixed bottom-8 left-8 bg-red-600 hover:bg-red-700 text-white font-bold p-4 rounded-full shadow-lg transition-transform hover:scale-110 items-center z-10 hidden">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
     </button>
-
     <div id="pantalla-final" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <div class="w-full max-w-5xl text-center">
             <h1 class="text-6xl font-extrabold mb-12">¡Fin del Juego!</h1>
@@ -181,8 +177,9 @@
             </div>
         </div>
     </div>
+    
     <script>
-        // --- DOM References ---
+    // --- DOM References ---
     const pantallas = document.querySelectorAll('.pantalla');
     const cargarBtn = document.getElementById('cargar-cuestionario-btn');
     const fileInput = document.getElementById('csv-file-input');
@@ -206,14 +203,14 @@
     const jugadoresVotadoLista = document.getElementById('jugadores-votado');
     const jugadoresPendientesLista = document.getElementById('jugadores-pendientes');
     const añadirJugadorBtn = document.getElementById('añadir-jugador-btn');
-    const reiniciarPartidaBtn = document.getElementById('reiniciar-partida-btn'); // Referencia al nuevo botón
+    const reiniciarPartidaBtn = document.getElementById('reiniciar-partida-btn');
     const podioEl = document.getElementById('podio');
     const FULL_DASH_ARRAY = 283;
 
     // --- State ---
     let peer;
     let cuestionario = [];
-    let jugadores = {}; // { nombre: { puntaje, conn, conectado, haVotado, correctas } }
+    let jugadores = {};
     let conexiones = {};
     let respuestasRonda = {};
     let estadoJuego = 'carga';
@@ -231,12 +228,11 @@
             jugadoresParaGuardar[nombre] = {
                 nombre: jugadores[nombre].nombre,
                 puntaje: jugadores[nombre].puntaje,
-                conectado: false, 
+                conectado: false,
                 haVotado: jugadores[nombre].haVotado,
                 correctas: jugadores[nombre].correctas,
             };
         }
-
         const estado = {
             gameId,
             cuestionario,
@@ -275,12 +271,10 @@
     function mostrarPantalla(id) {
         pantallas.forEach(p => p.classList.remove('activa'));
         document.getElementById(id).classList.add('activa');
-        
         const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard');
-        reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
-        añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-lobby') ? 'flex' : 'none';
+        if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
+        if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-lobby') ? 'flex' : 'none';
         if(estadoJugadoresPanel) estadoJugadoresPanel.style.display = (id === 'pantalla-pregunta' && estadoJuego === 'jugando') ? 'block' : 'none';
-
     }
 
     function actualizarListaJugadores() {
@@ -288,7 +282,6 @@
         listaJugadoresEl.innerHTML = '';
         const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado);
         contadorJugadoresEl.textContent = jugadoresActivos.length;
-        
         jugadoresActivos.forEach(jugador => {
             const li = document.createElement('li');
             li.className = 'flex items-center justify-between glass-card p-2 rounded-lg text-white';
@@ -306,10 +299,6 @@
         iniciarJuegoBtn.disabled = jugadoresActivos.length === 0;
     }
 
-    function actualizarEstadoJugadoresDisplay() {
-        // Implementación de esta función si es necesaria en el nuevo diseño
-    }
-
     // --- Helper Functions ---
     function generarCodigoCorto(longitud = 5) {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -321,7 +310,6 @@
     }
 
     // --- Game Logic ---
-    // (El resto de la lógica del juego se mantiene igual)
     function iniciarJuego() {
         estadoJuego = 'jugando';
         if (document.getElementById('opcion-preguntas-aleatorias').checked) {
@@ -343,7 +331,7 @@
         }
         respuestasRonda = {};
         Object.values(jugadores).forEach(j => j.haVotado = false);
-        estadoJuego = 'jugando'; 
+        estadoJuego = 'jugando';
         guardarEstadoJuego();
         mostrarPregunta();
     }
@@ -357,10 +345,8 @@
         controlesPostPregunta.classList.add('hidden');
         mostrarCorrectaBtn.disabled = false;
         saltarTiempoBtn.style.display = 'inline-block';
-        
         document.getElementById('contador-pregunta').textContent = `Pregunta ${preguntaActualIndex + 1} / ${cuestionario.length}`;
         document.getElementById('texto-pregunta').textContent = pregunta.pregunta;
-
         const imgEl = document.getElementById('imagen-pregunta');
         if (pregunta.imagen_url) {
             imgEl.src = pregunta.imagen_url;
@@ -368,21 +354,19 @@
         } else {
             imgEl.classList.add('hidden');
         }
-
         const respuestasGrid = document.getElementById('respuestas-grid');
         respuestasGrid.innerHTML = '';
         const simbolos = ['▲', '◆', '●', '■'];
         let numRespuestasVisibles = 0;
         pregunta.respuestas.forEach((respuesta, index) => {
             if (respuesta.trim() !== '') {
-                 numRespuestasVisibles++;
-                 const respuestaDiv = document.createElement('div');
-                 respuestaDiv.className = `respuesta-color-${index} text-white p-6 rounded-lg flex items-center text-3xl text-shadow`;
-                 respuestaDiv.innerHTML = `<span class="mr-4 text-4xl">${simbolos[index]}</span> <p>${respuesta}</p>`;
-                 respuestasGrid.appendChild(respuestaDiv);
+                numRespuestasVisibles++;
+                const respuestaDiv = document.createElement('div');
+                respuestaDiv.className = `respuesta-color-${index} text-white p-6 rounded-lg flex items-center text-3xl text-shadow`;
+                respuestaDiv.innerHTML = `<span class="mr-4 text-4xl">${simbolos[index]}</span> <p>${respuesta}</p>`;
+                respuestasGrid.appendChild(respuestaDiv);
             }
         });
-
         tiempoPregunta = pregunta.tiempo;
         tiempoRestante = tiempoPregunta;
         const temporizadorEl = document.getElementById('temporizador');
@@ -390,9 +374,8 @@
         setCircleDashoffset();
         clearInterval(temporizadorInterval);
         temporizadorInterval = null;
-
         temporizadorInterval = setInterval(() => {
-            if(isPaused) return;
+            if (isPaused) return;
             tiempoRestante--;
             temporizadorEl.textContent = tiempoRestante;
             setCircleDashoffset();
@@ -400,7 +383,6 @@
                 finalizarRonda();
             }
         }, 1000);
-
         Object.values(conexiones).forEach(nombre => {
             const jugador = jugadores[nombre];
             if (jugador.conectado && jugador.conn) {
@@ -420,37 +402,29 @@
         const dashoffset = (1 - rawTimeFraction) * FULL_DASH_ARRAY;
         temporizadorCirculo.style.strokeDashoffset = dashoffset;
     }
-    
-    // ... El resto del JS sigue aquí sin cambios...
 
     function finalizarRonda() {
         if (temporizadorInterval) {
             clearInterval(temporizadorInterval);
             temporizadorInterval = null;
         }
-        
         controlesPostPregunta.classList.remove('hidden');
         saltarTiempoBtn.style.display = 'none';
-
         const pregunta = cuestionario[preguntaActualIndex];
         Object.keys(respuestasRonda).forEach(nombre => {
             const respJugador = respuestasRonda[nombre].respuesta;
             const respCorrecta = pregunta.correcta;
-
             let esCorrecta = false;
             if (Array.isArray(respCorrecta)) {
                 esCorrecta = respCorrecta.length === respJugador.length && respCorrecta.every(val => respJugador.includes(val));
             } else {
                 esCorrecta = respCorrecta === respJugador;
             }
-
             if (esCorrecta) {
                 jugadores[nombre].correctas = (jugadores[nombre].correctas || 0) + 1;
             }
-
             const puntosRonda = esCorrecta ? (500 + respuestasRonda[nombre].tiempoRespuesta * 10) : 0;
             jugadores[nombre].puntaje += puntosRonda;
-
             if (jugadores[nombre].conectado && jugadores[nombre].conn) {
                 jugadores[nombre].conn.send({
                     tipo: 'resultado',
@@ -462,19 +436,19 @@
                 });
             }
         });
-        guardarEstadoJuego(); 
+        guardarEstadoJuego();
     }
-    
+
     function gestionarPausa() {
         isPaused = !isPaused;
         const tipoMensaje = isPaused ? 'pausa' : 'resume';
-
         Object.values(jugadores).forEach(j => {
-            if(j.conectado && j.conn) {
-                j.conn.send({ tipo: tipoMensaje });
+            if (j.conectado && j.conn) {
+                j.conn.send({
+                    tipo: tipoMensaje
+                });
             }
         });
-
         if (isPaused) {
             pausaBtn.textContent = 'Reanudar';
             pausaOverlay.style.display = 'flex';
@@ -488,9 +462,7 @@
         mostrarCorrectaBtn.disabled = true;
         const pregunta = cuestionario[preguntaActualIndex];
         const respuestasGrid = document.getElementById('respuestas-grid');
-        
         let correctaIndices = Array.isArray(pregunta.correcta) ? pregunta.correcta : [pregunta.correcta];
-
         Array.from(respuestasGrid.children).forEach((el, index) => {
             if (correctaIndices.includes(index)) {
                 el.classList.add('respuesta-correcta');
@@ -504,14 +476,11 @@
         mostrarPantalla('pantalla-leaderboard');
         const listaPuntuaciones = document.getElementById('lista-puntuaciones');
         listaPuntuaciones.innerHTML = '';
-
         const jugadoresOrdenados = Object.values(jugadores).filter(j => j.nombre).sort((a, b) => b.puntaje - a.puntaje);
-
         jugadoresOrdenados.forEach((jugador, index) => {
             const li = document.createElement('li');
             const medallas = ['👑', '🥈', '🥉'];
             const medalla = index < 3 ? `<span class="text-4xl mr-4">${medallas[index]}</span>` : `<span class="w-12 mr-4 text-center text-gray-300 font-semibold">${index + 1}.</span>`;
-
             li.className = 'flex items-center glass-card p-4 rounded-lg shadow-sm';
             li.innerHTML = `
                 ${medalla}
@@ -526,19 +495,15 @@
         estadoJuego = 'final';
         mostrarPantalla('pantalla-final');
         podioEl.innerHTML = '';
-
         const jugadoresOrdenados = Object.values(jugadores).filter(j => j.nombre).sort((a, b) => b.puntaje - a.puntaje);
         const puntuacionMaxima = jugadoresOrdenados.length > 0 ? jugadoresOrdenados[0].puntaje : 0;
-        
         const alturas = ['h-48', 'h-64', 'h-32'];
         const ordenPodio = [1, 0, 2];
         const medallas = ['🥈', '🥇', '🥉'];
-
-        for(let i = 0; i < 3; i++) {
+        for (let i = 0; i < 3; i++) {
             const index = ordenPodio[i];
             const jugador = jugadoresOrdenados[index];
-            if(!jugador) continue;
-
+            if (!jugador) continue;
             const podioDiv = document.createElement('div');
             podioDiv.className = 'flex flex-col items-center';
             podioDiv.innerHTML = `
@@ -551,9 +516,8 @@
             `;
             podioEl.appendChild(podioDiv);
         }
-
         Object.values(conexiones).forEach(nombre => {
-             const jugador = jugadores[nombre];
+            const jugador = jugadores[nombre];
             if (jugador && jugador.conectado && jugador.conn) {
                 jugador.conn.send({
                     tipo: 'resultado_final',
@@ -568,17 +532,17 @@
         });
         limpiarEstadoJuego();
     }
-    
+
     function descargarResultados() {
         const jugadoresOrdenados = Object.values(jugadores).filter(j => j.nombre).sort((a, b) => b.puntaje - a.puntaje);
         let csvContent = 'Puesto;Nombre;Puntuacion\n';
-        
         jugadoresOrdenados.forEach((jugador, index) => {
             const fila = `${index + 1};"${jugador.nombre}";${jugador.puntaje}`;
             csvContent += fila + '\n';
         });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([csvContent], {
+            type: 'text/csv;charset=utf-8;'
+        });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = "resultados_partida.csv";
@@ -587,29 +551,33 @@
         document.body.removeChild(link);
     }
 
+    // --- PeerJS Logic ---
     function inicializarPeer(existingGameId = null) {
-        if (peer) { peer.destroy(); }
-        
+        if (peer) {
+            peer.destroy();
+        }
         gameId = existingGameId || generarCodigoCorto(5);
         peer = new Peer(gameId);
-
         peer.on('open', id => {
             const urlUnion = new URL('jugador.html', window.location.href);
-            urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
+            if(urlSitioEl) urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
             urlUnion.searchParams.set('partida', id);
-            
-            codigoPartidaEl.textContent = id;
-            if(qrCodeEl) {
-                 qrCodeEl.innerHTML = "";
-                 new QRCode(qrCodeEl, { text: urlUnion.href, width: 200, height: 200, colorDark : "#ffffff", colorLight : "#00000000" });
+            if(codigoPartidaEl) codigoPartidaEl.textContent = id;
+            if (qrCodeEl) {
+                qrCodeEl.innerHTML = "";
+                new QRCode(qrCodeEl, {
+                    text: urlUnion.href,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                });
             }
-           
             if (!existingGameId) {
-                 mostrarPantalla('pantalla-lobby');
-                 guardarEstadoJuego();
+                mostrarPantalla('pantalla-lobby');
+                guardarEstadoJuego();
             }
         });
-
         peer.on('connection', configurarNuevaConexion);
         peer.on('error', (err) => {
             console.error("Error en PeerJS: ", err);
@@ -630,29 +598,43 @@
         });
         conn.on('close', () => gestionarDesconexionJugador(conn.peer));
     }
-    
+
     function gestionarConexionJugador(conn, nombre) {
         if (Object.values(jugadores).some(j => j.nombre === nombre && j.conectado)) {
-            conn.send({ tipo: 'error', payload: { mensaje: 'Ese nombre ya está en uso.' }});
+            conn.send({
+                tipo: 'error',
+                payload: {
+                    mensaje: 'Ese nombre ya está en uso.'
+                }
+            });
             setTimeout(() => conn.close(), 100);
             return;
         }
-        
         let jugador = jugadores[nombre];
-        if (jugador) { 
-             jugador.conectado = true;
-             jugador.conn = conn;
-        } else { 
-            jugador = { nombre: nombre, puntaje: 0, conn: conn, conectado: true, haVotado: false, correctas: 0 };
+        if (jugador) {
+            jugador.conectado = true;
+            jugador.conn = conn;
+        } else {
+            jugador = {
+                nombre: nombre,
+                puntaje: 0,
+                conn: conn,
+                conectado: true,
+                haVotado: false,
+                correctas: 0
+            };
             jugadores[nombre] = jugador;
         }
         conexiones[conn.peer] = nombre;
-        
         if (estadoJuego === 'jugando' || estadoJuego === 'leaderboard') {
-            jugador.conn.send({tipo: 'partida_iniciada'});
-            actualizarEstadoJugadoresDisplay();
-        } else { 
-            jugador.conn.send({tipo: 'confirmacion_join'});
+            jugador.conn.send({
+                tipo: 'partida_iniciada'
+            });
+            actualizarListaJugadores();
+        } else {
+            jugador.conn.send({
+                tipo: 'confirmacion_join'
+            });
             actualizarListaJugadores();
         }
         guardarEstadoJuego();
@@ -661,12 +643,13 @@
     function gestionarRespuestaJugador(peerId, payload) {
         const nombre = conexiones[peerId];
         if (!nombre || !jugadores[nombre] || jugadores[nombre].haVotado) return;
-
-        respuestasRonda[nombre] = { respuesta: payload.respuesta, tiempoRespuesta: tiempoRestante };
+        respuestasRonda[nombre] = {
+            respuesta: payload.respuesta,
+            tiempoRespuesta: tiempoRestante
+        };
         jugadores[nombre].haVotado = true;
-        actualizarEstadoJugadoresDisplay();
+        // actualizarEstadoJugadoresDisplay(); // Esta función podría ser útil aquí
         guardarEstadoJuego();
-
         const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado).length;
         if (Object.keys(respuestasRonda).length === jugadoresActivos) {
             finalizarRonda();
@@ -680,33 +663,31 @@
             jugadores[nombre].conectado = false;
             jugadores[nombre].conn = null;
             delete conexiones[peerId];
-            
-            if(estadoJuego === 'carga' || estadoJuego === 'lobby') {
+            if (estadoJuego === 'carga' || estadoJuego === 'lobby') {
                 actualizarListaJugadores();
             } else {
-                actualizarEstadoJugadoresDisplay();
+                // actualizarEstadoJugadoresDisplay(); // Y aquí
             }
         }
         guardarEstadoJuego();
     }
 
-    cargarBtn.addEventListener('click', () => {
+    // --- Event Listeners ---
+    if(cargarBtn) cargarBtn.addEventListener('click', () => {
         if (localStorage.getItem('qplay_estado_partida')) {
-             if (confirm('Hay una partida en curso. ¿Quieres empezar una nueva? Se perderá el progreso anterior.')) {
+            if (confirm('Hay una partida en curso. ¿Quieres empezar una nueva? Se perderá el progreso anterior.')) {
                 limpiarEstadoJuego();
                 fileInput.click();
-             }
+            }
         } else {
-             fileInput.click();
+            fileInput.click();
         }
     });
 
-    fileInput.addEventListener('change', (e) => {
+    if(fileInput) fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
-        limpiarEstadoJuego(); 
-
+        limpiarEstadoJuego();
         const reader = new FileReader();
         reader.onload = (event) => {
             const text = event.target.result;
@@ -724,11 +705,11 @@
                         correcta = parseInt(correctaRaw) - 1;
                     }
                     cuestionario.push({
-                        tipo: campos[0] || 'quiz', 
+                        tipo: campos[0] || 'quiz',
                         pregunta: campos[1] || '',
                         respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''],
                         tiempo: parseInt(campos[6]) || 30,
-                        correcta: correcta, 
+                        correcta: correcta,
                         imagen_url: campos[8] || ''
                     });
                 }
@@ -741,15 +722,17 @@
         };
         reader.readAsText(file);
     });
-    
+
     if(listaJugadoresEl) listaJugadoresEl.addEventListener('click', e => {
         const boton = e.target.closest('.eliminar-jugador-btn');
         if (boton) {
             const peerId = boton.dataset.peerId;
             const nombre = conexiones[peerId];
-            if(nombre && jugadores[nombre] && jugadores[nombre].conn) {
-                 jugadores[nombre].conn.send({ tipo: 'expulsado' });
-                 setTimeout(() => jugadores[nombre].conn.close(), 100);
+            if (nombre && jugadores[nombre] && jugadores[nombre].conn) {
+                jugadores[nombre].conn.send({
+                    tipo: 'expulsado'
+                });
+                setTimeout(() => jugadores[nombre].conn.close(), 100);
             }
             delete jugadores[nombre];
             delete conexiones[peerId];
@@ -775,10 +758,11 @@
         }
     });
     if(descargarResultadosBtn) descargarResultadosBtn.addEventListener('click', descargarResultados);
-    
+
+    // --- Initialization ---
     function reanudarPartida() {
         console.log("Restaurando partida...");
-        inicializarPeer(gameId); 
+        inicializarPeer(gameId);
         if (estadoJuego === 'lobby') {
             mostrarPantalla('pantalla-lobby');
             actualizarListaJugadores();
@@ -788,13 +772,11 @@
             mostrarLeaderboard();
         }
     }
-
     if (cargarEstadoJuego()) {
         reanudarPartida();
     } else {
         mostrarPantalla('pantalla-carga');
     }
-
     </script>
 </body>
 </html>
