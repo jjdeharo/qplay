@@ -171,12 +171,24 @@
     </button>
 
     <div id="pantalla-final" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
-        <h1 class="text-6xl font-extrabold mb-8">¡Fin del Juego!</h1>
-        <div id="podio" class="w-full max-w-3xl flex justify-around items-end">
-        </div>
-        <div class="mt-12 space-x-4">
-            <button id="descargar-resultados-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Descargar Resultados</button>
-            <button id="reiniciar-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Jugar de Nuevo</button>
+        <div class="w-full max-w-5xl">
+            <h1 class="text-6xl font-extrabold mb-8 text-center">¡Fin del Juego!</h1>
+            <div id="podio" class="w-full flex justify-around items-end mb-12">
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <h2 class="text-3xl font-bold mb-4 text-center">Resultados Finales</h2>
+                <div class="flex justify-between items-center text-lg font-semibold text-gray-600 dark:text-gray-400 border-b-2 border-gray-200 dark:border-gray-700 pb-2 mb-2">
+                    <span class="w-1/12 text-center">#</span>
+                    <span class="w-6/12">Jugador</span>
+                    <span class="w-3/12 text-right">Puntuación</span>
+                    <span class="w-2/12 text-right">% Acierto</span>
+                </div>
+                <ol id="lista-resultados-finales" class="text-xl max-h-64 overflow-y-auto"></ol>
+            </div>
+            <div class="mt-12 space-x-4 text-center">
+                <button id="descargar-resultados-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Descargar Resultados</button>
+                <button id="reiniciar-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Jugar de Nuevo</button>
+            </div>
         </div>
     </div>
 
@@ -210,6 +222,7 @@
     const urlSitioModal = document.getElementById('url-sitio-modal');
     const codigoPartidaModal = document.getElementById('codigo-partida-modal');
     const qrcodeModal = document.getElementById('qrcode-modal');
+    const listaResultadosFinales = document.getElementById('lista-resultados-finales');
     const FULL_DASH_ARRAY = 283;
 
     // --- State ---
@@ -491,6 +504,14 @@
         mostrarPantalla('pantalla-final');
         const podioEl = document.getElementById('podio');
         podioEl.innerHTML = '';
+        listaResultadosFinales.innerHTML = '';
+
+        let maxPuntajePosible = 0;
+        cuestionario.forEach(pregunta => {
+            maxPuntajePosible += 500 + (pregunta.tiempo * 10);
+        });
+        if (maxPuntajePosible === 0) maxPuntajePosible = 1; // Evitar división por cero
+
         const jugadoresOrdenados = Object.values(jugadores).filter(j => j.conectado).sort((a, b) => b.puntaje - a.puntaje);
         const alturas = ['h-48', 'h-64', 'h-32'];
         const ordenPodio = [1, 0, 2];
@@ -513,6 +534,19 @@
             `;
             podioEl.appendChild(podioDiv);
         }
+
+        jugadoresOrdenados.forEach((jugador, index) => {
+            const porcentaje = Math.round((jugador.puntaje / maxPuntajePosible) * 100);
+            const li = document.createElement('li');
+            li.className = 'flex justify-between items-center py-2 px-3 rounded-md odd:bg-gray-50 dark:odd:bg-gray-700/50';
+            li.innerHTML = `
+                <span class="w-1/12 text-center font-bold">${index + 1}.</span>
+                <span class="w-6/12">${jugador.nombre}</span>
+                <span class="w-3/12 text-right font-semibold text-indigo-500">${jugador.puntaje}</span>
+                <span class="w-2/12 text-right font-semibold text-gray-500 dark:text-gray-400">${porcentaje}%</span>
+            `;
+            listaResultadosFinales.appendChild(li);
+        });
     }
     
     function descargarResultados() {
@@ -614,7 +648,6 @@
         const nombre = conexiones[peerId];
         if (nombre && jugadores[nombre]) {
             jugadores[nombre].conectado = false;
-            // No eliminamos al jugador, solo lo marcamos como desconectado
             if(estadoJuego === 'carga') {
                 actualizarListaJugadores();
             } else {
