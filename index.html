@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlayQ - Presentador</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👑</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = { darkMode: 'class' };
@@ -31,6 +32,9 @@
             stroke-dashoffset: 0;
             transition: stroke-dashoffset 1s linear;
         }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
@@ -39,6 +43,20 @@
         <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
         <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
     </button>
+    
+    <div id="modal-añadir-jugador" class="modal fixed inset-0 bg-black bg-opacity-70 z-30 items-center justify-center p-4 hidden opacity-0">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg text-center p-8 relative">
+            <button id="cerrar-modal-btn" class="absolute top-4 right-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-3xl font-bold mb-4">Unirse a la partida</h2>
+            <p class="text-xl mb-2">Ve a <span id="url-sitio-modal" class="font-bold text-indigo-600 dark:text-indigo-400"></span></p>
+            <p class="text-xl mb-4">e introduce el código:</p>
+            <div id="codigo-partida-modal" class="text-8xl font-extrabold tracking-widest mb-6 p-4 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-inner">...</div>
+            <div id="qrcode-modal" class="p-4 bg-white rounded-lg shadow-lg inline-block"></div>
+        </div>
+    </div>
+
 
     <div id="pantalla-carga" class="pantalla activa min-h-screen w-full flex-col items-center justify-center text-center p-8">
         <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-4">PlayQ</h1>
@@ -142,7 +160,10 @@
         <h1 class="text-5xl font-extrabold mb-8">Puntuaciones</h1>
         <ol id="lista-puntuaciones" class="w-full max-w-3xl text-3xl space-y-4">
         </ol>
-        <button id="siguiente-pregunta-btn" class="mt-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Siguiente</button>
+        <div class="mt-12 flex space-x-4">
+            <button id="siguiente-pregunta-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Siguiente</button>
+            <button id="añadir-jugador-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Añadir Jugador</button>
+        </div>
     </div>
 
     <div id="pantalla-final" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
@@ -179,6 +200,12 @@
     const estadoJugadoresPanel = document.getElementById('estado-jugadores-panel');
     const jugadoresVotadoLista = document.getElementById('jugadores-votado');
     const jugadoresPendientesLista = document.getElementById('jugadores-pendientes');
+    const añadirJugadorBtn = document.getElementById('añadir-jugador-btn');
+    const modalAñadirJugador = document.getElementById('modal-añadir-jugador');
+    const cerrarModalBtn = document.getElementById('cerrar-modal-btn');
+    const urlSitioModal = document.getElementById('url-sitio-modal');
+    const codigoPartidaModal = document.getElementById('codigo-partida-modal');
+    const qrcodeModal = document.getElementById('qrcode-modal');
     const FULL_DASH_ARRAY = 283;
 
     // --- State ---
@@ -193,6 +220,7 @@
     let tiempoRestante;
     let tiempoPregunta;
     let isPaused = false;
+    let gameId = '';
 
     // --- Theme Management ---
     function applyTheme(theme) {
@@ -216,26 +244,24 @@
 
     function actualizarListaJugadores() {
         listaJugadoresEl.innerHTML = '';
-        let contador = 0;
-        Object.values(jugadores).forEach(jugador => {
-            if(jugador.conectado && jugador.conn) {
-                const li = document.createElement('li');
-                li.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded-lg';
-                li.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
-                        <span class="font-bold text-xl">${jugador.nombre}</span>
-                    </div>
-                    <button data-peer-id="${jugador.conn.peer}" class="eliminar-jugador-btn text-red-500 hover:text-red-700 font-bold p-2 rounded-full hover:bg-red-100 dark:hover:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                `;
-                listaJugadoresEl.appendChild(li);
-                contador++;
-            }
+        const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado);
+        contadorJugadoresEl.textContent = jugadoresActivos.length;
+        
+        jugadoresActivos.forEach(jugador => {
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-2 rounded-lg';
+            li.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                    <span class="font-bold text-xl">${jugador.nombre}</span>
+                </div>
+                <button data-peer-id="${jugador.conn.peer}" class="eliminar-jugador-btn text-red-500 hover:text-red-700 font-bold p-2 rounded-full hover:bg-red-100 dark:hover:bg-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+            `;
+            listaJugadoresEl.appendChild(li);
         });
-        contadorJugadoresEl.textContent = contador;
-        iniciarJuegoBtn.disabled = contador === 0;
+        iniciarJuegoBtn.disabled = jugadoresActivos.length === 0;
     }
 
     function actualizarEstadoJugadoresDisplay() {
@@ -333,6 +359,7 @@
         temporizadorEl.textContent = tiempoRestante;
         setCircleDashoffset();
         clearInterval(temporizadorInterval);
+        temporizadorInterval = null;
 
         temporizadorInterval = setInterval(() => {
             if(isPaused) return;
@@ -364,9 +391,10 @@
     }
 
     function finalizarRonda() {
-        if (!temporizadorInterval) return; // Evita doble ejecución
-        clearInterval(temporizadorInterval);
-        temporizadorInterval = null; // Previene llamadas futuras
+        if (temporizadorInterval) {
+            clearInterval(temporizadorInterval);
+            temporizadorInterval = null;
+        }
         
         controlesPostPregunta.classList.remove('hidden');
         saltarTiempoBtn.style.display = 'none';
@@ -498,16 +526,23 @@
 
     // --- PeerJS Logic ---
     function inicializarPeer() {
-        const idPartida = generarCodigoCorto(5);
-        peer = new Peer(idPartida);
+        gameId = generarCodigoCorto(5);
+        peer = new Peer(gameId);
 
         peer.on('open', id => {
-            codigoPartidaEl.textContent = id;
             const urlUnion = new URL('jugador.html', window.location.href);
             urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
             urlUnion.searchParams.set('partida', id);
+            
+            codigoPartidaEl.textContent = id;
             qrCodeEl.innerHTML = "";
             new QRCode(qrCodeEl, { text: urlUnion.href, width: 200, height: 200 });
+
+            urlSitioModal.textContent = urlUnion.origin + urlUnion.pathname;
+            codigoPartidaModal.textContent = id;
+            qrcodeModal.innerHTML = "";
+            new QRCode(qrcodeModal, { text: urlUnion.href, width: 200, height: 200 });
+
             mostrarPantalla('pantalla-lobby');
         });
 
@@ -517,7 +552,7 @@
 
     function configurarNuevaConexion(conn) {
         conn.on('data', (data) => {
-            if (data.tipo === 'join' && estadoJuego === 'carga') {
+            if (data.tipo === 'join') {
                 gestionarConexionJugador(conn, data.nombre);
             } else if (data.tipo === 'respuesta' && estadoJuego === 'jugando') {
                 gestionarRespuestaJugador(conn.peer, data.payload);
@@ -542,8 +577,14 @@
             jugadores[nombre] = jugador;
         }
         conexiones[conn.peer] = nombre;
-        jugador.conn.send({tipo: 'confirmacion_join'});
-        actualizarListaJugadores();
+        
+        if (estadoJuego === 'jugando') {
+            jugador.conn.send({tipo: 'partida_iniciada'});
+            actualizarEstadoJugadoresDisplay();
+        } else {
+            jugador.conn.send({tipo: 'confirmacion_join'});
+            actualizarListaJugadores();
+        }
     }
 
     function gestionarRespuestaJugador(peerId, payload) {
@@ -570,6 +611,18 @@
             } else {
                 actualizarEstadoJugadoresDisplay();
             }
+        }
+    }
+    
+    function toggleModalAñadirJugador() {
+        const modal = document.getElementById('modal-añadir-jugador');
+        const isHidden = modal.classList.contains('hidden');
+        if (isHidden) {
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        } else {
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
         }
     }
 
@@ -634,6 +687,9 @@
     irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
     reiniciarBtn.addEventListener('click', () => window.location.reload());
     descargarResultadosBtn.addEventListener('click', descargarResultados);
+    añadirJugadorBtn.addEventListener('click', toggleModalAñadirJugador);
+    cerrarModalBtn.addEventListener('click', toggleModalAñadirJugador);
+
 
     // --- Initialization ---
     const savedTheme = localStorage.getItem('theme');
