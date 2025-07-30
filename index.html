@@ -887,7 +887,7 @@
     // --- Initialization ---
     function reanudarPartida() {
         console.log("Restaurando partida...");
-        inicializarPeer(gameId);
+        inicializarPeer();
         if (estadoJuego === 'lobby') {
             mostrarPantalla('pantalla-lobby');
             actualizarListaJugadores();
