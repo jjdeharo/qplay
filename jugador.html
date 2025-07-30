@@ -265,7 +265,15 @@
         unirseBtn.textContent = "Conectando...";
 
         if(peer) peer.destroy();
-        peer = new Peer();
+            const peerConfig = {
+            config: {
+                'iceServers': [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                ]
+            }
+        };
+        peer = new Peer(peerConfig);
 
         peer.on('open', id => {
             conn = peer.connect(codigo, { reliable: true });
