@@ -98,6 +98,35 @@
                 <p id="resultado-puntos-total" class="text-3xl font-bold">5678</p>
             </div>
         </div>
+        
+        <div id="pantalla-resultado-final" class="pantalla text-center">
+             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-lg">
+                <h2 class="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-6">¡Resultados Finales!</h2>
+                <div class="space-y-4 text-left text-xl">
+                    <div class="flex justify-between items-baseline bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <span class="font-semibold">Tu puntuación:</span>
+                        <span id="final-puntuacion-propia" class="font-bold text-2xl text-indigo-500"></span>
+                    </div>
+                    <div class="flex justify-between items-baseline bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <span class="font-semibold">Puntuación máxima de la clase:</span>
+                        <span id="final-puntuacion-maxima" class="font-bold text-2xl"></span>
+                    </div>
+                    <div class="flex justify-between items-baseline bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg">
+                        <span class="font-semibold">% sobre el máximo:</span>
+                        <span id="final-porcentaje-maximo" class="font-bold text-2xl"></span>
+                    </div>
+                    <div class="flex justify-between items-baseline bg-green-100 dark:bg-green-700/50 p-3 rounded-lg">
+                        <span class="font-semibold text-green-800 dark:text-green-300">Respuestas correctas:</span>
+                        <span id="final-aciertos" class="font-bold text-2xl text-green-600 dark:text-green-400"></span>
+                    </div>
+                    <div class="flex justify-between items-baseline bg-green-100 dark:bg-green-700/50 p-3 rounded-lg">
+                        <span class="font-semibold text-green-800 dark:text-green-300">% de aciertos:</span>
+                        <span id="final-porcentaje-aciertos" class="font-bold text-2xl text-green-600 dark:text-green-400"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div id="emoji-picker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none scale-95">
@@ -265,6 +294,9 @@
             case 'resultado':
                 mostrarPantallaResultado(data.payload);
                 break;
+            case 'resultado_final':
+                mostrarResultadosFinales(data.payload);
+                break;
             case 'pausa':
                 pausaOverlay.style.display = 'flex';
                 break;
@@ -355,6 +387,20 @@
         document.getElementById('resultado-puntos-total').textContent = resultado.puntosTotal;
         
         mostrarPantalla('pantalla-resultado');
+    }
+
+    function mostrarResultadosFinales(data) {
+        const { tuPuntuacion, puntuacionMaxima, respuestasCorrectas, totalPreguntas } = data;
+        const porcentajeMaximo = puntuacionMaxima > 0 ? Math.round((tuPuntuacion / puntuacionMaxima) * 100) : 0;
+        const porcentajeAciertos = totalPreguntas > 0 ? Math.round((respuestasCorrectas / totalPreguntas) * 100) : 0;
+
+        document.getElementById('final-puntuacion-propia').textContent = `${tuPuntuacion} pts`;
+        document.getElementById('final-puntuacion-maxima').textContent = `${puntuacionMaxima} pts`;
+        document.getElementById('final-porcentaje-maximo').textContent = `${porcentajeMaximo}%`;
+        document.getElementById('final-aciertos').textContent = `${respuestasCorrectas} / ${totalPreguntas}`;
+        document.getElementById('final-porcentaje-aciertos').textContent = `${porcentajeAciertos}%`;
+        
+        mostrarPantalla('pantalla-resultado-final');
     }
 
     // --- Initialization ---
