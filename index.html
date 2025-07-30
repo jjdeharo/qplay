@@ -156,15 +156,19 @@
         </div>
     </div>
     
-    <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
-        <h1 class="text-5xl font-extrabold mb-8">Puntuaciones</h1>
-        <ol id="lista-puntuaciones" class="w-full max-w-3xl text-3xl space-y-4">
-        </ol>
-        <div class="mt-12 flex space-x-4">
-            <button id="siguiente-pregunta-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Siguiente</button>
-            <button id="añadir-jugador-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Añadir Jugador</button>
+    <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8 bg-gray-200 dark:bg-gray-900">
+        <div class="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
+            <h1 class="text-5xl font-extrabold mb-8 text-indigo-600 dark:text-indigo-400">Puntuaciones</h1>
+            <ol id="lista-puntuaciones" class="text-3xl space-y-3 text-left">
+            </ol>
+            <button id="siguiente-pregunta-btn" class="mt-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-10 rounded-lg text-2xl transition-transform hover:scale-105">Siguiente</button>
         </div>
     </div>
+
+    <button id="añadir-jugador-btn" class="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-5 rounded-full text-lg shadow-lg transition-transform hover:scale-110 items-center z-10 hidden">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Añadir Jugador</span>
+    </button>
 
     <div id="pantalla-final" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <h1 class="text-6xl font-extrabold mb-8">¡Fin del Juego!</h1>
@@ -240,6 +244,7 @@
         pantallas.forEach(p => p.classList.remove('activa'));
         document.getElementById(id).classList.add('activa');
         estadoJugadoresPanel.style.display = (id === 'pantalla-pregunta' && estadoJuego === 'jugando') ? 'block' : 'none';
+        añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard') ? 'flex' : 'none';
     }
 
     function actualizarListaJugadores() {
@@ -465,14 +470,18 @@
         const listaPuntuaciones = document.getElementById('lista-puntuaciones');
         listaPuntuaciones.innerHTML = '';
 
-        const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
+        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.conectado).sort((a, b) => b.puntaje - a.puntaje);
 
         jugadoresOrdenados.forEach((jugador, index) => {
             const li = document.createElement('li');
-            li.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-4 rounded-lg';
+            const medallas = ['👑', '🥈', '🥉'];
+            const medalla = index < 3 ? `<span class="text-4xl mr-4">${medallas[index]}</span>` : `<span class="w-12 mr-4 text-center text-gray-400 dark:text-gray-500 font-semibold">${index + 1}.</span>`;
+
+            li.className = 'flex items-center bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm';
             li.innerHTML = `
-                <span class="font-bold">${index + 1}. ${jugador.nombre}</span>
-                <span class="font-semibold text-indigo-600 dark:text-indigo-400">${jugador.puntaje}</span>
+                ${medalla}
+                <span class="font-bold flex-grow">${jugador.nombre}</span>
+                <span class="font-semibold text-indigo-600 dark:text-indigo-400">${jugador.puntaje} pts</span>
             `;
             listaPuntuaciones.appendChild(li);
         });
@@ -482,7 +491,7 @@
         mostrarPantalla('pantalla-final');
         const podioEl = document.getElementById('podio');
         podioEl.innerHTML = '';
-        const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
+        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.conectado).sort((a, b) => b.puntaje - a.puntaje);
         const alturas = ['h-48', 'h-64', 'h-32'];
         const ordenPodio = [1, 0, 2];
         const medallas = ['🥈', '🥇', '🥉'];
@@ -507,7 +516,7 @@
     }
     
     function descargarResultados() {
-        const jugadoresOrdenados = Object.values(jugadores).sort((a, b) => b.puntaje - a.puntaje);
+        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.conectado).sort((a, b) => b.puntaje - a.puntaje);
         let csvContent = 'Puesto;Nombre;Puntuacion\n';
         
         jugadoresOrdenados.forEach((jugador, index) => {
@@ -605,7 +614,7 @@
         const nombre = conexiones[peerId];
         if (nombre && jugadores[nombre]) {
             jugadores[nombre].conectado = false;
-            delete conexiones[peerId];
+            // No eliminamos al jugador, solo lo marcamos como desconectado
             if(estadoJuego === 'carga') {
                 actualizarListaJugadores();
             } else {
