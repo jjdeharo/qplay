@@ -303,7 +303,7 @@
     function mostrarPantalla(id) {
         pantallas.forEach(p => p.classList.remove('activa'));
         document.getElementById(id).classList.add('activa');
-        const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard');
+        const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard' || id === 'pantalla-final');
         if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
         if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-lobby' || id === 'pantalla-pregunta') ? 'flex' : 'none';
         
@@ -382,7 +382,6 @@
         return result;
     }
     
-    // --- NUEVA FUNCIÓN ---
     function reenviarEstadoActual(conn) {
         const pregunta = cuestionario[preguntaActualIndex];
         if (!pregunta) return;
@@ -400,7 +399,7 @@
                 }
             });
         } else if (estadoJuego === 'leaderboard') {
-            conn.send({ tipo: 'partida_iniciada' }); // Le dice que espere al siguiente
+            conn.send({ tipo: 'partida_iniciada' }); 
         }
     }
 
@@ -894,8 +893,10 @@
     if(mostrarCorrectaBtn) mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
     if(irAPuntuacionesBtn) irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
     if(reiniciarBtn) reiniciarBtn.addEventListener('click', () => {
-        limpiarEstadoJuego();
-        window.location.reload();
+        if (confirm('¿Estás seguro de que quieres reiniciar la partida? Se perderá todo el progreso actual.')) {
+            limpiarEstadoJuego();
+            window.location.reload();
+        }
     });
     if(reiniciarPartidaBtn) reiniciarPartidaBtn.addEventListener('click', () => {
         if (confirm('¿Estás seguro de que quieres reiniciar la partida? Se perderá todo el progreso actual.')) {
