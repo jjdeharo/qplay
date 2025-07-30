@@ -18,7 +18,7 @@
             font-family: 'Inter', sans-serif;
         }
         .font-poppins { 
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Poppins', sans-serif; 
         }
         .pantalla { display: none; }
         .pantalla.activa { display: flex; }
@@ -72,8 +72,8 @@
                 <h1 class="font-poppins text-7xl font-extrabold text-white mb-6 text-shadow">QPlay</h1>
                 <div class="space-y-4">
                     <div class="flex items-center gap-2">
+                        <button id="abrir-emojis-btn" class="p-3 bg-white bg-opacity-20 rounded-lg text-2xl transform hover:scale-110 transition-transform flex-shrink-0">😀</button>
                         <input type="text" id="nombre-input" placeholder="Tu nombre" class="w-full text-xl p-3 border-2 border-transparent rounded-lg bg-white bg-opacity-20 text-white placeholder-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none">
-                        <button id="abrir-emojis-btn" class="p-3 bg-white bg-opacity-20 rounded-lg text-2xl transform hover:scale-110 transition-transform">😀</button>
                     </div>
                     <input type="text" id="codigo-input" placeholder="CÓDIGO" maxlength="5" class="w-full text-center text-4xl p-3 tracking-[.25em] uppercase border-2 border-transparent rounded-lg bg-white bg-opacity-20 text-white placeholder-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none">
                     <button id="unirse-btn" class="w-full font-bold py-4 text-xl rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
@@ -106,7 +106,7 @@
 
         <div id="pantalla-pregunta" class="pantalla w-full h-screen flex-col">
             <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full flex-grow">
-                </div>
+            </div>
             <button id="confirmar-respuesta-btn" class="w-full mt-4 font-bold py-4 text-xl rounded-lg bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hidden">
                 Confirmar
             </button>
@@ -184,11 +184,13 @@
     const emojiPicker = document.getElementById('emoji-picker');
     const emojiTabsContainer = document.getElementById('emoji-tabs');
     const emojiContentContainer = document.getElementById('emoji-content');
+    const abrirEmojisBtn = document.getElementById('abrir-emojis-btn');
 
     // --- State ---
     let peer;
     let conn;
     let respuestasSeleccionadas = [];
+    let iconoSeleccionado = '😀'; // Icono por defecto
 
     // --- UI Functions ---
     function mostrarPantalla(id) {
@@ -235,7 +237,8 @@
             btn.className = 'text-3xl p-2 rounded-lg hover:bg-gray-700';
             btn.textContent = emoji;
             btn.onclick = () => {
-                nombreInput.value += emoji;
+                iconoSeleccionado = emoji; // Guardar el icono seleccionado
+                abrirEmojisBtn.textContent = iconoSeleccionado; // Actualizar el botón
                 emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
             };
             emojiContentContainer.appendChild(btn);
@@ -244,14 +247,18 @@
 
     // --- Game Logic ---
     function unirseAlJuego() {
-        const nombre = nombreInput.value.trim();
+        const nombreTexto = nombreInput.value.trim(); // Solo el texto del nombre
         const codigo = codigoInput.value.trim().toUpperCase();
         codigoInput.value = codigo;
 
-        if (!nombre || !codigo) {
-            errorConexionEl.textContent = "Nombre y código son obligatorios.";
+        // Validar el texto del nombre en lugar del icono
+        if (!nombreTexto || !codigo) {
+            errorConexionEl.textContent = "El nombre y el código son obligatorios.";
             return;
         }
+        
+        // Combinar el icono y el nombre para el envío
+        const nombreCompleto = `${iconoSeleccionado} ${nombreTexto}`;
 
         errorConexionEl.textContent = "";
         unirseBtn.disabled = true;
@@ -264,7 +271,8 @@
             conn = peer.connect(codigo, { reliable: true });
 
             conn.on('open', () => {
-                conn.send({ tipo: 'join', nombre: nombre });
+                // Enviar el nombre completo
+                conn.send({ tipo: 'join', nombre: nombreCompleto });
             });
 
             conn.on('data', gestionarDatosDelServidor);
@@ -425,7 +433,7 @@
         codigoInput.value = codigoPartidaURL.toUpperCase();
     }
     
-    document.getElementById('abrir-emojis-btn').onclick = () => emojiPicker.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+    abrirEmojisBtn.onclick = () => emojiPicker.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
     document.getElementById('cerrar-emojis-btn').onclick = () => emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
 
     unirseBtn.addEventListener('click', unirseAlJuego);
