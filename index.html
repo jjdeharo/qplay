@@ -279,6 +279,7 @@
         if (estadoGuardado) {
             try {
                 const estado = JSON.parse(estadoGuardado);
+                gameId = estado.gameId; // Recuperar el ID de la partida guardada
                 cuestionario = estado.cuestionario;
                 jugadores = estado.jugadores;
                 estadoJuego = estado.estadoJuego;
