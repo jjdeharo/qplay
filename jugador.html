@@ -10,11 +10,39 @@
       tailwind.config = { darkMode: 'class' };
     </script>
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Inter', sans-serif;
+        }
+        .font-poppins { 
+            font-family: 'Poppins', sans-serif;
+        }
         .pantalla { display: none; }
         .pantalla.activa { display: flex; }
+
+        .animated-gradient {
+            background: linear-gradient(45deg, #6c2bd9, #b83280, #ff6b00, #2c89d9);
+            background-size: 400% 400%;
+            animation: gradient-animation 15s ease infinite;
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-card {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
         .respuesta-btn {
             transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
         }
@@ -22,75 +50,77 @@
             transform: scale(0.95);
         }
         .respuesta-btn.seleccionada {
-            box-shadow: 0 0 0 4px white, 0 0 0 8px #4f46e5; /* Borde índigo para selección */
+            box-shadow: 0 0 0 4px white, 0 0 0 8px #4f46e5;
             transform: scale(1.05);
         }
-        #emoji-picker {
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        .respuesta-color-0 { background-color: #e53e3e; } /* Rojo */
-        .respuesta-color-1 { background-color: #3b82f6; } /* Azul */
-        .respuesta-color-2 { background-color: #f59e0b; } /* Amarillo */
-        .respuesta-color-3 { background-color: #10b981; } /* Verde */
+        .text-shadow { text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4); }
+
+        .respuesta-color-0 { background-color: #e53e3e; }
+        .respuesta-color-1 { background-color: #3b82f6; }
+        .respuesta-color-2 { background-color: #f59e0b; }
+        .respuesta-color-3 { background-color: #10b981; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
+<body class="animated-gradient text-white">
 
-    <button id="theme-toggle" class="fixed top-4 right-4 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-50">
-        <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-        <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-    </button>
     <div id="pausa-overlay" class="fixed inset-0 bg-black bg-opacity-70 items-center justify-center text-5xl font-bold text-white z-50 hidden">JUEGO EN PAUSA</div>
-
 
     <div id="app-container" class="w-full min-h-screen flex items-center justify-center p-4">
         
         <div id="pantalla-conexion" class="pantalla activa w-full max-w-md">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
-                <h1 class="text-5xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-6">QPlay</h1>
+            <div class="glass-card rounded-2xl p-8 text-center">
+                <h1 class="font-poppins text-7xl font-extrabold text-white mb-6 text-shadow">QPlay</h1>
                 <div class="space-y-4">
-                    <div class="flex items-center gap-2 flex-row-reverse">
-                        <input type="text" id="nombre-input" placeholder="Tu nombre" class="w-full text-xl p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500">
-                        <button id="abrir-emojis-btn" class="p-3 border border-gray-300 dark:border-gray-600 rounded-lg text-2xl">😀</button>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="nombre-input" placeholder="Tu nombre" class="w-full text-xl p-3 border-2 border-transparent rounded-lg bg-white bg-opacity-20 text-white placeholder-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none">
+                        <button id="abrir-emojis-btn" class="p-3 bg-white bg-opacity-20 rounded-lg text-2xl transform hover:scale-110 transition-transform">😀</button>
                     </div>
-                    <input type="text" id="codigo-input" placeholder="Código del juego" maxlength="5" class="w-full text-center text-3xl p-3 tracking-[.25em] uppercase border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500">
-                    <button id="unirse-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 text-xl rounded-lg transition-colors">¡A jugar!</button>
+                    <input type="text" id="codigo-input" placeholder="CÓDIGO" maxlength="5" class="w-full text-center text-4xl p-3 tracking-[.25em] uppercase border-2 border-transparent rounded-lg bg-white bg-opacity-20 text-white placeholder-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none">
+                    <button id="unirse-btn" class="w-full font-bold py-4 text-xl rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                        ¡A jugar!
+                    </button>
                 </div>
-                 <p id="error-conexion" class="text-red-500 mt-4 h-6"></p>
+                 <p id="error-conexion" class="text-yellow-300 mt-4 h-6 font-semibold"></p>
             </div>
         </div>
 
         <div id="pantalla-espera-inicio" class="pantalla text-center">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+            <div class="glass-card rounded-2xl shadow-lg p-12">
                 <h2 class="text-4xl font-bold mb-2">¡Ya estás dentro!</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-400">Espera a que el presentador inicie el juego...</p>
+                <p class="text-xl text-gray-200">Espera a que el presentador inicie el juego...</p>
+                <div class="mt-8">
+                    <svg class="animate-spin h-10 w-10 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
             </div>
         </div>
         
         <div id="pantalla-espera-partida-iniciada" class="pantalla text-center">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+            <div class="glass-card rounded-2xl shadow-lg p-12">
                 <h2 class="text-4xl font-bold mb-2">¡Partida en curso!</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-400">Te unirás en la siguiente pregunta...</p>
+                <p class="text-xl text-gray-200">Te unirás en la siguiente pregunta...</p>
             </div>
         </div>
 
-        <div id="pantalla-pregunta" class="pantalla w-full h-full flex-col">
+        <div id="pantalla-pregunta" class="pantalla w-full h-screen flex-col">
             <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full flex-grow">
-            </div>
-            <button id="confirmar-respuesta-btn" class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-4 text-xl rounded-lg transition-colors hidden">
+                </div>
+            <button id="confirmar-respuesta-btn" class="w-full mt-4 font-bold py-4 text-xl rounded-lg bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hidden">
                 Confirmar
             </button>
         </div>
         
         <div id="pantalla-esperando-jugadores" class="pantalla text-center">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+             <div class="glass-card rounded-2xl shadow-lg p-12">
                 <h2 class="text-4xl font-bold mb-2">¡Respuesta enviada!</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-400">Esperando al resto de jugadores...</p>
+                <p class="text-xl text-gray-200">Esperando al resto de jugadores...</p>
             </div>
         </div>
 
-        <div id="pantalla-resultado" class="pantalla text-center">
-             <div id="resultado-contenido" class="w-full max-w-md text-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
+        <div id="pantalla-resultado" class="pantalla text-center w-full max-w-md">
+             <div id="resultado-contenido" class="w-full text-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
                 <h2 id="resultado-texto" class="text-5xl font-extrabold mb-4">¡Correcto!</h2>
                 <p class="text-2xl mb-2">Puntos ganados:</p>
                 <p id="resultado-puntos-ronda" class="text-4xl font-bold mb-6">+1234</p>
@@ -99,29 +129,29 @@
             </div>
         </div>
         
-        <div id="pantalla-resultado-final" class="pantalla text-center">
-             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-lg">
-                <h2 class="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-6">¡Resultados Finales!</h2>
+        <div id="pantalla-resultado-final" class="pantalla text-center w-full max-w-lg">
+             <div class="glass-card rounded-2xl shadow-lg p-8">
+                <h2 class="text-4xl font-extrabold text-white mb-6">¡Resultados Finales!</h2>
                 <div class="space-y-4 text-left text-xl">
-                    <div class="flex justify-between items-baseline bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg">
+                    <div class="flex justify-between items-baseline bg-black bg-opacity-20 p-3 rounded-lg">
                         <span class="font-semibold">Tu puntuación:</span>
-                        <span id="final-puntuacion-propia" class="font-bold text-2xl text-indigo-500"></span>
+                        <span id="final-puntuacion-propia" class="font-bold text-2xl text-pink-400"></span>
                     </div>
-                    <div class="flex justify-between items-baseline bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg">
-                        <span class="font-semibold">Puntuación máxima de la clase:</span>
+                    <div class="flex justify-between items-baseline bg-black bg-opacity-20 p-3 rounded-lg">
+                        <span class="font-semibold">Puntuación máxima:</span>
                         <span id="final-puntuacion-maxima" class="font-bold text-2xl"></span>
                     </div>
-                    <div class="flex justify-between items-baseline bg-gray-100 dark:bg-gray-700/50 p-3 rounded-lg">
+                    <div class="flex justify-between items-baseline bg-black bg-opacity-20 p-3 rounded-lg">
                         <span class="font-semibold">% sobre el máximo:</span>
                         <span id="final-porcentaje-maximo" class="font-bold text-2xl"></span>
                     </div>
-                    <div class="flex justify-between items-baseline bg-green-100 dark:bg-green-700/50 p-3 rounded-lg">
-                        <span class="font-semibold text-green-800 dark:text-green-300">Respuestas correctas:</span>
-                        <span id="final-aciertos" class="font-bold text-2xl text-green-600 dark:text-green-400"></span>
+                    <div class="flex justify-between items-baseline bg-green-900 bg-opacity-50 p-3 rounded-lg">
+                        <span class="font-semibold text-green-300">Respuestas correctas:</span>
+                        <span id="final-aciertos" class="font-bold text-2xl text-green-300"></span>
                     </div>
-                    <div class="flex justify-between items-baseline bg-green-100 dark:bg-green-700/50 p-3 rounded-lg">
-                        <span class="font-semibold text-green-800 dark:text-green-300">% de aciertos:</span>
-                        <span id="final-porcentaje-aciertos" class="font-bold text-2xl text-green-600 dark:text-green-400"></span>
+                    <div class="flex justify-between items-baseline bg-green-900 bg-opacity-50 p-3 rounded-lg">
+                        <span class="font-semibold text-green-300">% de aciertos:</span>
+                        <span id="final-porcentaje-aciertos" class="font-bold text-2xl text-green-300"></span>
                     </div>
                 </div>
             </div>
@@ -130,14 +160,14 @@
     </div>
 
     <div id="emoji-picker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none scale-95">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="font-bold text-lg">Elige un emoticono</h3>
-                <button id="cerrar-emojis-btn" class="font-bold text-2xl">&times;</button>
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h3 class="font-bold text-lg text-white">Elige un emoticono</h3>
+                <button id="cerrar-emojis-btn" class="font-bold text-2xl text-gray-400 hover:text-white">&times;</button>
             </div>
-            <div id="emoji-tabs" class="flex-shrink-0 flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+            <div id="emoji-tabs" class="flex-shrink-0 flex border-b border-gray-700 overflow-x-auto">
             </div>
-            <div id="emoji-content" class="p-4 overflow-y-auto">
+            <div id="emoji-content" class="p-4 overflow-y-auto grid grid-cols-6 gap-2">
             </div>
         </div>
     </div>
@@ -159,20 +189,6 @@
     let peer;
     let conn;
     let respuestasSeleccionadas = [];
-
-    // --- Theme Management ---
-    function applyTheme(theme) {
-        const isDark = theme === 'dark';
-        document.documentElement.classList.toggle('dark', isDark);
-        document.getElementById('theme-icon-sun').classList.toggle('hidden', !isDark);
-        document.getElementById('theme-icon-moon').classList.toggle('hidden', isDark);
-    }
-    function toggleTheme() {
-      const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-      localStorage.setItem('theme', newTheme);
-      applyTheme(newTheme);
-    }
-    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
     // --- UI Functions ---
     function mostrarPantalla(id) {
@@ -196,9 +212,9 @@
             tab.textContent = categoria;
             tab.dataset.categoria = categoria;
             if (index === 0) {
-                tab.classList.add('border-indigo-500', 'text-indigo-600', 'dark:text-indigo-400');
+                tab.classList.add('border-pink-500', 'text-pink-400');
             } else {
-                tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'dark:hover:text-gray-300');
+                tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300');
             }
             tab.onclick = () => cambiarTabEmoji(categoria);
             emojiTabsContainer.appendChild(tab);
@@ -208,16 +224,15 @@
 
     function cambiarTabEmoji(categoria) {
         Array.from(emojiTabsContainer.children).forEach(tab => {
-            tab.classList.toggle('border-indigo-500', tab.dataset.categoria === categoria);
-            tab.classList.toggle('text-indigo-600', tab.dataset.categoria === categoria);
-            tab.classList.toggle('dark:text-indigo-400', tab.dataset.categoria === categoria);
+            tab.classList.toggle('border-pink-500', tab.dataset.categoria === categoria);
+            tab.classList.toggle('text-pink-400', tab.dataset.categoria === categoria);
             tab.classList.toggle('border-transparent', tab.dataset.categoria !== categoria);
             tab.classList.toggle('text-gray-500', tab.dataset.categoria !== categoria);
         });
         emojiContentContainer.innerHTML = '';
         emojis[categoria].forEach(emoji => {
             const btn = document.createElement('button');
-            btn.className = 'text-3xl p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700';
+            btn.className = 'text-3xl p-2 rounded-lg hover:bg-gray-700';
             btn.textContent = emoji;
             btn.onclick = () => {
                 nombreInput.value += emoji;
@@ -331,8 +346,8 @@
 
         for (let i = 0; i < pregunta.numRespuestas; i++) {
             const btn = document.createElement('button');
-            btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center justify-center rounded-lg shadow-lg`;
-            btn.innerHTML = `<span class="text-6xl">${simbolos[i]}</span>`;
+            btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center justify-center rounded-lg shadow-lg transform hover:scale-105 transition-transform`;
+            btn.innerHTML = `<span class="text-6xl text-shadow">${simbolos[i]}</span>`;
             btn.dataset.indice = i;
             btn.disabled = false;
 
@@ -377,10 +392,10 @@
         
         if (resultado.esCorrecta) {
             texto.textContent = "¡Correcto!";
-            contenido.className = "w-full max-w-md bg-green-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
+            contenido.className = "w-full max-w-md bg-gradient-to-br from-green-500 to-teal-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
         } else {
             texto.textContent = "Incorrecto";
-            contenido.className = "w-full max-w-md bg-red-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
+            contenido.className = "w-full max-w-md bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
         }
         
         document.getElementById('resultado-puntos-ronda').textContent = `+${resultado.puntosRonda}`;
@@ -404,10 +419,6 @@
     }
 
     // --- Initialization ---
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
-    
     const params = new URLSearchParams(window.location.search);
     const codigoPartidaURL = params.get('partida');
     if (codigoPartidaURL) {
