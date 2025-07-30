@@ -124,7 +124,7 @@
         </button>
     </div>
     
-    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-center justify-between p-8 bg-gray-800">
+    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-center justify-between p-8 bg-gray-800 relative">
         <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white z-20 hidden">JUEGO EN PAUSA</div>
         
         <div id="estado-jugadores-panel" class="absolute left-8 top-1/2 -translate-y-1/2 glass-card p-4 rounded-lg w-64 hidden max-h-[80vh] overflow-y-auto">
@@ -155,7 +155,7 @@
             </div>
         </div>
 
-        <div class="w-full max-w-6xl glass-card rounded-2xl p-8 ml-auto mr-auto">
+        <div class="w-full max-w-5xl glass-card rounded-2xl p-8 ml-auto mr-auto">
             <div class="flex flex-col items-center text-center">
                 <h2 id="texto-pregunta" class="text-5xl font-bold mb-6">¿Cuál es la capital de España?</h2>
                 <img id="imagen-pregunta" src="" alt="Imagen de la pregunta" class="max-h-80 rounded-lg shadow-lg mb-8 hidden">
@@ -163,7 +163,7 @@
             <div id="respuestas-grid" class="grid grid-cols-2 gap-4 w-full"></div>
         </div>
 
-        <div id="controles-post-pregunta" class="absolute bottom-8 right-8 space-x-4 hidden">
+        <div id="controles-post-pregunta" class="absolute top-1/2 -translate-y-1/2 right-8 flex flex-col space-y-4 hidden">
             <button id="mostrar-correcta-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Mostrar Correcta</button>
             <button id="ir-a-puntuaciones-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Ver Puntuaciones</button>
         </div>
