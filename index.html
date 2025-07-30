@@ -632,7 +632,16 @@
             peer.destroy();
         }
         gameId = existingGameId || generarCodigoCorto(5);
-        peer = new Peer(gameId);
+        const peerConfig = {
+            config: {
+                'iceServers': [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                ]
+            }
+        };
+        peer = new Peer(gameId, peerConfig);
+        
         peer.on('open', id => {
             const urlUnion = new URL('jugador.html', window.location.href);
             if(urlSitioEl) urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
