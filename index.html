@@ -169,6 +169,12 @@
         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span>Añadir Jugador</span>
     </button>
+    
+    <button id="reiniciar-partida-btn" class="fixed bottom-8 left-8 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-5 rounded-full text-lg shadow-lg transition-transform hover:scale-110 items-center z-10 hidden">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+        <span>Reiniciar Partida</span>
+    </button>
+
 
     <div id="pantalla-final" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
         <div class="w-full max-w-5xl text-center">
@@ -207,6 +213,7 @@
     const jugadoresVotadoLista = document.getElementById('jugadores-votado');
     const jugadoresPendientesLista = document.getElementById('jugadores-pendientes');
     const añadirJugadorBtn = document.getElementById('añadir-jugador-btn');
+    const reiniciarPartidaBtn = document.getElementById('reiniciar-partida-btn'); // Referencia al nuevo botón
     const modalAñadirJugador = document.getElementById('modal-añadir-jugador');
     const cerrarModalBtn = document.getElementById('cerrar-modal-btn');
     const urlSitioModal = document.getElementById('url-sitio-modal');
@@ -229,6 +236,54 @@
     let isPaused = false;
     let gameId = '';
 
+    // --- LocalStorage Logic ---
+    function guardarEstadoJuego() {
+        // No guardar las conexiones de PeerJS, solo los datos.
+        const jugadoresParaGuardar = {};
+        for (const nombre in jugadores) {
+            jugadoresParaGuardar[nombre] = {
+                nombre: jugadores[nombre].nombre,
+                puntaje: jugadores[nombre].puntaje,
+                conectado: false, // Siempre guardar como desconectado
+                haVotado: jugadores[nombre].haVotado,
+                correctas: jugadores[nombre].correctas,
+            };
+        }
+
+        const estado = {
+            gameId,
+            cuestionario,
+            jugadores: jugadoresParaGuardar,
+            estadoJuego,
+            preguntaActualIndex,
+        };
+        localStorage.setItem('qplay_estado_partida', JSON.stringify(estado));
+    }
+
+    function cargarEstadoJuego() {
+        const estadoGuardado = localStorage.getItem('qplay_estado_partida');
+        if (estadoGuardado) {
+            try {
+                const estado = JSON.parse(estadoGuardado);
+                gameId = estado.gameId;
+                cuestionario = estado.cuestionario;
+                jugadores = estado.jugadores;
+                estadoJuego = estado.estadoJuego;
+                preguntaActualIndex = estado.preguntaActualIndex;
+                return true;
+            } catch (error) {
+                console.error("Error al cargar el estado del juego:", error);
+                limpiarEstadoJuego();
+                return false;
+            }
+        }
+        return false;
+    }
+
+    function limpiarEstadoJuego() {
+        localStorage.removeItem('qplay_estado_partida');
+    }
+    
     // --- Theme Management ---
     function applyTheme(theme) {
         const isDark = theme === 'dark';
@@ -246,8 +301,12 @@
     function mostrarPantalla(id) {
         pantallas.forEach(p => p.classList.remove('activa'));
         document.getElementById(id).classList.add('activa');
+        
+        const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard');
+        reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
+        añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-lobby') ? 'flex' : 'none';
         estadoJugadoresPanel.style.display = (id === 'pantalla-pregunta' && estadoJuego === 'jugando') ? 'block' : 'none';
-        añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard') ? 'flex' : 'none';
+
     }
 
     function actualizarListaJugadores() {
@@ -278,14 +337,16 @@
         const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado);
         if (jugadoresActivos.length === 0) return;
 
-        jugadoresActivos.forEach(jugador => {
+        Object.values(jugadores).forEach(jugador => {
             const li = document.createElement('li');
             li.textContent = jugador.nombre;
-            if (jugador.haVotado) {
-                li.textContent += ' ✔️';
-                jugadoresVotadoLista.appendChild(li);
-            } else {
-                jugadoresPendientesLista.appendChild(li);
+            if (jugador.conectado) {
+                 if (jugador.haVotado) {
+                    li.textContent += ' ✔️';
+                    jugadoresVotadoLista.appendChild(li);
+                } else {
+                    jugadoresPendientesLista.appendChild(li);
+                }
             }
         });
     }
@@ -310,6 +371,7 @@
             }
         }
         preguntaActualIndex = -1;
+        guardarEstadoJuego();
         avanzarPregunta();
     }
 
@@ -321,6 +383,8 @@
         }
         respuestasRonda = {};
         Object.values(jugadores).forEach(j => j.haVotado = false);
+        estadoJuego = 'jugando'; // Asegurarse que el estado es correcto
+        guardarEstadoJuego();
         mostrarPregunta();
     }
 
@@ -379,7 +443,8 @@
             }
         }, 1000);
 
-        Object.values(jugadores).forEach(jugador => {
+        Object.values(conexiones).forEach(nombre => {
+            const jugador = jugadores[nombre];
             if (jugador.conectado && jugador.conn) {
                 jugador.conn.send({
                     tipo: 'pregunta',
@@ -420,7 +485,7 @@
             }
 
             if (esCorrecta) {
-                jugadores[nombre].correctas++;
+                jugadores[nombre].correctas = (jugadores[nombre].correctas || 0) + 1;
             }
 
             const puntosRonda = esCorrecta ? (500 + respuestasRonda[nombre].tiempoRespuesta * 10) : 0;
@@ -437,6 +502,7 @@
                 });
             }
         });
+        guardarEstadoJuego(); // Guardar estado después de calcular puntos
     }
     
     function gestionarPausa() {
@@ -473,11 +539,13 @@
     }
 
     function mostrarLeaderboard() {
+        estadoJuego = 'leaderboard';
+        guardarEstadoJuego();
         mostrarPantalla('pantalla-leaderboard');
         const listaPuntuaciones = document.getElementById('lista-puntuaciones');
         listaPuntuaciones.innerHTML = '';
 
-        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.conectado).sort((a, b) => b.puntaje - a.puntaje);
+        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.nombre).sort((a, b) => b.puntaje - a.puntaje);
 
         jugadoresOrdenados.forEach((jugador, index) => {
             const li = document.createElement('li');
@@ -495,10 +563,11 @@
     }
 
     function finalizarJuego() {
+        estadoJuego = 'final';
         mostrarPantalla('pantalla-final');
         podioEl.innerHTML = '';
 
-        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.conectado).sort((a, b) => b.puntaje - a.puntaje);
+        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.nombre).sort((a, b) => b.puntaje - a.puntaje);
         const puntuacionMaxima = jugadoresOrdenados.length > 0 ? jugadoresOrdenados[0].puntaje : 0;
         
         const alturas = ['h-48', 'h-64', 'h-32'];
@@ -523,24 +592,25 @@
             podioEl.appendChild(podioDiv);
         }
 
-        // Enviar resultados finales a cada jugador
-        Object.values(jugadores).forEach(jugador => {
-            if (jugador.conectado && jugador.conn) {
+        Object.values(conexiones).forEach(nombre => {
+             const jugador = jugadores[nombre];
+            if (jugador && jugador.conectado && jugador.conn) {
                 jugador.conn.send({
                     tipo: 'resultado_final',
                     payload: {
                         tuPuntuacion: jugador.puntaje,
                         puntuacionMaxima: puntuacionMaxima,
-                        respuestasCorrectas: jugador.correctas,
+                        respuestasCorrectas: jugador.correctas || 0,
                         totalPreguntas: cuestionario.length
                     }
                 });
             }
         });
+        limpiarEstadoJuego(); // Fin del juego, limpiar estado
     }
     
     function descargarResultados() {
-        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.conectado).sort((a, b) => b.puntaje - a.puntaje);
+        const jugadoresOrdenados = Object.values(jugadores).filter(j => j.nombre).sort((a, b) => b.puntaje - a.puntaje);
         let csvContent = 'Puesto;Nombre;Puntuacion\n';
         
         jugadoresOrdenados.forEach((jugador, index) => {
@@ -558,8 +628,10 @@
     }
 
     // --- PeerJS Logic ---
-    function inicializarPeer() {
-        gameId = generarCodigoCorto(5);
+    function inicializarPeer(existingGameId = null) {
+        if (peer) { peer.destroy(); }
+        
+        gameId = existingGameId || generarCodigoCorto(5);
         peer = new Peer(gameId);
 
         peer.on('open', id => {
@@ -576,11 +648,20 @@
             qrcodeModal.innerHTML = "";
             new QRCode(qrcodeModal, { text: urlUnion.href, width: 200, height: 200 });
 
-            mostrarPantalla('pantalla-lobby');
+            if (!existingGameId) {
+                 mostrarPantalla('pantalla-lobby');
+                 guardarEstadoJuego();
+            }
         });
 
         peer.on('connection', configurarNuevaConexion);
-        peer.on('error', (err) => console.error("Error en PeerJS: ", err));
+        peer.on('error', (err) => {
+            console.error("Error en PeerJS: ", err);
+            if (err.type === 'unavailable-id' && existingGameId) {
+                console.log("Reintentando conexión a PeerJS...");
+                setTimeout(() => inicializarPeer(existingGameId), 2000);
+            }
+        });
     }
 
     function configurarNuevaConexion(conn) {
@@ -595,38 +676,41 @@
     }
     
     function gestionarConexionJugador(conn, nombre) {
+        // Verificar si ya existe un jugador con ese nombre Y ESTÁ CONECTADO
         if (Object.values(jugadores).some(j => j.nombre === nombre && j.conectado)) {
             conn.send({ tipo: 'error', payload: { mensaje: 'Ese nombre ya está en uso.' }});
-            conn.close();
+            setTimeout(() => conn.close(), 100);
             return;
         }
         
-        let jugador = Object.values(jugadores).find(j => j.nombre === nombre);
-        if (jugador) {
+        let jugador = jugadores[nombre];
+        if (jugador) { // Jugador se reconecta
              jugador.conectado = true;
              jugador.conn = conn;
-        } else {
+        } else { // Nuevo jugador
             jugador = { nombre: nombre, puntaje: 0, conn: conn, conectado: true, haVotado: false, correctas: 0 };
             jugadores[nombre] = jugador;
         }
         conexiones[conn.peer] = nombre;
         
-        if (estadoJuego === 'jugando') {
+        if (estadoJuego === 'jugando' || estadoJuego === 'leaderboard') {
             jugador.conn.send({tipo: 'partida_iniciada'});
             actualizarEstadoJugadoresDisplay();
-        } else {
+        } else { // Lobby
             jugador.conn.send({tipo: 'confirmacion_join'});
             actualizarListaJugadores();
         }
+        guardarEstadoJuego();
     }
 
     function gestionarRespuestaJugador(peerId, payload) {
         const nombre = conexiones[peerId];
-        if (!nombre || !jugadores[nombre] || respuestasRonda[nombre]) return;
+        if (!nombre || !jugadores[nombre] || jugadores[nombre].haVotado) return;
 
         respuestasRonda[nombre] = { respuesta: payload.respuesta, tiempoRespuesta: tiempoRestante };
         jugadores[nombre].haVotado = true;
         actualizarEstadoJugadoresDisplay();
+        guardarEstadoJuego();
 
         const jugadoresActivos = Object.values(jugadores).filter(j => j.conectado).length;
         if (Object.keys(respuestasRonda).length === jugadoresActivos) {
@@ -637,13 +721,18 @@
     function gestionarDesconexionJugador(peerId) {
         const nombre = conexiones[peerId];
         if (nombre && jugadores[nombre]) {
+            console.log(`${nombre} se ha desconectado.`);
             jugadores[nombre].conectado = false;
-            if(estadoJuego === 'carga') {
+            jugadores[nombre].conn = null;
+            delete conexiones[peerId];
+            
+            if(estadoJuego === 'carga' || estadoJuego === 'lobby') {
                 actualizarListaJugadores();
             } else {
                 actualizarEstadoJugadoresDisplay();
             }
         }
+        guardarEstadoJuego();
     }
     
     function toggleModalAñadirJugador() {
@@ -659,11 +748,23 @@
     }
 
     // --- Event Listeners ---
-    cargarBtn.addEventListener('click', () => fileInput.click());
+    cargarBtn.addEventListener('click', () => {
+        if (localStorage.getItem('qplay_estado_partida')) {
+             if (confirm('Hay una partida en curso. ¿Quieres empezar una nueva? Se perderá el progreso anterior.')) {
+                limpiarEstadoJuego();
+                fileInput.click();
+             }
+        } else {
+             fileInput.click();
+        }
+    });
+
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
         
+        limpiarEstadoJuego(); // Limpiar estado al procesar un nuevo fichero
+
         const reader = new FileReader();
         reader.onload = (event) => {
             const text = event.target.result;
@@ -674,10 +775,11 @@
                 const campos = Array.from(lineas[i].matchAll(regex), m => m[1] || m[2]);
                 if (campos.length >= 8) {
                     let correcta;
-                    if (campos[7].includes(',')) {
-                        correcta = campos[7].split(',').map(n => parseInt(n) - 1).sort();
+                    const correctaRaw = campos[7] || '';
+                    if (correctaRaw.includes(',')) {
+                        correcta = correctaRaw.split(',').map(n => parseInt(n) - 1).sort();
                     } else {
-                        correcta = parseInt(campos[7]) - 1;
+                        correcta = parseInt(correctaRaw) - 1;
                     }
                     cuestionario.push({
                         tipo: campos[0] || 'quiz', 
@@ -689,6 +791,10 @@
                     });
                 }
             }
+            estadoJuego = 'lobby';
+            preguntaActualIndex = -1;
+            jugadores = {};
+            conexiones = {};
             inicializarPeer();
         };
         reader.readAsText(file);
@@ -708,6 +814,7 @@
             delete jugadores[nombre];
             delete conexiones[peerId];
             actualizarListaJugadores();
+            guardarEstadoJuego();
         }
     });
 
@@ -717,16 +824,48 @@
     saltarTiempoBtn.addEventListener('click', finalizarRonda);
     mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
     irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
-    reiniciarBtn.addEventListener('click', () => window.location.reload());
+    reiniciarBtn.addEventListener('click', () => {
+        limpiarEstadoJuego();
+        window.location.reload();
+    });
+    // Lógica para el nuevo botón de reinicio
+    reiniciarPartidaBtn.addEventListener('click', () => {
+        if (confirm('¿Estás seguro de que quieres reiniciar la partida? Se perderá todo el progreso actual.')) {
+            limpiarEstadoJuego();
+            window.location.reload();
+        }
+    });
     descargarResultadosBtn.addEventListener('click', descargarResultados);
     añadirJugadorBtn.addEventListener('click', toggleModalAñadirJugador);
     cerrarModalBtn.addEventListener('click', toggleModalAñadirJugador);
 
 
     // --- Initialization ---
+    function reanudarPartida() {
+        console.log("Restaurando partida...");
+        inicializarPeer(gameId); // Reconectar con el mismo ID
+
+        // Restaurar la interfaz al estado correcto
+        if (estadoJuego === 'lobby') {
+            mostrarPantalla('pantalla-lobby');
+            actualizarListaJugadores();
+        } else if (estadoJuego === 'jugando') {
+            mostrarPregunta();
+        } else if (estadoJuego === 'leaderboard') {
+            mostrarLeaderboard();
+        }
+    }
+
+    // Flujo de arranque principal
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+
+    if (cargarEstadoJuego()) {
+        reanudarPartida();
+    } else {
+        mostrarPantalla('pantalla-carga');
+    }
 
     </script>
 </body>
