@@ -34,5 +34,7 @@
     "error_csv_format": "CSV fitxategia hutsik dago edo formatu okerra du.",
     "error_load_example": "Ezin izan da adibidea kargatu: {message}",
     "error_name_in_use": "Izen hori dagoeneko erabiltzen da.",
-    "player_kicked": "Jokotik kanporatua izan zara."
+    "player_kicked": "Jokotik kanporatua izan zara.",
+    "results_csv_header": "Postua;Izena;Puntuazioa\n",
+    "results_csv_filename": "partidaren_emaitzak"
 }
