@@ -53,12 +53,10 @@ let gameId = '';
 let audioContext;
 let audioElement;
 let cancionActual = null;
-let tipoMusicaActual = null; // 'lobby', 'juego', 'ganador'
+let tipoMusicaActual = null; // 'principal', 'juego', 'ganador'
 
-// --- Constantes de configuración de música ---
-// ¡Modifica estos números si añades más canciones!
-const CANTIDAD_MUSICA_LOBBY = 8;
-const CANTIDAD_MUSICA_JUEGO = 2; // Asumo que tienes 2, p.ej. 'juego01.mp3', 'juego02.mp3'
+// --- Constantes de configuración de música (Simplificadas) ---
+const CANTIDAD_MUSICA_PRINCIPAL = 8;
 const CANTIDAD_MUSICA_GANADOR = 2;
 
 
@@ -109,26 +107,22 @@ function limpiarEstadoJuego() {
     localStorage.removeItem('qplay_estado_partida');
 }
 
-// --- Music Logic ---
+// --- Music Logic (MODIFICADA) ---
 function inicializarAudio() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         audioElement = new Audio();
         audioElement.crossOrigin = "anonymous";
         
-        // Cargar volumen guardado o usar un valor por defecto
         const volumenGuardado = localStorage.getItem('qplay_volumen');
         audioElement.volume = volumenGuardado ? parseFloat(volumenGuardado) : 0.4;
         if (volumenSlider) volumenSlider.value = audioElement.volume;
         
-        // Evento para reproducir la siguiente canción cuando una termina
+        // Cuando una canción termina, empieza otra del mismo tipo
         audioElement.addEventListener('ended', () => {
-             if (tipoMusicaActual === 'lobby') {
-                reproducirMusicaAleatoria('lobby');
-            } else if (tipoMusicaActual === 'juego') {
-                reproducirMusicaAleatoria('juego');
+             if (tipoMusicaActual === 'principal' || tipoMusicaActual === 'juego') {
+                reproducirMusicaAleatoria(tipoMusicaActual);
             }
-            // La música de ganador no se repite
         });
     }
 }
@@ -136,14 +130,10 @@ function inicializarAudio() {
 function obtenerPistaAleatoria(tipo) {
     let cantidad, prefijo, padLength;
     switch (tipo) {
-        case 'lobby':
-            cantidad = CANTIDAD_MUSICA_LOBBY;
-            prefijo = '';
-            padLength = 2;
-            break;
+        case 'principal':
         case 'juego':
-            cantidad = CANTIDAD_MUSICA_JUEGO;
-            prefijo = 'juego';
+            cantidad = CANTIDAD_MUSICA_PRINCIPAL;
+            prefijo = '';
             padLength = 2;
             break;
         case 'ganador':
@@ -165,15 +155,30 @@ function reproducirMusica(pista) {
     cancionActual = pista;
     audioElement.src = pista;
     audioElement.play().catch(error => {
-        console.warn("La reproducción automática fue bloqueada. Se requiere interacción del usuario.", error);
+        console.warn("La reproducción automática fue bloqueada.", error);
     });
 }
 
 function detenerMusica() {
     if (audioElement && !audioElement.paused) {
         audioElement.pause();
-        cancionActual = null;
-        tipoMusicaActual = null;
+    }
+    cancionActual = null;
+    tipoMusicaActual = null;
+}
+
+// --- NUEVAS FUNCIONES DE PAUSA/REANUDACIÓN ---
+function pausarMusica() {
+    if (audioElement && !audioElement.paused) {
+        audioElement.pause();
+    }
+}
+
+function reanudarMusica() {
+    if (audioElement && audioElement.src && audioElement.paused) {
+        audioElement.play().catch(error => {
+            console.warn("La reanudación fue bloqueada.", error);
+        });
     }
 }
 
@@ -185,43 +190,51 @@ function reproducirMusicaAleatoria(tipo) {
     }
 }
 
+// --- LÓGICA DE MÚSICA TOTALMENTE REESCRITA ---
 function gestionarMusicaPorEstado() {
-    if (!audioContext) return; // No hacer nada si el audio no está inicializado
+    if (!audioContext) return;
 
-    // Mostrar siempre el control de volumen si la música no es nula
-    if (tipoMusicaActual) {
-        controlVolumenEl.style.display = 'flex';
-    } else {
-        controlVolumenEl.style.display = 'none';
+    const musicaDeberiaSonar = (estadoJuego !== 'carga');
+    if (controlVolumenEl) {
+        controlVolumenEl.style.display = musicaDeberiaSonar ? 'flex' : 'none';
     }
 
     switch (estadoJuego) {
         case 'lobby':
-            if (tipoMusicaActual !== 'lobby') {
-                reproducirMusicaAleatoria('lobby');
-                controlVolumenEl.style.display = 'flex';
+            // Si la música no es la del lobby, la inicia
+            if (tipoMusicaActual !== 'principal') {
+                detenerMusica(); // Asegura una transición limpia
+                reproducirMusicaAleatoria('principal');
             }
             break;
+
         case 'jugando':
-            // La música de juego empieza con la primera pregunta
-            if (preguntaActualIndex === 0 && tipoMusicaActual !== 'juego') {
+            // Si venimos del lobby o no hay música, empieza una nueva canción de juego
+            if (tipoMusicaActual === 'principal' || tipoMusicaActual === null) {
+                detenerMusica();
                 reproducirMusicaAleatoria('juego');
+            } else {
+                // Si ya hay una canción de juego (estaba pausada), la reanuda
+                reanudarMusica();
             }
-             if (tipoMusicaActual) controlVolumenEl.style.display = 'flex';
             break;
+        
+        // En estos estados, la música se pausa
+        case 'mostrando_correcta':
         case 'leaderboard':
-             if (tipoMusicaActual) controlVolumenEl.style.display = 'flex';
+            pausarMusica();
             break;
+
         case 'final':
+            // Pone la música de ganador
             if (tipoMusicaActual !== 'ganador') {
+                detenerMusica();
                 reproducirMusicaAleatoria('ganador');
-                controlVolumenEl.style.display = 'flex';
             }
             break;
-        default:
-            // Para 'carga' y otros estados, detenemos la música
+
+        default: // 'carga' y cualquier otro estado
             detenerMusica();
-            controlVolumenEl.style.display = 'none';
             break;
     }
 }
@@ -245,6 +258,7 @@ function mostrarPantalla(id) {
     gestionarMusicaPorEstado();
 }
 
+// ... (El resto del archivo no necesita cambios) ...
 function actualizarListaJugadores() {
     if (!listaJugadoresEl) return;
     listaJugadoresEl.innerHTML = '';
@@ -302,7 +316,6 @@ function cerrarModalAñadirJugador() {
     }
 }
 
-// --- Helper Functions ---
 function generarCodigoCorto(longitud = 5) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
@@ -333,17 +346,15 @@ function reenviarEstadoActual(conn) {
     }
 }
 
-// --- FUNCIÓN DE REINICIO MEJORADA ---
 function reiniciarJuegoCompleto() {
-    // 1. Destruir la conexión de red
     if (peer && !peer.destroyed) {
         peer.destroy();
     }
     detenerMusica();
-    controlVolumenEl.style.display = 'none';
-    // 2. Borrar los datos guardados
+    if (controlVolumenEl) controlVolumenEl.style.display = 'none';
+    
     limpiarEstadoJuego();
-    // 3. Reiniciar las variables de estado en memoria
+    
     cuestionario = [];
     jugadores = {};
     conexiones = {};
@@ -352,12 +363,10 @@ function reiniciarJuegoCompleto() {
     preguntaActualIndex = -1;
     gameId = '';
     peer = null;
-    // 4. Mostrar la pantalla de inicio
+    
     mostrarPantalla('pantalla-carga');
 }
 
-
-// --- Game Logic ---
 function iniciarJuego() {
     estadoJuego = 'jugando';
     if (document.getElementById('opcion-preguntas-aleatorias').checked) {
@@ -459,6 +468,8 @@ function finalizarRonda() {
         temporizadorInterval = null;
     }
     estadoJuego = 'mostrando_correcta';
+    // Se llama a gestionarMusicaPorEstado cuando se revela la respuesta o se va al leaderboard
+    gestionarMusicaPorEstado(); 
     controlesPostPregunta.classList.remove('hidden');
     saltarTiempoBtn.style.display = 'none';
     const pregunta = cuestionario[preguntaActualIndex];
@@ -492,6 +503,11 @@ function finalizarRonda() {
 
 function gestionarPausa() {
     isPaused = !isPaused;
+    if (isPaused) {
+        pausarMusica();
+    } else {
+        reanudarMusica();
+    }
     const tipoMensaje = isPaused ? 'pausa' : 'resume';
     Object.values(jugadores).forEach(j => {
         if (j.conectado && j.conn) {
@@ -602,7 +618,6 @@ function descargarResultados() {
     document.body.removeChild(link);
 }
 
-// --- PeerJS Logic ---
 function inicializarPeer(existingGameId = null) {
     if (peer) {
         peer.destroy();
@@ -650,7 +665,6 @@ function inicializarPeer(existingGameId = null) {
                 colorLight: "#ffffff",
             });
         }
-        // Poblar el nuevo modal
         if(modalUrlSitioEl) modalUrlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
         if(modalCodigoPartidaEl) modalCodigoPartidaEl.textContent = id;
         if (modalQrCodeEl) {
@@ -717,7 +731,6 @@ function gestionarConexionJugador(conn, nombre) {
         jugadores[nombre] = jugador;
     }
     conexiones[conn.peer] = nombre;
-    // INVOCACIÓN A LA NUEVA LÓGICA
     if (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta' || estadoJuego === 'leaderboard') {
         reenviarEstadoActual(jugador.conn);
     } else {
@@ -762,7 +775,6 @@ function gestionarDesconexionJugador(peerId) {
     guardarEstadoJuego();
 }
 
-// --- Event Listeners ---
 if(cargarBtn) cargarBtn.addEventListener('click', () => {
     inicializarAudio();
 
@@ -870,7 +882,6 @@ if(volumenSlider) {
 
 window.addEventListener('beforeunload', guardarEstadoJuego);
 
-// --- Initialization ---
 function reanudarPartida() {
     console.log("Restaurando partida...");
     inicializarAudio();
