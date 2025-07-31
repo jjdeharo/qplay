@@ -34,15 +34,26 @@ function translatePage() {
         const key = el.getAttribute('data-i18n-key');
         const translation = translations[key];
         if (translation !== undefined) {
-            el.textContent = translation;
+            // Comprueba si el elemento es un input o textarea para usar .placeholder
+            if (el.placeholder !== undefined) {
+                el.placeholder = translation;
+            } else {
+                el.textContent = translation;
+            }
         }
     });
 
-    // Traduce también el título de la página
-    if (translations.page_title) {
-        document.title = translations.page_title;
-    }
+    // Traduce también el título de la página y los atributos title
+    document.title = translations.page_title || 'QPlay';
+    document.querySelectorAll('[data-i18n-title-key]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title-key');
+        const translation = translations[key];
+        if (translation !== undefined) {
+            el.title = translation;
+        }
+    });
 }
+
 
 /**
  * Establece el idioma de la aplicación.
@@ -76,16 +87,13 @@ function t(key, placeholders = {}) {
 }
 
 // --- INICIALIZACIÓN ---
-// Este código se ejecuta cuando el contenido principal de la página está listo.
 document.addEventListener('DOMContentLoaded', () => {
-    // Definimos los idiomas disponibles. Si añades otro, solo tienes que agregarlo aquí.
     const availableLangs = ['en', 'es', 'ca', 'gl', 'eu'];
     const defaultLang = 'es';
 
     const langSelectorContainer = document.getElementById('lang-selector');
 
     if (langSelectorContainer) {
-        // Crea los botones de idioma dinámicamente
         availableLangs.forEach(lang => {
             const button = document.createElement('button');
             button.dataset.lang = lang;
@@ -94,19 +102,28 @@ document.addEventListener('DOMContentLoaded', () => {
             langSelectorContainer.appendChild(button);
         });
 
-        // Añade un único listener al contenedor
         langSelectorContainer.addEventListener('click', (e) => {
             const button = e.target.closest('button[data-lang]');
             if (button) {
-                const selectedLang = button.dataset.lang;
-                setLanguage(selectedLang);
+                setLanguage(button.dataset.lang);
             }
         });
     }
 
-    // Obtiene el idioma guardado o usa el idioma por defecto
-    const savedLang = localStorage.getItem('qplay_language') || defaultLang;
+    // --- LÓGICA DE DETECCIÓN DE IDIOMA MODIFICADA ---
+    const savedLang = localStorage.getItem('qplay_language');
+    const browserLang = navigator.language.split('-')[0];
     
-    // Establece el idioma inicial de la aplicación
-    setLanguage(savedLang);
+    let initialLang = defaultLang;
+
+    if (savedLang) {
+        // 1. Prioridad: el idioma guardado por el usuario.
+        initialLang = savedLang;
+    } else if (availableLangs.includes(browserLang)) {
+        // 2. Prioridad: el idioma del navegador, si está disponible.
+        initialLang = browserLang;
+    }
+    // 3. Si no, se usa el idioma por defecto ('es').
+    
+    setLanguage(initialLang);
 });
