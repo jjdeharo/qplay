@@ -34,5 +34,7 @@
     "error_csv_format": "El archivo CSV está vacío o no tiene el formato correcto.",
     "error_load_example": "No se pudo cargar el ejemplo: {message}",
     "error_name_in_use": "Ese nombre ya está en uso.",
-    "player_kicked": "Has sido expulsado de la partida."
+    "player_kicked": "Has sido expulsado de la partida.",
+    "results_csv_header": "Puesto;Nombre;Puntuacion\n",
+    "results_csv_filename": "resultados_partida"
 }
