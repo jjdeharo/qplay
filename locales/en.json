@@ -34,5 +34,7 @@
     "error_csv_format": "The CSV file is empty or has an incorrect format.",
     "error_load_example": "Could not load the example: {message}",
     "error_name_in_use": "That name is already in use.",
-    "player_kicked": "You have been kicked from the game."
+    "player_kicked": "You have been kicked from the game.",
+    "results_csv_header": "Rank;Name;Score\n",
+    "results_csv_filename": "game_results"
 }
