@@ -34,5 +34,7 @@
     "error_csv_format": "L'arxiu CSV és buit o no té el format correcte.",
     "error_load_example": "No s'ha pogut carregar l'exemple: {message}",
     "error_name_in_use": "Aquest nom ja està en ús.",
-    "player_kicked": "Has estat expulsat de la partida."
+    "player_kicked": "Has estat expulsat de la partida.",
+    "results_csv_header": "Posició;Nom;Puntuació\n",
+    "results_csv_filename": "resultats_partida"
 }
