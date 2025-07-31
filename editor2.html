@@ -30,6 +30,7 @@
         .form-check-input.checkbox:checked::after { content: '✓'; font-size: 0.8rem; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .hidden-important { display: none !important; }
         
+        /* Estilos para la vista previa */
         #pregunta-preview { min-height: 80px; padding: 1rem; border-radius: 0.375rem; background-color: #f9fafb; margin-top: 0.75rem; font-size: 1.1rem; border: 1px solid #e5e7eb; text-align: left; }
         .dark #pregunta-preview { background-color: #1f2937; border-color: #4b5563; }
         #pregunta-preview > *:first-child { margin-top: 0; }
@@ -203,25 +204,9 @@
             };
 
             const renderizarContenidoMixto = (elemento, texto) => {
-                // Proceso de renderizado robusto
-                const mathBlocks = [];
-                // 1. Proteger las fórmulas de LaTeX
-                let textoSinMates = texto.replace(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g, (match) => {
-                    mathBlocks.push(match);
-                    return ``;
-                });
-
-                // 2. Convertir Markdown a HTML
-                let html = marked.parse(textoSinMates, { breaks: true, gfm: true });
-
-                // 3. Restaurar las fórmulas de LaTeX
-                html = html.replace(//g, (match, index) => {
-                    return mathBlocks[parseInt(index, 10)];
-                });
-
+                const html = marked.parse(texto, { breaks: true, gfm: true });
                 elemento.innerHTML = html;
                 
-                // 4. Renderizar KaTeX en el resultado final
                 if (window.renderMathInElement) {
                     renderMathInElement(elemento, {
                         delimiters: [
@@ -230,12 +215,16 @@
                             {left: '\\(', right: '\\)', display: false},
                             {left: '$', right: '$', display: false}
                         ],
-                        throwOnError: false
+                        throwOnError: false,
+                        // Ignorar las etiquetas que usa Markdown para que no haya conflictos
+                        ignoredTags: ["code", "pre", "script", "style"]
                     });
                 }
             };
             
-            const renderizarPreviewFormula = () => renderizarContenidoMixto(preguntaPreview, preguntaInput.value);
+            const renderizarPreviewFormula = () => {
+                renderizarContenidoMixto(preguntaPreview, preguntaInput.value);
+            };
 
             // --- THEME MANAGEMENT ---
             const applyTheme = (theme) => {
@@ -257,10 +246,15 @@
             };
 
             // --- CORE FUNCTIONS ---
-            const formatTipo = (tipo) => ({'quiz': 'Quiz', 'multiple': 'Múltiple', 'true-false': 'V/F'}[tipo] || 'Desconocido');
+            const formatTipo = (tipo) => {
+                const map = {'quiz': 'Quiz', 'multiple': 'Múltiple', 'true-false': 'V/F'};
+                return map[tipo] || 'Desconocido';
+            };
 
             const formatTiempo = (segundos) => {
-                if (segundos < 60) return `${segundos}s`;
+                if (segundos < 60) {
+                    return `${segundos}s`;
+                }
                 const min = Math.floor(segundos / 60);
                 const sec = segundos % 60;
                 return sec === 0 ? `${min}m` : `${min}m ${sec}s`;
@@ -307,8 +301,12 @@
                     input.classList.toggle('radio', !esMultiple); 
                     input.classList.toggle('checkbox', esMultiple); 
                 });
-                respuestasWrappers.forEach(w => w.classList.remove('hidden-important'));
-                respuestasInputs.forEach(i => i.disabled = false);
+                respuestasWrappers.forEach(w => {
+                    w.classList.remove('hidden-important');
+                });
+                respuestasInputs.forEach(i => {
+                    i.disabled = false;
+                });
                 if (tipo === 'true-false') {
                     respuestasInputs[0].value = "Verdadero"; 
                     respuestasInputs[1].value = "Falso";
@@ -360,10 +358,15 @@
                 gestionarCambioTipoPregunta();
                 preguntaInput.value = p.pregunta;
                 imagenUrlInput.value = p.imagen_url;
-                respuestasInputs.forEach((input, i) => { input.value = p.respuestas[i] || ''; });
+                respuestasInputs.forEach((input, i) => { 
+                    input.value = p.respuestas[i] || ''; 
+                });
                 correctasInputs.forEach((input, i) => { 
-                    if (Array.isArray(p.correcta)) input.checked = p.correcta.includes(i); 
-                    else input.checked = (p.correcta === i); 
+                    if (Array.isArray(p.correcta)) {
+                        input.checked = p.correcta.includes(i); 
+                    } else {
+                        input.checked = (p.correcta === i); 
+                    }
                 });
                 submitBtn.textContent = "Actualizar Pregunta";
                 submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
@@ -375,21 +378,24 @@
 
             const gestionarSubmitFormulario = (event) => {
                 event.preventDefault();
-                const index = parseInt(editIndexInput.value);
+                const index = parseInt(editIndexInput.value, 10);
                 const tipo = tipoPreguntaSelect.value;
                 let correcta;
                 if (tipo === 'multiple') { 
-                    correcta = correctasInputs.map((input, i) => input.checked ? i : -1).filter(i => i !== -1); 
+                    correcta = correctasInputs
+                        .map((input, i) => (input.checked ? i : -1))
+                        .filter(i => i !== -1); 
                 } else { 
-                    correcta = parseInt(document.querySelector('input[name="correcta"]:checked')?.value ?? -1);
+                    const checkedRadio = document.querySelector('input[name="correcta"]:checked');
+                    correcta = checkedRadio ? parseInt(checkedRadio.value, 10) : -1;
                 }
                 let tiempoFinal;
                 if (tiempoLimiteSelect.value === 'custom') { 
-                    const minutos = parseInt(minutosInput.value) || 0; 
-                    const segundos = parseInt(segundosInput.value) || 0; 
+                    const minutos = parseInt(minutosInput.value, 10) || 0; 
+                    const segundos = parseInt(segundosInput.value, 10) || 0; 
                     tiempoFinal = (minutos * 60) + segundos; 
                 } else { 
-                    tiempoFinal = parseInt(tiempoLimiteSelect.value); 
+                    tiempoFinal = parseInt(tiempoLimiteSelect.value, 10); 
                 }
                 ultimoTiempoSeleccionado = tiempoFinal;
                 const nuevaPregunta = { 
@@ -411,8 +417,10 @@
 
             const gestionarClickLista = (event) => {
                 const target = event.target.closest('button');
-                if (!target) return;
-                const index = parseInt(target.dataset.index);
+                if (!target) {
+                    return;
+                }
+                const index = parseInt(target.dataset.index, 10);
                 if (target.classList.contains('editar-btn')) {
                     iniciarEdicion(index);
                 } else if (target.classList.contains('eliminar-btn')) {
@@ -442,7 +450,9 @@
 
             const cargarCSV = (event) => {
                 const file = event.target.files[0];
-                if (!file) return;
+                if (!file) {
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const text = e.target.result;
@@ -450,10 +460,12 @@
                     const regex = /"([^"]*)"|([^;]+)/g;
                     preguntas = lineas.map(linea => {
                         const campos = Array.from(linea.matchAll(regex), m => (m[1] || m[2] || '').trim());
-                        if (campos.length < 8) return null;
-                        let correcta = campos[7].includes(',') ? campos[7].split(',').map(n => parseInt(n) - 1) : parseInt(campos[7]) - 1;
-                        return { tipo: campos[0], pregunta: campos[1], respuestas: campos.slice(2, 6), tiempo: parseInt(campos[6]), correcta: correcta, imagen_url: campos[8] || '' };
-                    }).filter(p => p);
+                        if (campos.length < 8) {
+                            return null;
+                        }
+                        let correcta = campos[7].includes(',') ? campos[7].split(',').map(n => parseInt(n, 10) - 1) : parseInt(campos[7], 10) - 1;
+                        return { tipo: campos[0], pregunta: campos[1], respuestas: campos.slice(2, 6), tiempo: parseInt(campos[6], 10), correcta: correcta, imagen_url: campos[8] || '' };
+                    }).filter(p => p !== null);
                     renderizarPreguntas();
                     alert(`${preguntas.length} preguntas cargadas.`);
                 };
