@@ -9,22 +9,6 @@
     <script>
       tailwind.config = { darkMode: 'class' };
     </script>
-    e<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
-    <style>
-        body { <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QPlay - Unirse al Juego</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = { darkMode: 'class' };
-    </script>
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -189,839 +173,334 @@
     </div>
 
     <script>
-    // --- DOM References ---
-    const pantallas = document.querySelectorAll('.pantalla');
-    const nombreInput = document.getElementById('nombre-input');
-    const codigoInput = document.getElementById('codigo-input');
-    const unirseBtn = document.getElementById('unirse-btn');
-    const errorConexionEl = document.getElementById('error-conexion');
-    const confirmarRespuestaBtn = document.getElementById('confirmar-respuesta-btn');
-    const pausaOverlay = document.getElementById('pausa-overlay');
-    const emojiPicker = document.getElementById('emoji-picker');
-    const emojiTabsContainer = document.getElementById('emoji-tabs');
-    const emojiContentContainer = document.getElementById('emoji-content');
-    const abrirEmojisBtn = document.getElementById('abrir-emojis-btn');
+        // --- DOM References ---
+        const pantallas = document.querySelectorAll('.pantalla');
+        const nombreInput = document.getElementById('nombre-input');
+        const codigoInput = document.getElementById('codigo-input');
+        const unirseBtn = document.getElementById('unirse-btn');
+        const errorConexionEl = document.getElementById('error-conexion');
+        const confirmarRespuestaBtn = document.getElementById('confirmar-respuesta-btn');
+        const pausaOverlay = document.getElementById('pausa-overlay');
+        const emojiPicker = document.getElementById('emoji-picker');
+        const emojiTabsContainer = document.getElementById('emoji-tabs');
+        const emojiContentContainer = document.getElementById('emoji-content');
+        const abrirEmojisBtn = document.getElementById('abrir-emojis-btn');
 
-    // --- Emoji Data ---
-    const emojis = {
-        '😀': ['😀', '😂', '😍', '🤔', '😎', '😭', '🤯', '🥳', '😴', '👍', '👎', '💪'],
-        '🐻': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊'],
-        '🍔': ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🌽', '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🥪', '🥙', '🧆', '🌮', '🌯', '🥗', '🥘', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '☕', '🍵', '🧃', '🥤', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊', '🥄', '🍴', '🍽️', '🥣', '🥡', '🥢', '🧂'],
-        '⚽': ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🥅', '🏒', '🏑', '🏏', '🥍', '⛳', '🏹', '🎣', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🏋️‍♀️', '🏋️‍♂️', '‍♀️', '‍♂️', '🤸‍♀️', '🤸‍♂️', '🤺', '‍♀️', '‍♂️', '🏌️‍♀️', '🏌️‍♂️', '🏇', '🧘‍♀️', '🧘‍♂️', '🏄‍♀️', '🏄‍♂️', '🏊‍♀️', '🏊‍♂️', '🤽‍♀️', '🤽‍♂️', '🚣‍♀️', '🚣‍♂️', '🧗‍♀️', '🧗‍♂️', '🚵‍♀️', '🚵‍♂️', '🚴‍♀️', '🚴‍♂️', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🤹‍♀️', '🤹‍♂️', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '𪕕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰'],
-        '💡': ['💡', '💻', '📱', '⌚', '🔬', '🔭', '🚀', '🛸', '🛰️', '✈️', '🚗', '🚲', '🤖', '👑', '💎', '💰', '📚', '✏️', '🔬', '🧬', '🧪', '💣', '🎉', '🎁', '🎈']
-    };
-
-    // --- Helper Function ---
-    function obtenerEmojiAleatorio() {
-        const todosLosEmojis = Object.values(emojis).flat();
-        const indiceAleatorio = Math.floor(Math.random() * todosLosEmojis.length);
-        return todosLosEmojis[indiceAleatorio];
-    }
-
-    // --- State ---
-    let peer;
-    let conn;
-    let respuestasSeleccionadas = [];
-    let iconoSeleccionado;
-
-    // --- Lógica de persistencia con LocalStorage ---
-    function guardarDatosJugador() {
-        const datos = {
-            nombre: nombreInput.value,
-            codigo: codigoInput.value,
-            icono: iconoSeleccionado
+        // --- Emoji Data ---
+        const emojis = {
+            '😀': ['😀', '😂', '😍', '🤔', '😎', '😭', '🤯', '🥳', '😴', '👍', '👎', '💪'],
+            '🐻': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊'],
+            '🍔': ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🌽', '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🥪', '🥙', '🧆', '🌮', '🌯', '🥗', '🥘', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '☕', '🍵', '🧃', '🥤', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊', '🥄', '🍴', '🍽️', '🥣', '🥡', '🥢', '🧂'],
+            '⚽': ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🥅', '🏒', '🏑', '🏏', '🥍', '⛳', '🏹', '🎣', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🏋️‍♀️', '🏋️‍♂️', '‍♀️', '‍♂️', '🤸‍♀️', '🤸‍♂️', '🤺', '‍♀️', '‍♂️', '🏌️‍♀️', '🏌️‍♂️', '🏇', '🧘‍♀️', '🧘‍♂️', '🏄‍♀️', '🏄‍♂️', '🏊‍♀️', '🏊‍♂️', '🤽‍♀️', '🤽‍♂️', '🚣‍♀️', '🚣‍♂️', '🧗‍♀️', '🧗‍♂️', '🚵‍♀️', '🚵‍♂️', '🚴‍♀️', '🚴‍♂️', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🤹‍♀️', '🤹‍♂️', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '𪕕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰'],
+            '💡': ['💡', '💻', '📱', '⌚', '🔬', '🔭', '🚀', '🛸', '🛰️', '✈️', '🚗', '🚲', '🤖', '👑', '💎', '💰', '📚', '✏️', '🔬', '🧬', '🧪', '💣', '🎉', '🎁', '🎈']
         };
-        localStorage.setItem('qplay_datos_jugador', JSON.stringify(datos));
-    }
 
-    function cargarDatosJugador() {
-        const datosGuardados = localStorage.getItem('qplay_datos_jugador');
-        if (datosGuardados) {
-            const datos = JSON.parse(datosGuardados);
-            nombreInput.value = datos.nombre || '';
-            codigoInput.value = datos.codigo || '';
-            iconoSeleccionado = datos.icono || obtenerEmojiAleatorio();
-        } else {
-            iconoSeleccionado = obtenerEmojiAleatorio();
+        // --- Helper Function ---
+        function obtenerEmojiAleatorio() {
+            const todosLosEmojis = Object.values(emojis).flat();
+            const indiceAleatorio = Math.floor(Math.random() * todosLosEmojis.length);
+            return todosLosEmojis[indiceAleatorio];
         }
-        abrirEmojisBtn.textContent = iconoSeleccionado;
-    }
 
-    function limpiarDatosJugador() {
-        localStorage.removeItem('qplay_datos_jugador');
-    }
-    
-    // --- UI Functions ---
-    function mostrarPantalla(id) {
-        pantallas.forEach(p => p.classList.remove('activa'));
-        document.getElementById(id).classList.add('activa');
-    }
-    
-    // --- Emoji Picker Logic ---
-    function inicializarEmojiPicker() {
-        Object.keys(emojis).forEach((categoria, index) => {
-            const tab = document.createElement('button');
-            tab.className = 'px-4 py-2 text-2xl border-b-2 transition-colors flex-shrink-0';
-            tab.textContent = categoria;
-            tab.dataset.categoria = categoria;
-            if (index === 0) {
-                tab.classList.add('border-pink-500', 'text-pink-400');
-            } else {
-                tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300');
-            }
-            tab.onclick = () => cambiarTabEmoji(categoria);
-            emojiTabsContainer.appendChild(tab);
-        });
-        cambiarTabEmoji(Object.keys(emojis)[0]);
-    }
+        // --- State ---
+        let peer;
+        let conn;
+        let respuestasSeleccionadas = [];
+        let iconoSeleccionado;
 
-    function cambiarTabEmoji(categoria) {
-        Array.from(emojiTabsContainer.children).forEach(tab => {
-            tab.classList.toggle('border-pink-500', tab.dataset.categoria === categoria);
-            tab.classList.toggle('text-pink-400', tab.dataset.categoria === categoria);
-            tab.classList.toggle('border-transparent', tab.dataset.categoria !== categoria);
-            tab.classList.toggle('text-gray-500', tab.dataset.categoria !== categoria);
-        });
-        emojiContentContainer.innerHTML = '';
-        emojis[categoria].forEach(emoji => {
-            const btn = document.createElement('button');
-            btn.className = 'text-3xl p-2 rounded-lg hover:bg-gray-700';
-            btn.textContent = emoji;
-            btn.onclick = () => {
-                iconoSeleccionado = emoji;
-                abrirEmojisBtn.textContent = iconoSeleccionado;
-                emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-                guardarDatosJugador();
+        // --- Lógica de persistencia con LocalStorage ---
+        function guardarDatosJugador() {
+            const datos = {
+                nombre: nombreInput.value,
+                codigo: codigoInput.value,
+                icono: iconoSeleccionado
             };
-            emojiContentContainer.appendChild(btn);
-        });
-    }
-
-    // --- Game Logic ---
-    function unirseAlJuego() {
-        const nombreTexto = nombreInput.value.trim();
-        const codigo = codigoInput.value.trim().toUpperCase();
-
-        if (!nombreTexto || !codigo) {
-            errorConexionEl.textContent = "El nombre y el código son obligatorios.";
-            return;
+            localStorage.setItem('qplay_datos_jugador', JSON.stringify(datos));
         }
-        
-        const nombreCompleto = `${iconoSeleccionado} ${nombreTexto}`;
 
-        errorConexionEl.textContent = "";
-        unirseBtn.disabled = true;
-        unirseBtn.textContent = "Conectando...";
-
-        if (peer) peer.destroy();
-
-        const peerConfig = {
-            host: '0.peerjs.com',
-            port: 443,
-            path: '/',
-            secure: true,
-            debug: 2,
-            config: {
-                iceServers: [
-                  { urls: 'stun:stun.relay.metered.ca:80' },
-                  { urls: 'turn:standard.relay.metered.ca:80', username: '9745e21b303bdaea589c29bc', credential: 'UgG56tBqCEGNjzLY' },
-                  { urls: 'turn:standard.relay.metered.ca:443?transport=tcp', username: '9745e21b303bdaea589c29bc', credential: 'UgG56tBqCEGNjzLY' }
-                ],
-                iceTransportPolicy: 'all'
-            }
-        };
-
-        peer = new Peer(null, peerConfig);
-
-        peer.on('open', id => {
-            conn = peer.connect(codigo, { reliable: true });
-            conn.on('open', () => conn.send({ tipo: 'join', nombre: nombreCompleto }));
-            conn.on('data', gestionarDatosDelServidor);
-            conn.on('close', () => {
-                if(document.getElementById('pantalla-conexion').classList.contains('activa')) return;
-                errorConexionEl.textContent = "Desconectado del presentador.";
-                mostrarPantalla('pantalla-conexion');
-                unirseBtn.disabled = false;
-                unirseBtn.textContent = "¡A jugar!";
-            });
-             conn.on('error', (err) => {
-                console.error("Error de conexión:", err);
-                errorConexionEl.textContent = "Error de conexión con el presentador.";
-            });
-        });
-
-        peer.on('error', err => {
-            let mensajeError = "No se pudo conectar. Revisa el código.";
-            if (err.type === 'peer-unavailable') {
-                mensajeError = "La partida no existe. Comprueba el código."
-            }
-            console.error("Error en PeerJS:", err);
-            errorConexionEl.textContent = mensajeError;
-            unirseBtn.disabled = false;
-            unirseBtn.textContent = "¡A jugar!";
-            if(peer) peer.destroy();
-        });
-    }
-
-    function gestionarDatosDelServidor(data) {
-        switch (data.tipo) {
-            case 'confirmacion_join':
-                mostrarPantalla('pantalla-espera-inicio');
-                break;
-            case 'partida_iniciada':
-                mostrarPantalla('pantalla-espera-partida-iniciada');
-                break;
-            case 'pregunta':
-                pausaOverlay.style.display = 'none';
-                mostrarPantallaPregunta(data.payload);
-                break;
-            case 'resultado':
-                mostrarPantallaResultado(data.payload);
-                break;
-            case 'resultado_final':
-                mostrarResultadosFinales(data.payload);
-                break;
-            case 'pausa':
-                pausaOverlay.style.display = 'flex';
-                break;
-            case 'resume':
-                pausaOverlay.style.display = 'none';
-                break;
-            case 'expulsado':
-                errorConexionEl.textContent = "Has sido expulsado de la partida.";
-                mostrarPantalla('pantalla-conexion');
-                unirseBtn.disabled = false;
-                unirseBtn.textContent = "¡A jugar!";
-                limpiarDatosJugador();
-                if(conn) conn.close();
-                break;
-            case 'error':
-                errorConexionEl.textContent = data.payload.mensaje;
-                mostrarPantalla('pantalla-conexion');
-                unirseBtn.disabled = false;
-                unirseBtn.textContent = "¡A jugar!";
-                if(conn) conn.close();
-                break;
-        }
-    }
-
-    function mostrarPantallaPregunta(pregunta) {
-        const grid = document.getElementById('respuestas-grid');
-        grid.innerHTML = '';
-        const simbolos = ['▲', '◆', '●', '■'];
-        respuestasSeleccionadas = [];
-        
-        const esMultiple = pregunta.tipo === 'multiple';
-        confirmarRespuestaBtn.classList.toggle('hidden', !esMultiple);
-
-        for (let i = 0; i < pregunta.numRespuestas; i++) {
-            const btn = document.createElement('button');
-            btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center justify-center rounded-lg shadow-lg transform hover:scale-105 transition-transform`;
-            btn.innerHTML = `<span class="text-6xl text-shadow">${simbolos[i]}</span>`;
-            btn.dataset.indice = i;
-            btn.disabled = false;
-
-            if (esMultiple) {
-                btn.onclick = () => seleccionarRespuestaMultiple(btn);
+        function cargarDatosJugador() {
+            const datosGuardados = localStorage.getItem('qplay_datos_jugador');
+            if (datosGuardados) {
+                const datos = JSON.parse(datosGuardados);
+                nombreInput.value = datos.nombre || '';
+                codigoInput.value = datos.codigo || '';
+                iconoSeleccionado = datos.icono || obtenerEmojiAleatorio();
             } else {
-                btn.onclick = () => enviarRespuestaUnica(i);
+                iconoSeleccionado = obtenerEmojiAleatorio();
             }
-            grid.appendChild(btn);
+            abrirEmojisBtn.textContent = iconoSeleccionado;
         }
-        mostrarPantalla('pantalla-pregunta');
-    }
-    
-    function enviarRespuestaUnica(indice) {
-        if (conn && conn.open) {
-            conn.send({ tipo: 'respuesta', payload: { respuesta: indice } });
-            mostrarPantalla('pantalla-esperando-jugadores');
-        }
-    }
 
-    function seleccionarRespuestaMultiple(btnElement) {
-        const indice = parseInt(btnElement.dataset.indice);
-        btnElement.classList.toggle('seleccionada');
-        
-        if (respuestasSeleccionadas.includes(indice)) {
-            respuestasSeleccionadas = respuestasSeleccionadas.filter(i => i !== indice);
-        } else {
-            respuestasSeleccionadas.push(indice);
-        }
-    }
-
-    function confirmarRespuestasMultiples() {
-        if (conn && conn.open) {
-            conn.send({ tipo: 'respuesta', payload: { respuesta: respuestasSeleccionadas.sort() } });
-            mostrarPantalla('pantalla-esperando-jugadores');
-        }
-    }
-
-    function mostrarPantallaResultado(resultado) {
-        const contenido = document.getElementById('resultado-contenido');
-        const texto = document.getElementById('resultado-texto');
-        
-        if (resultado.esCorrecta) {
-            texto.textContent = "¡Correcto!";
-            contenido.className = "w-full max-w-md bg-gradient-to-br from-green-500 to-teal-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
-        } else {
-            texto.textContent = "Incorrecto";
-            contenido.className = "w-full max-w-md bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
+        function limpiarDatosJugador() {
+            localStorage.removeItem('qplay_datos_jugador');
         }
         
-        document.getElementById('resultado-puntos-ronda').textContent = `+${resultado.puntosRonda}`;
-        document.getElementById('resultado-puntos-total').textContent = resultado.puntosTotal;
+        // --- UI Functions ---
+        function mostrarPantalla(id) {
+            pantallas.forEach(p => p.classList.remove('activa'));
+            document.getElementById(id).classList.add('activa');
+        }
         
-        mostrarPantalla('pantalla-resultado');
-    }
-
-    function mostrarResultadosFinales(data) {
-        const { tuPuntuacion, puntuacionMaxima, respuestasCorrectas, totalPreguntas } = data;
-        const porcentajeMaximo = puntuacionMaxima > 0 ? Math.round((tuPuntuacion / puntuacionMaxima) * 100) : 0;
-        const porcentajeAciertos = totalPreguntas > 0 ? Math.round((respuestasCorrectas / totalPreguntas) * 100) : 0;
-
-        document.getElementById('final-puntuacion-propia').textContent = `${tuPuntuacion} pts`;
-        document.getElementById('final-puntuacion-maxima').textContent = `${puntuacionMaxima} pts`;
-        document.getElementById('final-porcentaje-maximo').textContent = `${porcentajeMaximo}%`;
-        document.getElementById('final-aciertos').textContent = `${respuestasCorrectas} / ${totalPreguntas}`;
-        document.getElementById('final-porcentaje-aciertos').textContent = `${porcentajeAciertos}%`;
-        
-        mostrarPantalla('pantalla-resultado-final');
-        limpiarDatosJugador();
-    }
-
-    // --- Initialization ---
-    // 1. Cargamos los datos guardados (nombre, icono, y el código antiguo si existe)
-    cargarDatosJugador();
-
-    // 2. Comprobamos si la URL nos da un código nuevo
-    const params = new URLSearchParams(window.location.search);
-    const codigoPartidaURL = params.get('partida');
-
-    // 3. Si hay un código en la URL, este tiene la máxima prioridad
-    if (codigoPartidaURL) {
-        // Se actualiza el campo de texto con el nuevo código
-        codigoInput.value = codigoPartidaURL.toUpperCase();
-        // Se guardan los datos actualizados (incluido el nuevo código) en localStorage
-        guardarDatosJugador();
-    }
-    
-    // Asignación de eventos
-    abrirEmojisBtn.onclick = () => emojiPicker.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-    document.getElementById('cerrar-emojis-btn').onclick = () => emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-    unirseBtn.addEventListener('click', unirseAlJuego);
-    nombreInput.addEventListener('input', guardarDatosJugador);
-    codigoInput.addEventListener('input', (e) => {
-        e.target.value = e.target.value.toUpperCase();
-        guardarDatosJugador();
-    });
-    confirmarRespuestaBtn.addEventListener('click', confirmarRespuestasMultiples);
-    
-    inicializarEmojiPicker();
-    
-    </script>
-</body>
-</html>
-            font-family: 'Inter', sans-serif;
-        }
-        .font-poppins { 
-            font-family: 'Poppins', sans-serif; 
-        }
-        .pantalla { display: none; }
-        .pantalla.activa { display: flex; }
-
-        .animated-gradient {
-            background: linear-gradient(45deg, #6c2bd9, #b83280, #ff6b00, #2c89d9);
-            background-size: 400% 400%;
-            animation: gradient-animation 15s ease infinite;
+        // --- Emoji Picker Logic ---
+        function inicializarEmojiPicker() {
+            Object.keys(emojis).forEach((categoria, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'px-4 py-2 text-2xl border-b-2 transition-colors flex-shrink-0';
+                tab.textContent = categoria;
+                tab.dataset.categoria = categoria;
+                if (index === 0) {
+                    tab.classList.add('border-pink-500', 'text-pink-400');
+                } else {
+                    tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300');
+                }
+                tab.onclick = () => cambiarTabEmoji(categoria);
+                emojiTabsContainer.appendChild(tab);
+            });
+            cambiarTabEmoji(Object.keys(emojis)[0]);
         }
 
-        @keyframes gradient-animation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        function cambiarTabEmoji(categoria) {
+            Array.from(emojiTabsContainer.children).forEach(tab => {
+                tab.classList.toggle('border-pink-500', tab.dataset.categoria === categoria);
+                tab.classList.toggle('text-pink-400', tab.dataset.categoria === categoria);
+                tab.classList.toggle('border-transparent', tab.dataset.categoria !== categoria);
+                tab.classList.toggle('text-gray-500', tab.dataset.categoria !== categoria);
+            });
+            emojiContentContainer.innerHTML = '';
+            emojis[categoria].forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.className = 'text-3xl p-2 rounded-lg hover:bg-gray-700';
+                btn.textContent = emoji;
+                btn.onclick = () => {
+                    iconoSeleccionado = emoji;
+                    abrirEmojisBtn.textContent = iconoSeleccionado;
+                    emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                    guardarDatosJugador();
+                };
+                emojiContentContainer.appendChild(btn);
+            });
         }
 
-        .glass-card {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
+        // --- Game Logic ---
+        function unirseAlJuego() {
+            const nombreTexto = nombreInput.value.trim();
+            const codigo = codigoInput.value.trim().toUpperCase();
 
-        .respuesta-btn {
-            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-        }
-        .respuesta-btn:active {
-            transform: scale(0.95);
-        }
-        .respuesta-btn.seleccionada {
-            box-shadow: 0 0 0 4px white, 0 0 0 8px #4f46e5;
-            transform: scale(1.05);
-        }
-        .text-shadow { text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4); }
-
-        .respuesta-color-0 { background-color: #e53e3e; }
-        .respuesta-color-1 { background-color: #3b82f6; }
-        .respuesta-color-2 { background-color: #f59e0b; }
-        .respuesta-color-3 { background-color: #10b981; }
-    </style>
-</head>
-<body class="animated-gradient text-white">
-
-    <div id="pausa-overlay" class="fixed inset-0 bg-black bg-opacity-70 items-center justify-center text-5xl font-bold text-white z-50 hidden">JUEGO EN PAUSA</div>
-
-    <div id="app-container" class="w-full min-h-screen flex items-center justify-center p-4">
-        
-        <div id="pantalla-conexion" class="pantalla activa w-full max-w-md">
-            <div class="glass-card rounded-2xl p-8 text-center">
-                <h1 class="font-poppins text-7xl font-extrabold text-white mb-6 text-shadow">QPlay</h1>
-                <div class="space-y-4">
-                    <div class="flex items-center gap-2">
-                        <button id="abrir-emojis-btn" class="p-3 bg-white bg-opacity-20 rounded-lg text-2xl transform hover:scale-110 transition-transform flex-shrink-0"></button>
-                        <input type="text" id="nombre-input" placeholder="Tu nombre" class="w-full text-xl p-3 border-2 border-transparent rounded-lg bg-white bg-opacity-20 text-white placeholder-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none">
-                    </div>
-                    <input type="text" id="codigo-input" placeholder="CÓDIGO" maxlength="5" class="w-full text-center text-4xl p-3 tracking-[.25em] uppercase border-2 border-transparent rounded-lg bg-white bg-opacity-20 text-white placeholder-gray-300 focus:ring-2 focus:ring-pink-400 focus:outline-none">
-                    <button id="unirse-btn" class="w-full font-bold py-4 text-xl rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                        ¡A jugar!
-                    </button>
-                </div>
-                 <p id="error-conexion" class="text-yellow-300 mt-4 h-6 font-semibold"></p>
-            </div>
-        </div>
-
-        <div id="pantalla-espera-inicio" class="pantalla text-center">
-            <div class="glass-card rounded-2xl shadow-lg p-12">
-                <h2 class="text-4xl font-bold mb-2">¡Ya estás dentro!</h2>
-                <p class="text-xl text-gray-200">Espera a que el presentador inicie el juego...</p>
-                <div class="mt-8">
-                    <svg class="animate-spin h-10 w-10 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-        
-        <div id="pantalla-espera-partida-iniciada" class="pantalla text-center">
-            <div class="glass-card rounded-2xl shadow-lg p-12">
-                <h2 class="text-4xl font-bold mb-2">¡Partida en curso!</h2>
-                <p class="text-xl text-gray-200">Te unirás en la siguiente pregunta...</p>
-            </div>
-        </div>
-
-        <div id="pantalla-pregunta" class="pantalla w-full h-screen flex-col">
-            <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full flex-grow">
-            </div>
-            <button id="confirmar-respuesta-btn" class="w-full mt-4 font-bold py-4 text-xl rounded-lg bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hidden">
-                Confirmar
-            </button>
-        </div>
-        
-        <div id="pantalla-esperando-jugadores" class="pantalla text-center">
-             <div class="glass-card rounded-2xl shadow-lg p-12">
-                <h2 class="text-4xl font-bold mb-2">¡Respuesta enviada!</h2>
-                <p class="text-xl text-gray-200">Esperando al resto de jugadores...</p>
-            </div>
-        </div>
-
-        <div id="pantalla-resultado" class="pantalla text-center w-full max-w-md">
-             <div id="resultado-contenido" class="w-full text-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <h2 id="resultado-texto" class="text-5xl font-extrabold mb-4">¡Correcto!</h2>
-                <p class="text-2xl mb-2">Puntos ganados:</p>
-                <p id="resultado-puntos-ronda" class="text-4xl font-bold mb-6">+1234</p>
-                <p class="text-xl">Puntuación total:</p>
-                <p id="resultado-puntos-total" class="text-3xl font-bold">5678</p>
-            </div>
-        </div>
-        
-        <div id="pantalla-resultado-final" class="pantalla text-center w-full max-w-lg">
-             <div class="glass-card rounded-2xl shadow-lg p-8">
-                <h2 class="text-4xl font-extrabold text-white mb-6">¡Resultados Finales!</h2>
-                <div class="space-y-4 text-left text-xl">
-                    <div class="flex justify-between items-baseline bg-black bg-opacity-20 p-3 rounded-lg">
-                        <span class="font-semibold">Tu puntuación:</span>
-                        <span id="final-puntuacion-propia" class="font-bold text-2xl text-pink-400"></span>
-                    </div>
-                    <div class="flex justify-between items-baseline bg-black bg-opacity-20 p-3 rounded-lg">
-                        <span class="font-semibold">Puntuación máxima:</span>
-                        <span id="final-puntuacion-maxima" class="font-bold text-2xl"></span>
-                    </div>
-                    <div class="flex justify-between items-baseline bg-black bg-opacity-20 p-3 rounded-lg">
-                        <span class="font-semibold">% sobre el máximo:</span>
-                        <span id="final-porcentaje-maximo" class="font-bold text-2xl"></span>
-                    </div>
-                    <div class="flex justify-between items-baseline bg-green-900 bg-opacity-50 p-3 rounded-lg">
-                        <span class="font-semibold text-green-300">Respuestas correctas:</span>
-                        <span id="final-aciertos" class="font-bold text-2xl text-green-300"></span>
-                    </div>
-                    <div class="flex justify-between items-baseline bg-green-900 bg-opacity-50 p-3 rounded-lg">
-                        <span class="font-semibold text-green-300">% de aciertos:</span>
-                        <span id="final-porcentaje-aciertos" class="font-bold text-2xl text-green-300"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div id="emoji-picker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none scale-95">
-        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center p-4 border-b border-gray-700">
-                <h3 class="font-bold text-lg text-white">Elige un emoticono</h3>
-                <button id="cerrar-emojis-btn" class="font-bold text-2xl text-gray-400 hover:text-white">&times;</button>
-            </div>
-            <div id="emoji-tabs" class="flex-shrink-0 flex border-b border-gray-700 overflow-x-auto">
-            </div>
-            <div id="emoji-content" class="p-4 overflow-y-auto grid grid-cols-6 gap-2">
-            </div>
-        </div>
-    </div>
-
-    <script>
-    // --- DOM References ---
-    const pantallas = document.querySelectorAll('.pantalla');
-    const nombreInput = document.getElementById('nombre-input');
-    const codigoInput = document.getElementById('codigo-input');
-    const unirseBtn = document.getElementById('unirse-btn');
-    const errorConexionEl = document.getElementById('error-conexion');
-    const confirmarRespuestaBtn = document.getElementById('confirmar-respuesta-btn');
-    const pausaOverlay = document.getElementById('pausa-overlay');
-    const emojiPicker = document.getElementById('emoji-picker');
-    const emojiTabsContainer = document.getElementById('emoji-tabs');
-    const emojiContentContainer = document.getElementById('emoji-content');
-    const abrirEmojisBtn = document.getElementById('abrir-emojis-btn');
-
-    // --- Emoji Data ---
-    const emojis = {
-        '😀': ['😀', '😂', '😍', '🤔', '😎', '😭', '🤯', '🥳', '😴', '👍', '👎', '💪'],
-        '🐻': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊'],
-        '🍔': ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🌽', '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🥪', '🥙', '🧆', '🌮', '🌯', '🥗', '🥘', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '☕', '🍵', '🧃', '🥤', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊', '🥄', '🍴', '🍽️', '🥣', '🥡', '🥢', '🧂'],
-        '⚽': ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🥅', '🏒', '🏑', '🏏', '🥍', '⛳', '🏹', '🎣', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🏋️‍♀️', '🏋️‍♂️', '‍♀️', '‍♂️', '🤸‍♀️', '🤸‍♂️', '🤺', '‍♀️', '‍♂️', '🏌️‍♀️', '🏌️‍♂️', '🏇', '🧘‍♀️', '🧘‍♂️', '🏄‍♀️', '🏄‍♂️', '🏊‍♀️', '🏊‍♂️', '🤽‍♀️', '🤽‍♂️', '🚣‍♀️', '🚣‍♂️', '🧗‍♀️', '🧗‍♂️', '🚵‍♀️', '🚵‍♂️', '🚴‍♀️', '🚴‍♂️', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🤹‍♀️', '🤹‍♂️', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '𪕕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰'],
-        '💡': ['💡', '💻', '📱', '⌚', '🔬', '🔭', '🚀', '🛸', '🛰️', '✈️', '🚗', '🚲', '🤖', '👑', '💎', '💰', '📚', '✏️', '🔬', '🧬', '🧪', '💣', '🎉', '🎁', '🎈']
-    };
-
-    // --- Helper Function ---
-    function obtenerEmojiAleatorio() {
-        const todosLosEmojis = Object.values(emojis).flat();
-        const indiceAleatorio = Math.floor(Math.random() * todosLosEmojis.length);
-        return todosLosEmojis[indiceAleatorio];
-    }
-
-    // --- State ---
-    let peer;
-    let conn;
-    let respuestasSeleccionadas = [];
-    let iconoSeleccionado; // Se inicializará al cargar los datos
-
-    // --- NUEVO: Lógica de persistencia con LocalStorage ---
-    function guardarDatosJugador() {
-        const datos = {
-            nombre: nombreInput.value,
-            codigo: codigoInput.value,
-            icono: iconoSeleccionado
-        };
-        localStorage.setItem('qplay_datos_jugador', JSON.stringify(datos));
-    }
-
-    function cargarDatosJugador() {
-        const datosGuardados = localStorage.getItem('qplay_datos_jugador');
-        if (datosGuardados) {
-            const datos = JSON.parse(datosGuardados);
-            nombreInput.value = datos.nombre || '';
-            codigoInput.value = datos.codigo || '';
-            iconoSeleccionado = datos.icono || obtenerEmojiAleatorio();
-        } else {
-            // Si no hay datos, asigna uno aleatorio
-            iconoSeleccionado = obtenerEmojiAleatorio();
-            guardarDatosJugador(); // Guarda el icono aleatorio para la próxima vez
-        }
-        abrirEmojisBtn.textContent = iconoSeleccionado;
-    }
-
-    function limpiarDatosJugador() {
-        localStorage.removeItem('qplay_datos_jugador');
-    }
-    // --- FIN de la lógica de persistencia ---
-
-
-    // --- UI Functions ---
-    function mostrarPantalla(id) {
-        pantallas.forEach(p => p.classList.remove('activa'));
-        document.getElementById(id).classList.add('activa');
-    }
-    
-    // --- Emoji Picker Logic ---
-    function inicializarEmojiPicker() {
-        Object.keys(emojis).forEach((categoria, index) => {
-            const tab = document.createElement('button');
-            tab.className = 'px-4 py-2 text-2xl border-b-2 transition-colors flex-shrink-0';
-            tab.textContent = categoria;
-            tab.dataset.categoria = categoria;
-            if (index === 0) {
-                tab.classList.add('border-pink-500', 'text-pink-400');
-            } else {
-                tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300');
+            if (!nombreTexto || !codigo) {
+                errorConexionEl.textContent = "El nombre y el código son obligatorios.";
+                return;
             }
-            tab.onclick = () => cambiarTabEmoji(categoria);
-            emojiTabsContainer.appendChild(tab);
-        });
-        cambiarTabEmoji(Object.keys(emojis)[0]);
-    }
+            
+            const nombreCompleto = `${iconoSeleccionado} ${nombreTexto}`;
 
-    function cambiarTabEmoji(categoria) {
-        Array.from(emojiTabsContainer.children).forEach(tab => {
-            tab.classList.toggle('border-pink-500', tab.dataset.categoria === categoria);
-            tab.classList.toggle('text-pink-400', tab.dataset.categoria === categoria);
-            tab.classList.toggle('border-transparent', tab.dataset.categoria !== categoria);
-            tab.classList.toggle('text-gray-500', tab.dataset.categoria !== categoria);
-        });
-        emojiContentContainer.innerHTML = '';
-        emojis[categoria].forEach(emoji => {
-            const btn = document.createElement('button');
-            btn.className = 'text-3xl p-2 rounded-lg hover:bg-gray-700';
-            btn.textContent = emoji;
-            btn.onclick = () => {
-                iconoSeleccionado = emoji;
-                abrirEmojisBtn.textContent = iconoSeleccionado;
-                emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-                guardarDatosJugador(); // MODIFICADO: Guarda los datos al cambiar el icono
+            errorConexionEl.textContent = "";
+            unirseBtn.disabled = true;
+            unirseBtn.textContent = "Conectando...";
+
+            if (peer) peer.destroy();
+
+            const peerConfig = {
+                host: '0.peerjs.com',
+                port: 443,
+                path: '/',
+                secure: true,
+                debug: 2,
+                config: {
+                    iceServers: [
+                      { urls: 'stun:stun.relay.metered.ca:80' },
+                      { urls: 'turn:standard.relay.metered.ca:80', username: '9745e21b303bdaea589c29bc', credential: 'UgG56tBqCEGNjzLY' },
+                      { urls: 'turn:standard.relay.metered.ca:443?transport=tcp', username: '9745e21b303bdaea589c29bc', credential: 'UgG56tBqCEGNjzLY' }
+                    ],
+                    iceTransportPolicy: 'all'
+                }
             };
-            emojiContentContainer.appendChild(btn);
-        });
-    }
 
-    // --- Game Logic ---
-    function unirseAlJuego() {
-        const nombreTexto = nombreInput.value.trim();
-        const codigo = codigoInput.value.trim().toUpperCase();
-        codigoInput.value = codigo;
+            peer = new Peer(null, peerConfig);
 
-        if (!nombreTexto || !codigo) {
-            errorConexionEl.textContent = "El nombre y el código son obligatorios.";
-            return;
+            peer.on('open', id => {
+                conn = peer.connect(codigo, { reliable: true });
+                conn.on('open', () => conn.send({ tipo: 'join', nombre: nombreCompleto }));
+                conn.on('data', gestionarDatosDelServidor);
+                conn.on('close', () => {
+                    if(document.getElementById('pantalla-conexion').classList.contains('activa')) return;
+                    errorConexionEl.textContent = "Desconectado del presentador.";
+                    mostrarPantalla('pantalla-conexion');
+                    unirseBtn.disabled = false;
+                    unirseBtn.textContent = "¡A jugar!";
+                });
+                 conn.on('error', (err) => {
+                    console.error("Error de conexión:", err);
+                    errorConexionEl.textContent = "Error de conexión con el presentador.";
+                });
+            });
+
+            peer.on('error', err => {
+                let mensajeError = "No se pudo conectar. Revisa el código.";
+                if (err.type === 'peer-unavailable') {
+                    mensajeError = "La partida no existe. Comprueba el código."
+                }
+                console.error("Error en PeerJS:", err);
+                errorConexionEl.textContent = mensajeError;
+                unirseBtn.disabled = false;
+                unirseBtn.textContent = "¡A jugar!";
+                if(peer) peer.destroy();
+            });
+        }
+
+        function gestionarDatosDelServidor(data) {
+            switch (data.tipo) {
+                case 'confirmacion_join':
+                    mostrarPantalla('pantalla-espera-inicio');
+                    break;
+                case 'partida_iniciada':
+                    mostrarPantalla('pantalla-espera-partida-iniciada');
+                    break;
+                case 'pregunta':
+                    pausaOverlay.style.display = 'none';
+                    mostrarPantallaPregunta(data.payload);
+                    break;
+                case 'resultado':
+                    mostrarPantallaResultado(data.payload);
+                    break;
+                case 'resultado_final':
+                    mostrarResultadosFinales(data.payload);
+                    break;
+                case 'pausa':
+                    pausaOverlay.style.display = 'flex';
+                    break;
+                case 'resume':
+                    pausaOverlay.style.display = 'none';
+                    break;
+                case 'expulsado':
+                    errorConexionEl.textContent = "Has sido expulsado de la partida.";
+                    mostrarPantalla('pantalla-conexion');
+                    unirseBtn.disabled = false;
+                    unirseBtn.textContent = "¡A jugar!";
+                    limpiarDatosJugador();
+                    if(conn) conn.close();
+                    break;
+                case 'error':
+                    errorConexionEl.textContent = data.payload.mensaje;
+                    mostrarPantalla('pantalla-conexion');
+                    unirseBtn.disabled = false;
+                    unirseBtn.textContent = "¡A jugar!";
+                    if(conn) conn.close();
+                    break;
+            }
+        }
+
+        function mostrarPantallaPregunta(pregunta) {
+            const grid = document.getElementById('respuestas-grid');
+            grid.innerHTML = '';
+            const simbolos = ['▲', '◆', '●', '■'];
+            respuestasSeleccionadas = [];
+            
+            const esMultiple = pregunta.tipo === 'multiple';
+            confirmarRespuestaBtn.classList.toggle('hidden', !esMultiple);
+
+            for (let i = 0; i < pregunta.numRespuestas; i++) {
+                const btn = document.createElement('button');
+                btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center justify-center rounded-lg shadow-lg transform hover:scale-105 transition-transform`;
+                btn.innerHTML = `<span class="text-6xl text-shadow">${simbolos[i]}</span>`;
+                btn.dataset.indice = i;
+                btn.disabled = false;
+
+                if (esMultiple) {
+                    btn.onclick = () => seleccionarRespuestaMultiple(btn);
+                } else {
+                    btn.onclick = () => enviarRespuestaUnica(i);
+                }
+                grid.appendChild(btn);
+            }
+            mostrarPantalla('pantalla-pregunta');
         }
         
-        const nombreCompleto = `${iconoSeleccionado} ${nombreTexto}`;
-
-        errorConexionEl.textContent = "";
-        unirseBtn.disabled = true;
-        unirseBtn.textContent = "Conectando...";
-
-        if (peer) peer.destroy();
-
-        const peerConfig = {
-            host: '0.peerjs.com',
-            port: 443,
-            path: '/',
-            secure: true,
-            debug: 2,
-            config: {
-                iceServers: [
-                  { urls: 'stun:stun.relay.metered.ca:80' },
-                  {
-                    urls: 'turn:standard.relay.metered.ca:80',
-                    username: '9745e21b303bdaea589c29bc',
-                    credential: 'UgG56tBqCEGNjzLY'
-                  },
-                  {
-                    urls: 'turn:standard.relay.metered.ca:443?transport=tcp',
-                    username: '9745e21b303bdaea589c29bc',
-                    credential: 'UgG56tBqCEGNjzLY'
-                  }
-                ],
-                iceTransportPolicy: 'all'
+        function enviarRespuestaUnica(indice) {
+            if (conn && conn.open) {
+                conn.send({ tipo: 'respuesta', payload: { respuesta: indice } });
+                mostrarPantalla('pantalla-esperando-jugadores');
             }
-        };
-
-        peer = new Peer(null, peerConfig);
-
-        peer.on('open', id => {
-            conn = peer.connect(codigo, { reliable: true });
-
-            conn.on('open', () => {
-                conn.send({ tipo: 'join', nombre: nombreCompleto });
-            });
-
-            conn.on('data', gestionarDatosDelServidor);
-
-            conn.on('close', () => {
-                if(document.getElementById('pantalla-conexion').classList.contains('activa')) return;
-                errorConexionEl.textContent = "Desconectado del presentador.";
-                mostrarPantalla('pantalla-conexion');
-                unirseBtn.disabled = false;
-                unirseBtn.textContent = "¡A jugar!";
-            });
-             conn.on('error', (err) => {
-                console.error("Error de conexión:", err);
-                errorConexionEl.textContent = "Error de conexión con el presentador.";
-            });
-        });
-
-        peer.on('error', err => {
-            let mensajeError = "No se pudo conectar. Revisa el código.";
-            if (err.type === 'peer-unavailable') {
-                mensajeError = "La partida no existe. Comprueba el código."
-            }
-            console.error("Error en PeerJS:", err);
-            errorConexionEl.textContent = mensajeError;
-            unirseBtn.disabled = false;
-            unirseBtn.textContent = "¡A jugar!";
-            if(peer) peer.destroy();
-        });
-    }
-
-    function gestionarDatosDelServidor(data) {
-        switch (data.tipo) {
-            case 'confirmacion_join':
-                mostrarPantalla('pantalla-espera-inicio');
-                break;
-            case 'partida_iniciada':
-                mostrarPantalla('pantalla-espera-partida-iniciada');
-                break;
-            case 'pregunta':
-                pausaOverlay.style.display = 'none';
-                mostrarPantallaPregunta(data.payload);
-                break;
-            case 'resultado':
-                mostrarPantallaResultado(data.payload);
-                break;
-            case 'resultado_final':
-                mostrarResultadosFinales(data.payload);
-                break;
-            case 'pausa':
-                pausaOverlay.style.display = 'flex';
-                break;
-            case 'resume':
-                pausaOverlay.style.display = 'none';
-                break;
-            case 'expulsado':
-                errorConexionEl.textContent = "Has sido expulsado de la partida.";
-                mostrarPantalla('pantalla-conexion');
-                unirseBtn.disabled = false;
-                unirseBtn.textContent = "¡A jugar!";
-                limpiarDatosJugador(); // MODIFICADO: Limpia los datos al ser expulsado
-                if(conn) conn.close();
-                break;
-            case 'error':
-                errorConexionEl.textContent = data.payload.mensaje;
-                mostrarPantalla('pantalla-conexion');
-                unirseBtn.disabled = false;
-                unirseBtn.textContent = "¡A jugar!";
-                if(conn) conn.close();
-                break;
         }
-    }
 
-    function mostrarPantallaPregunta(pregunta) {
-        const grid = document.getElementById('respuestas-grid');
-        grid.innerHTML = '';
-        const simbolos = ['▲', '◆', '●', '■'];
-        respuestasSeleccionadas = [];
-        
-        const esMultiple = pregunta.tipo === 'multiple';
-        confirmarRespuestaBtn.classList.toggle('hidden', !esMultiple);
-
-        for (let i = 0; i < pregunta.numRespuestas; i++) {
-            const btn = document.createElement('button');
-            btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center justify-center rounded-lg shadow-lg transform hover:scale-105 transition-transform`;
-            btn.innerHTML = `<span class="text-6xl text-shadow">${simbolos[i]}</span>`;
-            btn.dataset.indice = i;
-            btn.disabled = false;
-
-            if (esMultiple) {
-                btn.onclick = () => seleccionarRespuestaMultiple(btn);
+        function seleccionarRespuestaMultiple(btnElement) {
+            const indice = parseInt(btnElement.dataset.indice);
+            btnElement.classList.toggle('seleccionada');
+            
+            if (respuestasSeleccionadas.includes(indice)) {
+                respuestasSeleccionadas = respuestasSeleccionadas.filter(i => i !== indice);
             } else {
-                btn.onclick = () => enviarRespuestaUnica(i);
+                respuestasSeleccionadas.push(indice);
             }
-            grid.appendChild(btn);
         }
-        mostrarPantalla('pantalla-pregunta');
-    }
-    
-    function enviarRespuestaUnica(indice) {
-        if (conn && conn.open) {
-            conn.send({ tipo: 'respuesta', payload: { respuesta: indice } });
-            mostrarPantalla('pantalla-esperando-jugadores');
+
+        function confirmarRespuestasMultiples() {
+            if (conn && conn.open) {
+                conn.send({ tipo: 'respuesta', payload: { respuesta: respuestasSeleccionadas.sort() } });
+                mostrarPantalla('pantalla-esperando-jugadores');
+            }
         }
-    }
 
-    function seleccionarRespuestaMultiple(btnElement) {
-        const indice = parseInt(btnElement.dataset.indice);
-        btnElement.classList.toggle('seleccionada');
-        
-        if (respuestasSeleccionadas.includes(indice)) {
-            respuestasSeleccionadas = respuestasSeleccionadas.filter(i => i !== indice);
-        } else {
-            respuestasSeleccionadas.push(indice);
+        function mostrarPantallaResultado(resultado) {
+            const contenido = document.getElementById('resultado-contenido');
+            const texto = document.getElementById('resultado-texto');
+            
+            if (resultado.esCorrecta) {
+                texto.textContent = "¡Correcto!";
+                contenido.className = "w-full max-w-md bg-gradient-to-br from-green-500 to-teal-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
+            } else {
+                texto.textContent = "Incorrecto";
+                contenido.className = "w-full max-w-md bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
+            }
+            
+            document.getElementById('resultado-puntos-ronda').textContent = `+${resultado.puntosRonda}`;
+            document.getElementById('resultado-puntos-total').textContent = resultado.puntosTotal;
+            
+            mostrarPantalla('pantalla-resultado');
         }
-    }
 
-    function confirmarRespuestasMultiples() {
-        if (conn && conn.open) {
-            conn.send({ tipo: 'respuesta', payload: { respuesta: respuestasSeleccionadas.sort() } });
-            mostrarPantalla('pantalla-esperando-jugadores');
+        function mostrarResultadosFinales(data) {
+            const { tuPuntuacion, puntuacionMaxima, respuestasCorrectas, totalPreguntas } = data;
+            const porcentajeMaximo = puntuacionMaxima > 0 ? Math.round((tuPuntuacion / puntuacionMaxima) * 100) : 0;
+            const porcentajeAciertos = totalPreguntas > 0 ? Math.round((respuestasCorrectas / totalPreguntas) * 100) : 0;
+
+            document.getElementById('final-puntuacion-propia').textContent = `${tuPuntuacion} pts`;
+            document.getElementById('final-puntuacion-maxima').textContent = `${puntuacionMaxima} pts`;
+            document.getElementById('final-porcentaje-maximo').textContent = `${porcentajeMaximo}%`;
+            document.getElementById('final-aciertos').textContent = `${respuestasCorrectas} / ${totalPreguntas}`;
+            document.getElementById('final-porcentaje-aciertos').textContent = `${porcentajeAciertos}%`;
+            
+            mostrarPantalla('pantalla-resultado-final');
+            limpiarDatosJugador();
         }
-    }
 
-    function mostrarPantallaResultado(resultado) {
-        const contenido = document.getElementById('resultado-contenido');
-        const texto = document.getElementById('resultado-texto');
-        
-        if (resultado.esCorrecta) {
-            texto.textContent = "¡Correcto!";
-            contenido.className = "w-full max-w-md bg-gradient-to-br from-green-500 to-teal-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
-        } else {
-            texto.textContent = "Incorrecto";
-            contenido.className = "w-full max-w-md bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-2xl shadow-lg p-8 flex flex-col items-center";
+        // --- Initialization ---
+        // 1. Cargamos los datos guardados (nombre, icono, y el código antiguo si existe)
+        cargarDatosJugador();
+
+        // 2. Comprobamos si la URL nos da un código nuevo
+        const params = new URLSearchParams(window.location.search);
+        const codigoPartidaURL = params.get('partida');
+
+        // 3. Si hay un código en la URL, este tiene la máxima prioridad
+        if (codigoPartidaURL) {
+            // Se actualiza el campo de texto con el nuevo código
+            codigoInput.value = codigoPartidaURL.toUpperCase();
+            // Se guardan los datos actualizados (incluido el nuevo código) en localStorage
+            guardarDatosJugador();
         }
         
-        document.getElementById('resultado-puntos-ronda').textContent = `+${resultado.puntosRonda}`;
-        document.getElementById('resultado-puntos-total').textContent = resultado.puntosTotal;
+        // Asignación de eventos
+        abrirEmojisBtn.onclick = () => emojiPicker.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+        document.getElementById('cerrar-emojis-btn').onclick = () => emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+        unirseBtn.addEventListener('click', unirseAlJuego);
+        nombreInput.addEventListener('input', guardarDatosJugador);
+        codigoInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+            guardarDatosJugador();
+        });
+        confirmarRespuestaBtn.addEventListener('click', confirmarRespuestasMultiples);
         
-        mostrarPantalla('pantalla-resultado');
-    }
-
-    function mostrarResultadosFinales(data) {
-        const { tuPuntuacion, puntuacionMaxima, respuestasCorrectas, totalPreguntas } = data;
-        const porcentajeMaximo = puntuacionMaxima > 0 ? Math.round((tuPuntuacion / puntuacionMaxima) * 100) : 0;
-        const porcentajeAciertos = totalPreguntas > 0 ? Math.round((respuestasCorrectas / totalPreguntas) * 100) : 0;
-
-        document.getElementById('final-puntuacion-propia').textContent = `${tuPuntuacion} pts`;
-        document.getElementById('final-puntuacion-maxima').textContent = `${puntuacionMaxima} pts`;
-        document.getElementById('final-porcentaje-maximo').textContent = `${porcentajeMaximo}%`;
-        document.getElementById('final-aciertos').textContent = `${respuestasCorrectas} / ${totalPreguntas}`;
-        document.getElementById('final-porcentaje-aciertos').textContent = `${porcentajeAciertos}%`;
-        
-        mostrarPantalla('pantalla-resultado-final');
-        limpiarDatosJugador(); // MODIFICADO: Limpia los datos al finalizar la partida
-    }
-
-    // --- Initialization ---
-    const params = new URLSearchParams(window.location.search);
-    const codigoPartidaURL = params.get('partida');
-    if (codigoPartidaURL) {
-        codigoInput.value = codigoPartidaURL.toUpperCase();
-    }
-    
-    abrirEmojisBtn.onclick = () => emojiPicker.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-    document.getElementById('cerrar-emojis-btn').onclick = () => emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-
-    unirseBtn.addEventListener('click', unirseAlJuego);
-    
-    // --- NUEVO: Event listeners para guardar los datos al modificarlos ---
-    nombreInput.addEventListener('input', guardarDatosJugador);
-    codigoInput.addEventListener('input', (e) => {
-        e.target.value = e.target.value.toUpperCase();
-        guardarDatosJugador();
-    });
-    
-    confirmarRespuestaBtn.addEventListener('click', confirmarRespuestasMultiples);
-    
-    inicializarEmojiPicker();
-    
-    // --- NUEVO: Carga los datos guardados al iniciar la página ---
-    cargarDatosJugador();
+        inicializarEmojiPicker();
     
     </script>
 </body>
