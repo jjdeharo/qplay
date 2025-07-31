@@ -100,7 +100,9 @@ function mostrarPantalla(id) {
     document.getElementById(id).classList.add('activa');
     const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard' || id === 'pantalla-final');
     if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
-    if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-lobby' || id === 'pantalla-pregunta') ? 'flex' : 'none';
+    
+    // El botón de añadir jugador ya no aparece en el lobby
+    if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-pregunta') ? 'flex' : 'none';
     
     if (id === 'pantalla-pregunta' && (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta')) {
         estadoJugadoresPanel.style.display = 'block';
