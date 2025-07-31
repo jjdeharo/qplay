@@ -206,7 +206,38 @@
     let peer;
     let conn;
     let respuestasSeleccionadas = [];
-    let iconoSeleccionado = obtenerEmojiAleatorio();
+    let iconoSeleccionado; // Se inicializará al cargar los datos
+
+    // --- NUEVO: Lógica de persistencia con LocalStorage ---
+    function guardarDatosJugador() {
+        const datos = {
+            nombre: nombreInput.value,
+            codigo: codigoInput.value,
+            icono: iconoSeleccionado
+        };
+        localStorage.setItem('qplay_datos_jugador', JSON.stringify(datos));
+    }
+
+    function cargarDatosJugador() {
+        const datosGuardados = localStorage.getItem('qplay_datos_jugador');
+        if (datosGuardados) {
+            const datos = JSON.parse(datosGuardados);
+            nombreInput.value = datos.nombre || '';
+            codigoInput.value = datos.codigo || '';
+            iconoSeleccionado = datos.icono || obtenerEmojiAleatorio();
+        } else {
+            // Si no hay datos, asigna uno aleatorio
+            iconoSeleccionado = obtenerEmojiAleatorio();
+            guardarDatosJugador(); // Guarda el icono aleatorio para la próxima vez
+        }
+        abrirEmojisBtn.textContent = iconoSeleccionado;
+    }
+
+    function limpiarDatosJugador() {
+        localStorage.removeItem('qplay_datos_jugador');
+    }
+    // --- FIN de la lógica de persistencia ---
+
 
     // --- UI Functions ---
     function mostrarPantalla(id) {
@@ -248,6 +279,7 @@
                 iconoSeleccionado = emoji;
                 abrirEmojisBtn.textContent = iconoSeleccionado;
                 emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                guardarDatosJugador(); // MODIFICADO: Guarda los datos al cambiar el icono
             };
             emojiContentContainer.appendChild(btn);
         });
@@ -362,6 +394,7 @@
                 mostrarPantalla('pantalla-conexion');
                 unirseBtn.disabled = false;
                 unirseBtn.textContent = "¡A jugar!";
+                limpiarDatosJugador(); // MODIFICADO: Limpia los datos al ser expulsado
                 if(conn) conn.close();
                 break;
             case 'error':
@@ -455,6 +488,7 @@
         document.getElementById('final-porcentaje-aciertos').textContent = `${porcentajeAciertos}%`;
         
         mostrarPantalla('pantalla-resultado-final');
+        limpiarDatosJugador(); // MODIFICADO: Limpia los datos al finalizar la partida
     }
 
     // --- Initialization ---
@@ -468,11 +502,20 @@
     document.getElementById('cerrar-emojis-btn').onclick = () => emojiPicker.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
 
     unirseBtn.addEventListener('click', unirseAlJuego);
-    codigoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase() });
+    
+    // --- NUEVO: Event listeners para guardar los datos al modificarlos ---
+    nombreInput.addEventListener('input', guardarDatosJugador);
+    codigoInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.toUpperCase();
+        guardarDatosJugador();
+    });
+    
     confirmarRespuestaBtn.addEventListener('click', confirmarRespuestasMultiples);
     
     inicializarEmojiPicker();
-    abrirEmojisBtn.textContent = iconoSeleccionado;
+    
+    // --- NUEVO: Carga los datos guardados al iniciar la página ---
+    cargarDatosJugador();
     
     </script>
 </body>
