@@ -118,8 +118,7 @@ function actualizarListaJugadores() {
         const li = document.createElement('li');
         li.className = 'flex items-center justify-between glass-card p-2 rounded-lg text-white';
         li.innerHTML = `
-            <div class="flex items-center space-x-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+            <div class="flex items-center">
                 <span class="font-bold text-xl">${jugador.nombre}</span>
             </div>
             <button data-peer-id="${jugador.conn.peer}" class="eliminar-jugador-btn text-red-400 hover:text-red-500 font-bold p-2 rounded-full hover:bg-red-900 hover:bg-opacity-50 transition-colors">
