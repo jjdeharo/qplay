@@ -34,5 +34,7 @@
     "error_csv_format": "O arquivo CSV está baleiro ou non ten o formato correcto.",
     "error_load_example": "Non se puido cargar o exemplo: {message}",
     "error_name_in_use": "Ese nome xa está en uso.",
-    "player_kicked": "Fuches expulsado da partida."
+    "player_kicked": "Fuches expulsado da partida.",
+    "results_csv_header": "Posto;Nome;Puntuación\n",
+    "results_csv_filename": "resultados_partida"
 }
