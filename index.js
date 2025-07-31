@@ -32,6 +32,7 @@ const cerrarModalBtn = document.getElementById('cerrar-modal-btn');
 const modalUrlSitioEl = document.getElementById('modal-url-sitio');
 const modalCodigoPartidaEl = document.getElementById('modal-codigo-partida');
 const modalQrCodeEl = document.getElementById('modal-qrcode');
+const langSelectorEl = document.getElementById('lang-selector'); // Referencia añadida
 const FULL_DASH_ARRAY = 283;
 // --- Referencias de audio ---
 const controlVolumenEl = document.getElementById('control-volumen');
@@ -233,6 +234,16 @@ function gestionarMusicaPorEstado() {
 function mostrarPantalla(id) {
     pantallas.forEach(p => p.classList.remove('activa'));
     document.getElementById(id).classList.add('activa');
+
+    // Muestra u oculta el selector de idioma según la pantalla activa
+    if (langSelectorEl) {
+        if (id === 'pantalla-carga') {
+            langSelectorEl.style.display = 'flex';
+        } else {
+            langSelectorEl.style.display = 'none';
+        }
+    }
+
     const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard' || id === 'pantalla-final');
     if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
     
