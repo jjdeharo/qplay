@@ -6,23 +6,22 @@
     <title>Editor de Cuestionarios Avanzado</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { darkMode: 'class' };
+      tailwind.config = {
+        darkMode: 'class',
+      };
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-sN/J4BiiactO/EwkGryJmqDRCza7N4JWdSAc3LGoE7Psd7IeWHlHGHPAcn+Aq/4N" crossorigin="anonymous">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1gAUA15SOMiCl0H8ascL4AU2dC1FfsMQA4RIwOjiQs" crossorigin="anonymous"></script>
-
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/Gf1Yp46Dc62IzeWYfkznxlMebdtnzaSOgAqfrRXpCW7IOtzn" crossorigin="anonymous"
-        onload="renderizarElementosConFormulas()"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
         }
-        .hidden-important { display: none !important; }
         .form-check-input {
             appearance: none; -webkit-appearance: none; flex-shrink: 0;
             width: 1.25rem; height: 1.25rem;
@@ -33,13 +32,23 @@
         .dark .form-check-input { border-color: #4b5563; }
         .form-check-input:checked { border-color: #4f46e5; background-color: #4f46e5; }
         .form-check-input.radio { border-radius: 50%; }
-        .form-check-input.radio:checked::after { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .form-check-input.radio:checked::after {
+            content: ''; width: 0.5rem; height: 0.5rem;
+            border-radius: 50%; background: white;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
         .form-check-input.checkbox { border-radius: 0.25rem; }
-        .form-check-input.checkbox:checked::after { content: '✓'; font-size: 0.8rem; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .form-check-input.checkbox:checked::after {
+            content: '✓'; font-size: 0.8rem; color: white;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .hidden-important { display: none !important; }
         #pregunta-preview {
             min-height: 60px; padding: 1rem; border-radius: 0.375rem; 
             background-color: #f9fafb; margin-top: 0.75rem; 
-            display: flex; align-items: center; justify-content: flex-start; 
+            display: flex; align-items: center; justify-content: flex-start;
             font-size: 1.1rem; border: 1px solid #e5e7eb; text-align: left; flex-wrap: wrap;
         }
         .dark #pregunta-preview { background-color: #1f2937; border-color: #4b5563; }
@@ -50,89 +59,132 @@
 
     <div class="w-full max-w-4xl mx-auto p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 relative">
-            <button id="theme-toggle" class="absolute top-6 right-6 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700">
-                <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            <button id="theme-toggle" class="absolute top-6 right-6 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
             </button>
             <header class="mb-8 text-center">
                 <h1 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Editor de Cuestionarios</h1>
-                <p class="text-gray-500 dark:text-gray-400 mt-2">Crea, edita y gestiona tus preguntas con fórmulas LaTeX.</p>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Crea, edita, guarda y carga tus preguntas.</p>
             </header>
 
             <form id="pregunta-form" class="mb-8 bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
                 <input type="hidden" id="edit-index" value="-1">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="tipo-pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de pregunta</label>
+                        <select id="tipo-pregunta" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="quiz">Quiz (4 opciones, 1 correcta)</option>
+                            <option value="multiple">Respuesta Múltiple (varias correctas)</option>
+                            <option value="true-false">Verdadero / Falso</option>
+                        </select>
                     </div>
+                    <div>
+                        <label for="tiempo-limite" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tiempo límite</label>
+                        <select id="tiempo-limite" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="20">20 segundos</option>
+                            <option value="30" selected>30 segundos</option>
+                            <option value="60">1 minuto</option>
+                            <option value="90">1.5 minutos</option>
+                            <option value="120">2 minutos</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="tiempo-personalizado-container" class="grid grid-cols-2 gap-4 mb-4 hidden-important">
+                    <div>
+                        <label for="minutos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Minutos</label>
+                        <input type="number" id="minutos" min="0" max="99" placeholder="0" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label for="segundos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Segundos</label>
+                        <input type="number" id="segundos" min="0" max="59" placeholder="45" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4">
                         <div>
-                            <label for="pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregunta</label>
-                            <textarea id="pregunta" rows="4" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2" placeholder="Usa $..$ o \(.. \) para fórmulas en línea y $$..$$ o \[..\] para bloques."></textarea>
+                            <label for="pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregunta (con soporte para LaTeX)</label>
+                            <textarea id="pregunta" rows="4" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Escribe texto y fórmulas. Usa $...$ o \(...\) para fórmulas en línea y $$...$$ o \[...\] para bloques."></textarea>
+                            
                             <div id="pregunta-preview-container">
-                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mt-2 mb-1">Previsualización:</label>
+                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Previsualización:</label>
                                 <div id="pregunta-preview"></div>
                             </div>
                         </div>
+                        <div>
+                            <label for="imagen_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL de la Imagen (Opcional)</label>
+                            <input type="url" id="imagen_url" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="https://ejemplo.com/imagen.png">
+                        </div>
                     </div>
                     <div class="space-y-3" id="respuestas-container">
-                        </div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Respuestas (Marcar la/s correcta/s)</label>
+                        <div class="flex items-center" id="respuesta-wrapper-1"><input type="radio" id="correcta-1" name="correcta" value="0" class="form-check-input radio" checked><input type="text" id="respuesta-1" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 1"></div>
+                        <div class="flex items-center" id="respuesta-wrapper-2"><input type="radio" id="correcta-2" name="correcta" value="1" class="form-check-input radio"><input type="text" id="respuesta-2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 2"></div>
+                        <div class="flex items-center" id="respuesta-wrapper-3"><input type="radio" id="correcta-3" name="correcta" value="2" class="form-check-input radio"><input type="text" id="respuesta-3" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 3"></div>
+                        <div class="flex items-center" id="respuesta-wrapper-4"><input type="radio" id="correcta-4" name="correcta" value="3" class="form-check-input radio"><input type="text" id="respuesta-4" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 4"></div>
+                    </div>
                 </div>
                 <div class="mt-6 flex space-x-4">
-                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg">Añadir Pregunta</button>
-                    <button type="button" id="cancel-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg hidden-important">Cancelar</button>
+                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Añadir Pregunta</button>
+                    <button type="button" id="cancel-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 hidden-important">Cancelar Edición</button>
                 </div>
             </form>
 
             <div class="mb-8">
                 <h2 class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">Cuestionario Actual</h2>
                 <div id="lista-preguntas" class="space-y-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg max-h-72 overflow-y-auto">
-                    </div>
+                    <p class="text-gray-500 dark:text-gray-400">Aún no has añadido ninguna pregunta.</p>
+                </div>
             </div>
 
             <div class="flex flex-col md:flex-row gap-4">
-                </div>
+                <button id="guardar-csv" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Guardar en CSV</button>
+                <button id="cargar-csv" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Cargar desde CSV</button>
+                <input type="file" id="csv-file-input" class="hidden" accept=".csv">
+            </div>
         </div>
     </div>
 
     <script>
-        // --- FUNCIÓN GLOBAL PARA RENDERIZAR CON KATEX ---
-        function renderizarElementosConFormulas() {
-            if (window.renderMathInElement) {
-                renderMathInElement(document.body, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '\\[', right: '\\]', display: true},
-                        {left: '\\(', right: '\\)', display: false},
-                        {left: '$', right: '$', display: false}
-                    ],
-                    throwOnError: false
-                });
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            // --- REFERENCIAS AL DOM ---
+            // --- DOM REFERENCES ---
+            const form = document.getElementById('pregunta-form');
+            const tipoPreguntaSelect = document.getElementById('tipo-pregunta');
+            const tiempoLimiteSelect = document.getElementById('tiempo-limite');
+            const tiempoPersonalizadoContainer = document.getElementById('tiempo-personalizado-container');
+            const minutosInput = document.getElementById('minutos');
+            const segundosInput = document.getElementById('segundos');
             const preguntaInput = document.getElementById('pregunta');
             const preguntaPreview = document.getElementById('pregunta-preview');
-            const listaPreguntasContainer = document.getElementById('lista-preguntas');
-            const form = document.getElementById('pregunta-form');
+            const imagenUrlInput = document.getElementById('imagen_url');
+            const respuestasInputs = Array.from({ length: 4 }, (_, i) => document.getElementById(`respuesta-${i + 1}`));
+            const correctasInputs = Array.from({ length: 4 }, (_, i) => document.getElementById(`correcta-${i + 1}`));
+            const respuestasWrappers = Array.from({ length: 4 }, (_, i) => document.getElementById(`respuesta-wrapper-${i + 1}`));
             const editIndexInput = document.getElementById('edit-index');
             const submitBtn = document.getElementById('submit-btn');
             const cancelBtn = document.getElementById('cancel-btn');
-            // ... (Añade aquí el resto de tus referencias al DOM que tenías: tipoPreguntaSelect, tiempoLimiteSelect, etc.)
+            const listaPreguntasContainer = document.getElementById('lista-preguntas');
+            const guardarBtn = document.getElementById('guardar-csv');
+            const cargarBtn = document.getElementById('cargar-csv');
+            const fileInput = document.getElementById('csv-file-input');
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const sunIcon = document.getElementById('theme-icon-sun');
+            const moonIcon = document.getElementById('theme-icon-moon');
 
-            // --- ESTADO DE LA APLICACIÓN ---
+            // --- APP STATE ---
             let preguntas = [];
-
-            // --- FUNCIONES ---
-            function renderizarPreviewFormula() {
-                // Para la preview, solo renderizamos el contenido del div específico
-                preguntaPreview.textContent = preguntaInput.value;
+            let ultimoTiempoSeleccionado = 30;
+            
+            // --- KATEX RENDERER ---
+            const renderizarConKaTeX = (elemento, texto) => {
                 if (window.renderMathInElement) {
-                    renderMathInElement(preguntaPreview, {
-                         delimiters: [
+                    elemento.textContent = texto;
+                    renderMathInElement(elemento, {
+                        delimiters: [
                             {left: '$$', right: '$$', display: true},
                             {left: '\\[', right: '\\]', display: true},
                             {left: '\\(', right: '\\)', display: false},
@@ -141,9 +193,47 @@
                         throwOnError: false
                     });
                 }
-            }
+            };
             
-            function renderizarPreguntas() {
+            const renderizarPreviewFormula = () => renderizarConKaTeX(preguntaPreview, preguntaInput.value);
+
+            // --- THEME MANAGEMENT ---
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                }
+            };
+
+            const toggleTheme = () => {
+              const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+              localStorage.setItem('theme', newTheme);
+              applyTheme(newTheme);
+            };
+
+            // --- CORE FUNCTIONS ---
+            const formatTipo = (tipo) => {
+                switch(tipo) {
+                    case 'quiz': return 'Quiz';
+                    case 'multiple': return 'Múltiple';
+                    case 'true-false': return 'V/F';
+                    default: return 'Desconocido';
+                }
+            };
+
+            const formatTiempo = (segundos) => {
+                if (segundos < 60) return `${segundos}s`;
+                const min = Math.floor(segundos / 60);
+                const sec = segundos % 60;
+                return sec === 0 ? `${min}m` : `${min}m ${sec}s`;
+            };
+
+            const renderizarPreguntas = () => {
                 listaPreguntasContainer.innerHTML = '';
                 if (preguntas.length === 0) {
                     listaPreguntasContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">Aún no has añadido ninguna pregunta.</p>';
@@ -152,43 +242,226 @@
                 preguntas.forEach((p, index) => {
                     const el = document.createElement('div');
                     el.className = 'bg-gray-100 dark:bg-gray-800 p-3 rounded-md flex justify-between items-center';
-                    // Se inserta el texto plano. La función global de renderizado se encargará de las fórmulas.
+                    
+                    const preguntaTextoDiv = document.createElement('div');
+                    preguntaTextoDiv.className = "pregunta-texto text-gray-800 dark:text-gray-200";
+                    preguntaTextoDiv.title = p.pregunta;
+                    renderizarConKaTeX(preguntaTextoDiv, `${index + 1}. ${p.pregunta}`);
+
                     el.innerHTML = `
-                        <div class="flex-grow mr-4 overflow-hidden">
-                            <div class="pregunta-texto text-gray-800 dark:text-gray-200 truncate" title="${p.pregunta.replace(/"/g, '&quot;')}">${index + 1}. ${p.pregunta}</div>
+                        <div class="flex-grow truncate mr-4">
+                            <div class="flex items-center space-x-2 mt-1 text-xs">
+                                <span class="bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">${formatTipo(p.tipo)}</span>
+                                <span class="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full font-medium">${formatTiempo(p.tiempo)}</span>
+                            </div>
                         </div>
                         <div class="flex space-x-2 flex-shrink-0">
-                            <button data-index="${index}" class="editar-btn ...">Editar</button>
-                            <button data-index="${index}" class="eliminar-btn ...">Eliminar</button>
-                        </div>`;
+                            <button data-index="${index}" class="editar-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md text-sm transition-colors">Editar</button>
+                            <button data-index="${index}" class="eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm transition-colors">Eliminar</button>
+                        </div>
+                    `;
+                    el.querySelector('.flex-grow').prepend(preguntaTextoDiv);
                     listaPreguntasContainer.appendChild(el);
                 });
-                // Una vez añadidas todas las preguntas al DOM, se le pide a KaTeX que renderice todo el contenedor
-                renderizarElementosConFormulas();
-            }
+            };
+            
+            const gestionarCambioTipoPregunta = () => {
+                const tipo = tipoPreguntaSelect.value;
+                const esMultiple = tipo === 'multiple';
+                correctasInputs.forEach((input, i) => { 
+                    input.type = esMultiple ? 'checkbox' : 'radio'; 
+                    input.name = esMultiple ? `correcta-${i}` : 'correcta'; 
+                    input.classList.toggle('radio', !esMultiple); 
+                    input.classList.toggle('checkbox', esMultiple); 
+                });
+                respuestasWrappers.forEach(w => w.classList.remove('hidden-important'));
+                respuestasInputs.forEach(i => i.disabled = false);
+                if (tipo === 'true-false') {
+                    respuestasInputs[0].value = "Verdadero"; 
+                    respuestasInputs[1].value = "Falso";
+                    respuestasInputs[0].disabled = true; 
+                    respuestasInputs[1].disabled = true;
+                    respuestasWrappers[2].classList.add('hidden-important'); 
+                    respuestasWrappers[3].classList.add('hidden-important');
+                }
+            };
 
-            // --- LÓGICA DEL FORMULARIO ---
-            function gestionarSubmitFormulario(event) {
-                event.preventDefault();
-                // ... (Tu lógica para añadir/actualizar preguntas)
-                // Ejemplo simple:
-                const nuevaPregunta = {
-                    pregunta: preguntaInput.value.trim(),
-                    // ... el resto de tus propiedades
-                };
-                preguntas.push(nuevaPregunta);
-                renderizarPreguntas();
+            const gestionarCambioTiempo = () => { 
+                if (tiempoLimiteSelect.value === 'custom') { 
+                    tiempoPersonalizadoContainer.classList.remove('hidden-important'); 
+                } else { 
+                    tiempoPersonalizadoContainer.classList.add('hidden-important'); 
+                } 
+            };
+
+            const establecerTiempoFormulario = (segundosTotales) => {
+                const esTiempoStandard = Array.from(tiempoLimiteSelect.options).some(opt => opt.value == segundosTotales);
+                if (esTiempoStandard) {
+                    tiempoLimiteSelect.value = segundosTotales;
+                } else {
+                    tiempoLimiteSelect.value = 'custom';
+                    minutosInput.value = Math.floor(segundosTotales / 60);
+                    segundosInput.value = segundosTotales % 60;
+                }
+                gestionarCambioTiempo();
+            };
+
+            const resetearFormulario = () => {
                 form.reset();
+                editIndexInput.value = "-1";
+                submitBtn.textContent = "Añadir Pregunta";
+                submitBtn.classList.replace('bg-yellow-600', 'bg-indigo-600');
+                submitBtn.classList.replace('hover:bg-yellow-700', 'hover:bg-indigo-700');
+                cancelBtn.classList.add('hidden-important');
+                tipoPreguntaSelect.value = 'quiz';
+                establecerTiempoFormulario(ultimoTiempoSeleccionado);
+                gestionarCambioTipoPregunta();
                 renderizarPreviewFormula();
-            }
+            };
+            
+            const iniciarEdicion = (index) => {
+                const p = preguntas[index];
+                editIndexInput.value = index;
+                tipoPreguntaSelect.value = p.tipo;
+                establecerTiempoFormulario(p.tiempo);
+                gestionarCambioTipoPregunta();
+                preguntaInput.value = p.pregunta;
+                imagenUrlInput.value = p.imagen_url;
+                respuestasInputs.forEach((input, i) => { input.value = p.respuestas[i] || ''; });
+                correctasInputs.forEach((input, i) => { 
+                    if (Array.isArray(p.correcta)) {
+                        input.checked = p.correcta.includes(i); 
+                    } else { 
+                        input.checked = (p.correcta === i); 
+                    } 
+                });
+                submitBtn.textContent = "Actualizar Pregunta";
+                submitBtn.classList.replace('bg-indigo-600', 'bg-yellow-600');
+                submitBtn.classList.replace('hover:bg-indigo-700', 'hover:bg-yellow-700');
+                cancelBtn.classList.remove('hidden-important');
+                renderizarPreviewFormula();
+                window.scrollTo(0, 0);
+            };
+
+            const gestionarSubmitFormulario = (event) => {
+                event.preventDefault();
+                const index = parseInt(editIndexInput.value);
+                const tipo = tipoPreguntaSelect.value;
+                let correcta;
+                if (tipo === 'multiple') { 
+                    correcta = correctasInputs.map((input, i) => input.checked ? i : -1).filter(i => i !== -1); 
+                } else { 
+                    correcta = parseInt(document.querySelector('input[name="correcta"]:checked').value); 
+                }
+                let tiempoFinal;
+                if (tiempoLimiteSelect.value === 'custom') { 
+                    const minutos = parseInt(minutosInput.value) || 0; 
+                    const segundos = parseInt(segundosInput.value) || 0; 
+                    tiempoFinal = (minutos * 60) + segundos; 
+                } else { 
+                    tiempoFinal = parseInt(tiempoLimiteSelect.value); 
+                }
+                ultimoTiempoSeleccionado = tiempoFinal;
+                const nuevaPregunta = { 
+                    tipo: tipo, 
+                    pregunta: preguntaInput.value.trim(), 
+                    respuestas: respuestasInputs.map(input => input.value.trim()), 
+                    correcta: correcta, 
+                    tiempo: tiempoFinal, 
+                    imagen_url: imagenUrlInput.value.trim() 
+                };
+                if (index > -1) { 
+                    preguntas[index] = nuevaPregunta; 
+                } else { 
+                    preguntas.push(nuevaPregunta); 
+                }
+                renderizarPreguntas();
+                resetearFormulario();
+            };
+
+            const gestionarClickLista = (event) => {
+                const target = event.target.closest('button');
+                if (!target) return;
+
+                const index = parseInt(target.dataset.index);
+                if (target.classList.contains('editar-btn')) {
+                    iniciarEdicion(index);
+                } else if (target.classList.contains('eliminar-btn')) {
+                    preguntas.splice(index, 1);
+                    renderizarPreguntas();
+                }
+            };
+
+            const guardarCSV = () => {
+                if (preguntas.length === 0) { 
+                    alert('No hay preguntas para guardar.');
+                    return; 
+                }
+                const headers = ['Tipo', 'Pregunta', 'R1', 'R2', 'R3', 'R4', 'Tiempo', 'Correcta', 'URL Imagen'];
+                let csvContent = headers.join(';') + '\n';
+                preguntas.forEach(p => { 
+                    const correctaStr = Array.isArray(p.correcta) ? p.correcta.map(c => c + 1).join(',') : p.correcta + 1;
+                    const fila = [ p.tipo, `"${(p.pregunta || '').replace(/"/g, '""')}"`, `"${(p.respuestas[0] || '').replace(/"/g, '""')}"`, `"${(p.respuestas[1] || '').replace(/"/g, '""')}"`, `"${(p.respuestas[2] || '').replace(/"/g, '""')}"`, `"${(p.respuestas[3] || '').replace(/"/g, '""')}"`, p.tiempo, correctaStr, `"${(p.imagen_url || '').replace(/"/g, '""')}"` ]; 
+                    csvContent += fila.join(';') + '\n'; 
+                });
+                const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' }); // Añadir BOM para compatibilidad con Excel
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "cuestionario_avanzado.csv";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            const cargarCSV = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const text = e.target.result;
+                    const lineas = text.split('\n').filter(l => l.trim() !== '').slice(1); // Omitir cabecera
+                    const regex = /"([^"]*)"|([^;]+)/g;
+                    preguntas = [];
+                    lineas.forEach(linea => {
+                        const campos = Array.from(linea.matchAll(regex), m => (m[1] || m[2] || '').trim());
+                        if (campos.length >= 8) {
+                            let correcta;
+                            if (campos[7].includes(',')) {
+                                correcta = campos[7].split(',').map(n => parseInt(n) - 1);
+                            } else {
+                                correcta = parseInt(campos[7]) - 1;
+                            }
+                            preguntas.push({ tipo: campos[0] || 'quiz', pregunta: campos[1] || '', respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''], tiempo: parseInt(campos[6]) || 30, correcta: correcta, imagen_url: campos[8] || '' });
+                        }
+                    });
+                    renderizarPreguntas();
+                    alert(`${preguntas.length} preguntas cargadas.`);
+                };
+                reader.readAsText(file, 'UTF-8');
+                fileInput.value = '';
+            };
 
             // --- EVENT LISTENERS ---
             preguntaInput.addEventListener('keyup', renderizarPreviewFormula);
+            tipoPreguntaSelect.addEventListener('change', gestionarCambioTipoPregunta);
+            tiempoLimiteSelect.addEventListener('change', gestionarCambioTiempo);
             form.addEventListener('submit', gestionarSubmitFormulario);
+            cancelBtn.addEventListener('click', resetearFormulario);
+            listaPreguntasContainer.addEventListener('click', gestionarClickLista);
+            guardarBtn.addEventListener('click', guardarCSV);
+            cargarBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', cargarCSV);
+            themeToggleBtn.addEventListener('click', toggleTheme);
             
-            // --- INICIALIZACIÓN ---
-            renderizarPreviewFormula(); // Limpia la preview al cargar
-            renderizarPreguntas(); // Renderiza la lista inicial
+            // --- INITIALIZATION ---
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+            
+            renderizarPreguntas();
+            gestionarCambioTipoPregunta();
+            gestionarCambioTiempo();
+            renderizarPreviewFormula();
         });
     </script>
 </body>
