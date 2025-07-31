@@ -30,19 +30,12 @@
         .form-check-input.checkbox:checked::after { content: '✓'; font-size: 0.8rem; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .hidden-important { display: none !important; }
         
-        /* Estilos para la vista previa */
         #pregunta-preview { min-height: 80px; padding: 1rem; border-radius: 0.375rem; background-color: #f9fafb; margin-top: 0.75rem; font-size: 1.1rem; border: 1px solid #e5e7eb; text-align: left; }
         .dark #pregunta-preview { background-color: #1f2937; border-color: #4b5563; }
         #pregunta-preview > *:first-child { margin-top: 0; }
         #pregunta-preview > *:last-child { margin-bottom: 0; }
         #pregunta-preview p { margin-bottom: 0.5rem; }
-        
-        /* CSS para que las listas se vean bien */
-        #pregunta-preview ul, #pregunta-preview ol {
-            padding-left: 2rem; /* Añade sangría a la lista */
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
+        #pregunta-preview ul, #pregunta-preview ol { padding-left: 2rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
         #pregunta-preview ul { list-style-type: disc; }
         #pregunta-preview ol { list-style-type: decimal; }
         #pregunta-preview li { margin-bottom: 0.25rem; }
@@ -210,9 +203,25 @@
             };
 
             const renderizarContenidoMixto = (elemento, texto) => {
-                const htmlDeMarkdown = marked.parse(texto, { breaks: true, gfm: true });
-                elemento.innerHTML = htmlDeMarkdown;
+                // Proceso de renderizado robusto
+                const mathBlocks = [];
+                // 1. Proteger las fórmulas de LaTeX
+                let textoSinMates = texto.replace(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g, (match) => {
+                    mathBlocks.push(match);
+                    return ``;
+                });
+
+                // 2. Convertir Markdown a HTML
+                let html = marked.parse(textoSinMates, { breaks: true, gfm: true });
+
+                // 3. Restaurar las fórmulas de LaTeX
+                html = html.replace(//g, (match, index) => {
+                    return mathBlocks[parseInt(index, 10)];
+                });
+
+                elemento.innerHTML = html;
                 
+                // 4. Renderizar KaTeX en el resultado final
                 if (window.renderMathInElement) {
                     renderMathInElement(elemento, {
                         delimiters: [
