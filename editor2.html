@@ -32,18 +32,9 @@
         .dark .form-check-input { border-color: #4b5563; }
         .form-check-input:checked { border-color: #4f46e5; background-color: #4f46e5; }
         .form-check-input.radio { border-radius: 50%; }
-        .form-check-input.radio:checked::after {
-            content: ''; width: 0.5rem; height: 0.5rem;
-            border-radius: 50%; background: white;
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-        }
+        .form-check-input.radio:checked::after { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .form-check-input.checkbox { border-radius: 0.25rem; }
-        .form-check-input.checkbox:checked::after {
-            content: '✓'; font-size: 0.8rem; color: white;
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-        }
+        .form-check-input.checkbox:checked::after { content: '✓'; font-size: 0.8rem; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .hidden-important { display: none !important; }
         #pregunta-preview {
             min-height: 60px; padding: 1rem; border-radius: 0.375rem; 
@@ -53,6 +44,7 @@
         }
         .dark #pregunta-preview { background-color: #1f2937; border-color: #4b5563; }
         .katex-display { margin: 0.5em 0; width: 100%; }
+        .editor-toolbar button { font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white">
@@ -107,11 +99,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4">
                         <div>
-                            <label for="pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregunta (con soporte para LaTeX)</label>
-                            <textarea id="pregunta" rows="4" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Escribe texto y fórmulas. Usa $...$ o \(...\) para fórmulas en línea y $$...$$ o \[...\] para bloques."></textarea>
+                            <label for="pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregunta</label>
+                            
+                            <div class="editor-toolbar flex items-center space-x-2 bg-gray-200 dark:bg-gray-700 p-1.5 rounded-t-md border-x border-t border-gray-300 dark:border-gray-600">
+                                <button type="button" id="btn-bold" class="px-3 py-1 rounded font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" title="Negrita">B</button>
+                                <button type="button" id="btn-italic" class="px-3 py-1 rounded italic font-serif text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" title="Cursiva">I</button>
+                                <div class="w-px h-5 bg-gray-400 dark:bg-gray-500"></div>
+                                <button type="button" id="btn-inline-math" class="px-3 py-1 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" title="Fórmula en línea">$ f(x) $</button>
+                                <button type="button" id="btn-block-math" class="px-3 py-1 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" title="Fórmula en bloque">$$ f(x) $$</button>
+                            </div>
+
+                            <textarea id="pregunta" rows="4" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-b-md p-2 text-gray-900 dark:text-white focus:ring-0" placeholder="Escribe texto y fórmulas..."></textarea>
                             
                             <div id="pregunta-preview-container">
-                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Previsualización:</label>
+                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mt-2 mb-1">Previsualización:</label>
                                 <div id="pregunta-preview"></div>
                             </div>
                         </div>
@@ -122,15 +123,15 @@
                     </div>
                     <div class="space-y-3" id="respuestas-container">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Respuestas (Marcar la/s correcta/s)</label>
-                        <div class="flex items-center" id="respuesta-wrapper-1"><input type="radio" id="correcta-1" name="correcta" value="0" class="form-check-input radio" checked><input type="text" id="respuesta-1" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 1"></div>
-                        <div class="flex items-center" id="respuesta-wrapper-2"><input type="radio" id="correcta-2" name="correcta" value="1" class="form-check-input radio"><input type="text" id="respuesta-2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 2"></div>
-                        <div class="flex items-center" id="respuesta-wrapper-3"><input type="radio" id="correcta-3" name="correcta" value="2" class="form-check-input radio"><input type="text" id="respuesta-3" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 3"></div>
-                        <div class="flex items-center" id="respuesta-wrapper-4"><input type="radio" id="correcta-4" name="correcta" value="3" class="form-check-input radio"><input type="text" id="respuesta-4" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Respuesta 4"></div>
+                        <div class="flex items-center" id="respuesta-wrapper-1"><input type="radio" id="correcta-1" name="correcta" value="0" class="form-check-input radio" checked><input type="text" id="respuesta-1" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Respuesta 1"></div>
+                        <div class="flex items-center" id="respuesta-wrapper-2"><input type="radio" id="correcta-2" name="correcta" value="1" class="form-check-input radio"><input type="text" id="respuesta-2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Respuesta 2"></div>
+                        <div class="flex items-center" id="respuesta-wrapper-3"><input type="radio" id="correcta-3" name="correcta" value="2" class="form-check-input radio"><input type="text" id="respuesta-3" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Respuesta 3"></div>
+                        <div class="flex items-center" id="respuesta-wrapper-4"><input type="radio" id="correcta-4" name="correcta" value="3" class="form-check-input radio"><input type="text" id="respuesta-4" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Respuesta 4"></div>
                     </div>
                 </div>
                 <div class="mt-6 flex space-x-4">
-                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Añadir Pregunta</button>
-                    <button type="button" id="cancel-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 hidden-important">Cancelar Edición</button>
+                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Añadir Pregunta</button>
+                    <button type="button" id="cancel-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors hidden-important">Cancelar Edición</button>
                 </div>
             </form>
 
@@ -142,8 +143,8 @@
             </div>
 
             <div class="flex flex-col md:flex-row gap-4">
-                <button id="guardar-csv" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Guardar en CSV</button>
-                <button id="cargar-csv" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300">Cargar desde CSV</button>
+                <button id="guardar-csv" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Guardar en CSV</button>
+                <button id="cargar-csv" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Cargar desde CSV</button>
                 <input type="file" id="csv-file-input" class="hidden" accept=".csv">
             </div>
         </div>
@@ -174,13 +175,39 @@
             const themeToggleBtn = document.getElementById('theme-toggle');
             const sunIcon = document.getElementById('theme-icon-sun');
             const moonIcon = document.getElementById('theme-icon-moon');
+            const btnBold = document.getElementById('btn-bold');
+            const btnItalic = document.getElementById('btn-italic');
+            const btnInlineMath = document.getElementById('btn-inline-math');
+            const btnBlockMath = document.getElementById('btn-block-math');
 
             // --- APP STATE ---
             let preguntas = [];
             let ultimoTiempoSeleccionado = 30;
             
-            // --- KATEX RENDERER ---
+            // --- EDITOR AND RENDERER ---
+            const wrapText = (startTag, endTag) => {
+                const start = preguntaInput.selectionStart;
+                const end = preguntaInput.selectionEnd;
+                const selectedText = preguntaInput.value.substring(start, end);
+                const textBefore = preguntaInput.value.substring(0, start);
+                const textAfter = preguntaInput.value.substring(end);
+                
+                const newText = `${textBefore}${startTag}${selectedText}${endTag}${textAfter}`;
+                preguntaInput.value = newText;
+                
+                if (start === end) {
+                    preguntaInput.selectionStart = preguntaInput.selectionEnd = start + startTag.length;
+                } else {
+                    preguntaInput.selectionStart = start + startTag.length;
+                    preguntaInput.selectionEnd = end + startTag.length;
+                }
+                preguntaInput.focus();
+                renderizarPreviewFormula();
+            };
+
             const renderizarConKaTeX = (elemento, texto) => {
+                // Para simplificar, no renderizamos Markdown, solo KaTeX.
+                // Para ** y *, necesitaríamos una librería de Markdown.
                 if (window.renderMathInElement) {
                     elemento.textContent = texto;
                     renderMathInElement(elemento, {
@@ -217,14 +244,7 @@
             };
 
             // --- CORE FUNCTIONS ---
-            const formatTipo = (tipo) => {
-                switch(tipo) {
-                    case 'quiz': return 'Quiz';
-                    case 'multiple': return 'Múltiple';
-                    case 'true-false': return 'V/F';
-                    default: return 'Desconocido';
-                }
-            };
+            const formatTipo = (tipo) => ({'quiz': 'Quiz', 'multiple': 'Múltiple', 'true-false': 'V/F'}[tipo] || 'Desconocido');
 
             const formatTiempo = (segundos) => {
                 if (segundos < 60) return `${segundos}s`;
@@ -256,8 +276,8 @@
                             </div>
                         </div>
                         <div class="flex space-x-2 flex-shrink-0">
-                            <button data-index="${index}" class="editar-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md text-sm transition-colors">Editar</button>
-                            <button data-index="${index}" class="eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm transition-colors">Eliminar</button>
+                            <button data-index="${index}" class="editar-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md text-sm">Editar</button>
+                            <button data-index="${index}" class="eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm">Eliminar</button>
                         </div>
                     `;
                     el.querySelector('.flex-grow').prepend(preguntaTextoDiv);
@@ -310,8 +330,8 @@
                 form.reset();
                 editIndexInput.value = "-1";
                 submitBtn.textContent = "Añadir Pregunta";
-                submitBtn.classList.replace('bg-yellow-600', 'bg-indigo-600');
-                submitBtn.classList.replace('hover:bg-yellow-700', 'hover:bg-indigo-700');
+                submitBtn.classList.remove('bg-yellow-600', 'hover:bg-yellow-700');
+                submitBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
                 cancelBtn.classList.add('hidden-important');
                 tipoPreguntaSelect.value = 'quiz';
                 establecerTiempoFormulario(ultimoTiempoSeleccionado);
@@ -329,15 +349,12 @@
                 imagenUrlInput.value = p.imagen_url;
                 respuestasInputs.forEach((input, i) => { input.value = p.respuestas[i] || ''; });
                 correctasInputs.forEach((input, i) => { 
-                    if (Array.isArray(p.correcta)) {
-                        input.checked = p.correcta.includes(i); 
-                    } else { 
-                        input.checked = (p.correcta === i); 
-                    } 
+                    if (Array.isArray(p.correcta)) input.checked = p.correcta.includes(i); 
+                    else input.checked = (p.correcta === i); 
                 });
                 submitBtn.textContent = "Actualizar Pregunta";
-                submitBtn.classList.replace('bg-indigo-600', 'bg-yellow-600');
-                submitBtn.classList.replace('hover:bg-indigo-700', 'hover:bg-yellow-700');
+                submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                submitBtn.classList.add('bg-yellow-600', 'hover:bg-yellow-700');
                 cancelBtn.classList.remove('hidden-important');
                 renderizarPreviewFormula();
                 window.scrollTo(0, 0);
@@ -351,7 +368,7 @@
                 if (tipo === 'multiple') { 
                     correcta = correctasInputs.map((input, i) => input.checked ? i : -1).filter(i => i !== -1); 
                 } else { 
-                    correcta = parseInt(document.querySelector('input[name="correcta"]:checked').value); 
+                    correcta = parseInt(document.querySelector('input[name="correcta"]:checked')?.value ?? -1);
                 }
                 let tiempoFinal;
                 if (tiempoLimiteSelect.value === 'custom') { 
@@ -382,7 +399,6 @@
             const gestionarClickLista = (event) => {
                 const target = event.target.closest('button');
                 if (!target) return;
-
                 const index = parseInt(target.dataset.index);
                 if (target.classList.contains('editar-btn')) {
                     iniciarEdicion(index);
@@ -401,16 +417,14 @@
                 let csvContent = headers.join(';') + '\n';
                 preguntas.forEach(p => { 
                     const correctaStr = Array.isArray(p.correcta) ? p.correcta.map(c => c + 1).join(',') : p.correcta + 1;
-                    const fila = [ p.tipo, `"${(p.pregunta || '').replace(/"/g, '""')}"`, `"${(p.respuestas[0] || '').replace(/"/g, '""')}"`, `"${(p.respuestas[1] || '').replace(/"/g, '""')}"`, `"${(p.respuestas[2] || '').replace(/"/g, '""')}"`, `"${(p.respuestas[3] || '').replace(/"/g, '""')}"`, p.tiempo, correctaStr, `"${(p.imagen_url || '').replace(/"/g, '""')}"` ]; 
+                    const fila = [ p.tipo, `"${p.pregunta.replace(/"/g, '""')}"`, ...p.respuestas.map(r => `"${r.replace(/"/g, '""')}"`), p.tiempo, correctaStr, `"${p.imagen_url.replace(/"/g, '""')}"` ]; 
                     csvContent += fila.join(';') + '\n'; 
                 });
-                const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' }); // Añadir BOM para compatibilidad con Excel
+                const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
                 link.href = URL.createObjectURL(blob);
-                link.download = "cuestionario_avanzado.csv";
-                document.body.appendChild(link);
+                link.download = "cuestionario.csv";
                 link.click();
-                document.body.removeChild(link);
             };
 
             const cargarCSV = (event) => {
@@ -419,21 +433,14 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const text = e.target.result;
-                    const lineas = text.split('\n').filter(l => l.trim() !== '').slice(1); // Omitir cabecera
+                    const lineas = text.split('\n').filter(l => l.trim() !== '').slice(1);
                     const regex = /"([^"]*)"|([^;]+)/g;
-                    preguntas = [];
-                    lineas.forEach(linea => {
+                    preguntas = lineas.map(linea => {
                         const campos = Array.from(linea.matchAll(regex), m => (m[1] || m[2] || '').trim());
-                        if (campos.length >= 8) {
-                            let correcta;
-                            if (campos[7].includes(',')) {
-                                correcta = campos[7].split(',').map(n => parseInt(n) - 1);
-                            } else {
-                                correcta = parseInt(campos[7]) - 1;
-                            }
-                            preguntas.push({ tipo: campos[0] || 'quiz', pregunta: campos[1] || '', respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''], tiempo: parseInt(campos[6]) || 30, correcta: correcta, imagen_url: campos[8] || '' });
-                        }
-                    });
+                        if (campos.length < 8) return null;
+                        let correcta = campos[7].includes(',') ? campos[7].split(',').map(n => parseInt(n) - 1) : parseInt(campos[7]) - 1;
+                        return { tipo: campos[0], pregunta: campos[1], respuestas: campos.slice(2, 6), tiempo: parseInt(campos[6]), correcta: correcta, imagen_url: campos[8] || '' };
+                    }).filter(p => p);
                     renderizarPreguntas();
                     alert(`${preguntas.length} preguntas cargadas.`);
                 };
@@ -443,6 +450,10 @@
 
             // --- EVENT LISTENERS ---
             preguntaInput.addEventListener('keyup', renderizarPreviewFormula);
+            btnBold.addEventListener('click', () => wrapText('**', '**'));
+            btnItalic.addEventListener('click', () => wrapText('*', '*'));
+            btnInlineMath.addEventListener('click', () => wrapText('$', '$'));
+            btnBlockMath.addEventListener('click', () => wrapText('$$', '$$'));
             tipoPreguntaSelect.addEventListener('change', gestionarCambioTipoPregunta);
             tiempoLimiteSelect.addEventListener('change', gestionarCambioTiempo);
             form.addEventListener('submit', gestionarSubmitFormulario);
@@ -454,10 +465,8 @@
             themeToggleBtn.addEventListener('click', toggleTheme);
             
             // --- INITIALIZATION ---
-            const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
-            
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(savedTheme);
             renderizarPreguntas();
             gestionarCambioTipoPregunta();
             gestionarCambioTiempo();
