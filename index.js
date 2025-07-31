@@ -1,6 +1,7 @@
 // --- DOM References ---
 const pantallas = document.querySelectorAll('.pantalla');
 const cargarBtn = document.getElementById('cargar-cuestionario-btn');
+const cargarEjemploBtn = document.getElementById('cargar-ejemplo-btn');
 const fileInput = document.getElementById('csv-file-input');
 const codigoPartidaEl = document.getElementById('codigo-partida');
 const urlSitioEl = document.getElementById('url-sitio');
@@ -775,6 +776,42 @@ function gestionarDesconexionJugador(peerId) {
     guardarEstadoJuego();
 }
 
+function procesarYEmpezar(csvText) {
+    const lineas = csvText.split('\n').filter(l => l.trim() !== '');
+    const regex = /"([^"]*)"|([^;]+)/g;
+    cuestionario = [];
+    for (let i = 1; i < lineas.length; i++) {
+        const campos = Array.from(lineas[i].matchAll(regex), m => m[1] || m[2]);
+        if (campos.length >= 8) {
+            let correcta;
+            const correctaRaw = campos[7] || '';
+            if (correctaRaw.includes(',')) {
+                correcta = correctaRaw.split(',').map(n => parseInt(n) - 1).sort();
+            } else {
+                correcta = parseInt(correctaRaw) - 1;
+            }
+            cuestionario.push({
+                tipo: campos[0] || 'quiz',
+                pregunta: campos[1] || '',
+                respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''],
+                tiempo: parseInt(campos[6]) || 30,
+                correcta: correcta,
+                imagen_url: campos[8] || ''
+            });
+        }
+    }
+    if (cuestionario.length === 0) {
+        alert("El archivo CSV está vacío o no tiene el formato correcto.");
+        mostrarPantalla('pantalla-carga');
+        return;
+    }
+    estadoJuego = 'lobby';
+    preguntaActualIndex = -1;
+    jugadores = {};
+    conexiones = {};
+    inicializarPeer();
+}
+
 if(cargarBtn) cargarBtn.addEventListener('click', () => {
     inicializarAudio();
 
@@ -788,41 +825,43 @@ if(cargarBtn) cargarBtn.addEventListener('click', () => {
     }
 });
 
+if(cargarEjemploBtn) {
+    cargarEjemploBtn.addEventListener('click', () => {
+        inicializarAudio();
+        
+        if (localStorage.getItem('qplay_estado_partida')) {
+            if (!confirm('Hay una partida en curso. ¿Quieres empezar una nueva? Se perderá el progreso anterior.')) {
+                return; 
+            }
+        }
+        
+        limpiarEstadoJuego();
+        const urlEjemplo = 'https://raw.githubusercontent.com/jjdeharo/qplay/refs/heads/main/ejemplo.csv';
+
+        fetch(urlEjemplo)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error de red: ${response.statusText}`);
+                }
+                return response.text();
+            })
+            .then(csvText => {
+                procesarYEmpezar(csvText);
+            })
+            .catch(error => {
+                console.error('Error al cargar el cuestionario de ejemplo:', error);
+                alert(`No se pudo cargar el ejemplo: ${error.message}`);
+            });
+    });
+}
+
 if(fileInput) fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     limpiarEstadoJuego();
     const reader = new FileReader();
     reader.onload = (event) => {
-        const text = event.target.result;
-        const lineas = text.split('\n').filter(l => l.trim() !== '');
-        const regex = /"([^"]*)"|([^;]+)/g;
-        cuestionario = [];
-        for (let i = 1; i < lineas.length; i++) {
-            const campos = Array.from(lineas[i].matchAll(regex), m => m[1] || m[2]);
-            if (campos.length >= 8) {
-                let correcta;
-                const correctaRaw = campos[7] || '';
-                if (correctaRaw.includes(',')) {
-                    correcta = correctaRaw.split(',').map(n => parseInt(n) - 1).sort();
-                } else {
-                    correcta = parseInt(correctaRaw) - 1;
-                }
-                cuestionario.push({
-                    tipo: campos[0] || 'quiz',
-                    pregunta: campos[1] || '',
-                    respuestas: [campos[2] || '', campos[3] || '', campos[4] || '', campos[5] || ''],
-                    tiempo: parseInt(campos[6]) || 30,
-                    correcta: correcta,
-                    imagen_url: campos[8] || ''
-                });
-            }
-        }
-        estadoJuego = 'lobby';
-        preguntaActualIndex = -1;
-        jugadores = {};
-        conexiones = {};
-        inicializarPeer();
+        procesarYEmpezar(event.target.result);
     };
     reader.readAsText(file);
 });
