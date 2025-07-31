@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QPlay - Presentador</title>
@@ -18,19 +17,22 @@
 </head>
 <body class="animated-gradient text-white">
 
+    <div id="lang-selector" class="fixed top-4 right-4 z-50 flex space-x-1 glass-card p-2 rounded-lg">
+        </div>
+
     <div id="pantalla-carga" class="pantalla activa min-h-screen w-full flex-col items-center justify-center text-center p-8">
         <div class="glass-card rounded-2xl p-8 md:p-12 w-full max-w-md">
-            <h1 class="font-poppins text-7xl font-extrabold text-white mb-4 text-shadow">QPlay</h1>
-            <p class="text-xl text-gray-200 mb-8">Carga tu cuestionario para empezar a jugar.</p>
+            <h1 class="font-poppins text-7xl font-extrabold text-white mb-4 text-shadow" data-i18n-key="load_title">QPlay</h1>
+            <p class="text-xl text-gray-200 mb-8" data-i18n-key="load_subtitle">Carga tu cuestionario para empezar a jugar.</p>
             <div class="flex flex-col items-center space-y-4">
-                <button id="cargar-cuestionario-btn" class="w-full font-bold py-4 text-xl rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6h.1a5 5 0 011 9.9M12 15v-6m0 0l-3 3m3-3l3 3" /></svg>
-                    <span>Cargar Cuestionario</span>
+                <button id="cargar-cuestionario-btn" class="w-full font-bold py-4 text-xl rounded-lg ...">
+                    <svg ...></svg>
+                    <span data-i18n-key="load_button">Cargar Cuestionario</span>
                 </button>
-                <a href="editor.html" class="w-full bg-gray-700 bg-opacity-50 hover:bg-opacity-75 text-white font-bold py-3 px-6 rounded-lg text-lg transition-all hover:scale-105">
+                <a href="editor.html" class="w-full bg-gray-700 ..." data-i18n-key="load_editor_link">
                     o crea un QPlay con el editor
                 </a>
-                <button id="cargar-ejemplo-btn" class="text-gray-300 hover:text-white text-sm mt-4 pt-2 transition-colors">
+                <button id="cargar-ejemplo-btn" class="text-gray-300 ..." data-i18n-key="load_example_button">
                     o cargar un ejemplo
                 </button>
             </div>
@@ -41,127 +43,97 @@
     <div id="pantalla-lobby" class="pantalla min-h-screen w-full flex-col p-4 md:p-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 flex-grow">
             <div class="glass-card rounded-lg p-6 shadow-md hidden md:block">
-                <h2 class="text-2xl font-bold mb-4 border-b border-gray-200 border-opacity-30 pb-2">Opciones</h2>
+                <h2 class="text-2xl font-bold mb-4 border-b ... pb-2" data-i18n-key="lobby_options">Opciones</h2>
                 <div class="space-y-4">
                     <label class="flex items-center justify-between cursor-pointer">
-                        <span class="text-xl">Preguntas aleatorias</span>
-                        <div class="relative">
-                            <input type="checkbox" id="opcion-preguntas-aleatorias" class="sr-only peer">
-                            <div class="w-14 h-8 bg-gray-900 bg-opacity-50 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500"></div>
-                        </div>
+                        <span class="text-xl" data-i18n-key="lobby_random_questions">Preguntas aleatorias</span>
+                        <div class="relative"><input type="checkbox" id="opcion-preguntas-aleatorias" class="sr-only peer"><div class="w-14 h-8 ..."></div></div>
                     </label>
                     <label class="flex items-center justify-between cursor-pointer">
-                        <span class="text-xl">Respuestas aleatorias</span>
-                        <div class="relative">
-                            <input type="checkbox" id="opcion-respuestas-aleatorias" class="sr-only peer">
-                            <div class="w-14 h-8 bg-gray-900 bg-opacity-50 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-pink-500"></div>
-                        </div>
+                        <span class="text-xl" data-i18n-key="lobby_random_answers">Respuestas aleatorias</span>
+                        <div class="relative"><input type="checkbox" id="opcion-respuestas-aleatorias" class="sr-only peer"><div class="w-14 h-8 ..."></div></div>
                     </label>
                 </div>
             </div>
             <div class="flex flex-col items-center justify-center text-center">
-                <p class="text-2xl mb-2 text-shadow">Únete en <span id="url-sitio" class="font-bold"></span></p>
-                <div id="codigo-partida" class="text-8xl md:text-9xl font-extrabold tracking-widest my-4 p-4 rounded-lg game-code-text">...</div>
-                <div id="qrcode" class="p-4 bg-white rounded-lg shadow-lg"></div>
-                <button id="iniciar-juego-btn" class="w-full mt-8 font-bold py-4 text-3xl rounded-lg bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none" disabled>
-                    Empezar Juego
-                </button>
+                <p class="text-2xl mb-2 text-shadow"><span data-i18n-key="lobby_join_at">Únete en</span> <span id="url-sitio" class="font-bold"></span></p>
+                <div id="codigo-partida" ...>...</div>
+                <div id="qrcode" ...></div>
+                <button id="iniciar-juego-btn" class="..." disabled data-i18n-key="lobby_start_button">Empezar Juego</button>
             </div>
             <div class="glass-card rounded-lg p-6 shadow-md flex flex-col">
-                 <h2 class="text-2xl font-bold mb-4">Jugadores (<span id="contador-jugadores">0</span>)</h2>
-                 <ul id="lista-jugadores" class="space-y-2 h-full overflow-y-auto pr-2">
-                 </ul>
+                 <h2 class="text-2xl font-bold mb-4"><span data-i18n-key="lobby_players">Jugadores</span> (<span id="contador-jugadores">0</span>)</h2>
+                 <ul id="lista-jugadores" class="space-y-2 h-full overflow-y-auto pr-2"></ul>
             </div>
         </div>
-        </div>
+    </div>
     
-    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-center justify-between p-8 bg-gray-800 relative">
-        <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white z-20 hidden">JUEGO EN PAUSA</div>
+    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full ...">
+        <div id="pausa-overlay" class="absolute ... hidden" data-i18n-key="game_paused">JUEGO EN PAUSA</div>
         
-        <div id="estado-jugadores-panel" class="absolute left-8 top-1/2 -translate-y-1/2 glass-card p-4 rounded-lg w-64 hidden max-h-[80vh] overflow-y-auto">
+        <div id="estado-jugadores-panel" class="absolute left-8 ...">
             <div>
-                <h3 class="font-bold text-lg mb-2 text-green-300">Han votado (<span id="contador-votado">0</span>)</h3>
+                <h3 class="font-bold text-lg mb-2 text-green-300"><span data-i18n-key="voted_players">Han votado</span> (<span id="contador-votado">0</span>)</h3>
                 <ul id="jugadores-votado" class="space-y-1 text-sm"></ul>
             </div>
             <div class="mt-4">
-                <h3 class="font-bold text-lg mb-2 text-yellow-300">Pendientes (<span id="contador-pendientes">0</span>)</h3>
+                <h3 class="font-bold text-lg mb-2 text-yellow-300"><span data-i18n-key="pending_players">Pendientes</span> (<span id="contador-pendientes">0</span>)</h3>
                 <ul id="jugadores-pendientes" class="space-y-1 text-sm"></ul>
             </div>
         </div>
 
         <div class="w-full flex justify-between items-start absolute top-8 px-8 z-10">
-            <div class="flex items-center space-x-4">
-                <span id="contador-pregunta" class="text-2xl font-bold">Pregunta 1 / 10</span>
-                <div class="relative w-24 h-24">
-                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                        <circle class="text-gray-600" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
-                        <circle id="temporizador-circulo" class="text-pink-500" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" transform="rotate(-90 50 50)" />
-                     </svg>
-                    <div id="temporizador" class="absolute inset-0 flex items-center justify-center text-4xl font-bold">30</div>
-                </div>
-            </div>
+            <span id="contador-pregunta" class="text-2xl font-bold"></span>
             <div class="flex space-x-2">
-                <button id="pausa-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">Pausar</button>
-                <button id="saltar-tiempo-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Saltar Tiempo</button>
+                <button id="pausa-btn" class="..." data-i18n-key="pause_button">Pausar</button>
+                <button id="saltar-tiempo-btn" class="..." data-i18n-key="skip_time_button">Saltar Tiempo</button>
             </div>
         </div>
 
-        <div class="w-full max-w-5xl glass-card rounded-2xl p-8 ml-auto mr-auto">
-            <div class="flex flex-col items-center text-center">
-                <h2 id="texto-pregunta" class="text-5xl font-bold mb-6">¿Cuál es la capital de España?</h2>
-                <img id="imagen-pregunta" src="" alt="Imagen de la pregunta" class="max-h-80 rounded-lg shadow-lg mb-8 hidden">
-            </div>
-            <div id="respuestas-grid" class="grid grid-cols-2 gap-4 w-full"></div>
-        </div>
-
-        <div id="controles-post-pregunta" class="absolute top-1/2 -translate-y-1/2 right-8 flex flex-col space-y-4 hidden">
-            <button id="mostrar-correcta-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl">Mostrar Correcta</button>
-            <button id="ir-a-puntuaciones-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-xl inline-flex items-center">
-                <span>Ver Puntuaciones</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+        <div id="controles-post-pregunta" class="absolute ... hidden">
+            <button id="mostrar-correcta-btn" class="..." data-i18n-key="show_correct_button">Mostrar Correcta</button>
+            <button id="ir-a-puntuaciones-btn" class="...">
+                <span data-i18n-key="view_scores_button">Ver Puntuaciones</span>
+                <svg ...></svg>
             </button>
-            
         </div>
     </div>
-    <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
-        <div class="w-full max-w-4xl glass-card rounded-2xl shadow-xl p-8 text-center">
-            <h1 class="text-5xl font-extrabold mb-8">Puntuaciones</h1>
+
+    <div id="pantalla-leaderboard" class="pantalla min-h-screen w-full ...">
+        <div class="w-full max-w-4xl glass-card ...">
+            <h1 class="text-5xl font-extrabold mb-8" data-i18n-key="leaderboard_title">Puntuaciones</h1>
             <ol id="lista-puntuaciones" class="text-3xl space-y-3 text-left"></ol>
-            <button id="siguiente-pregunta-btn" class="mt-12 font-bold py-4 text-2xl rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">Siguiente</button>
+            <button id="siguiente-pregunta-btn" class="..." data-i18n-key="next_question_button">Siguiente</button>
         </div>
     </div>
-    <button id="añadir-jugador-btn" class="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white font-bold p-4 rounded-full shadow-lg transition-transform hover:scale-110 items-center z-10 hidden">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+
+    <button id="añadir-jugador-btn" class="fixed ..." data-i18n-title-key="add_player_button_tooltip">
+        <svg ...></svg>
     </button>
-    <button id="reiniciar-partida-btn" class="fixed bottom-8 left-8 bg-red-600 hover:bg-red-700 text-white font-bold p-4 rounded-full shadow-lg transition-transform hover:scale-110 items-center z-10 hidden">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+    <button id="reiniciar-partida-btn" class="fixed ..." data-i18n-title-key="restart_game_button_tooltip">
+        <svg ...></svg>
     </button>
-    <div id="pantalla-final" class="pantalla min-h-screen w-full flex-col items-center justify-center p-8">
+
+    <div id="pantalla-final" class="pantalla min-h-screen w-full ...">
         <div class="w-full max-w-5xl text-center">
-            <h1 class="text-6xl font-extrabold mb-12">¡Fin del Juego!</h1>
-            <div id="podio" class="w-full flex justify-around items-end mb-12"></div>
+            <h1 class="text-6xl font-extrabold mb-12" data-i18n-key="final_title">¡Fin del Juego!</h1>
+            <div id="podio" ...></div>
             <div class="mt-12 space-x-4">
-                <button id="descargar-resultados-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Descargar Resultados</button>
-                <button id="reiniciar-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-2xl">Jugar de Nuevo</button>
+                <button id="descargar-resultados-btn" class="..." data-i18n-key="download_results_button">Descargar Resultados</button>
+                <button id="reiniciar-btn" class="..." data-i18n-key="play_again_button">Jugar de Nuevo</button>
             </div>
         </div>
     </div>
     
-    <div id="modal-añadir-jugador" class="fixed inset-0 bg-black bg-opacity-70 items-center justify-center z-50 hidden">
-        <div class="glass-card rounded-2xl p-8 text-center relative w-full max-w-lg">
-            <button id="cerrar-modal-btn" class="absolute top-4 right-4 text-white text-3xl font-bold hover:text-gray-300">&times;</button>
-            <h2 class="text-3xl font-bold mb-4">Añadir más jugadores</h2>
-            <p class="text-2xl mb-2 text-shadow">Únete en <span id="modal-url-sitio" class="font-bold"></span></p>
-            <div id="modal-codigo-partida" class="text-8xl font-extrabold tracking-widest my-4 p-4 rounded-lg game-code-text">...</div>
-            <div id="modal-qrcode" class="p-4 bg-white rounded-lg shadow-lg mx-auto w-fit"></div>
-        </div>
+    <div id="modal-añadir-jugador" class="fixed ... hidden">
+        <div class="glass-card ...">
+            <button id="cerrar-modal-btn" ...>&times;</button>
+            <h2 class="text-3xl font-bold mb-4" data-i18n-key="add_players_title">Añadir más jugadores</h2>
+            <p class="text-2xl mb-2 text-shadow"><span data-i18n-key="lobby_join_at">Únete en</span> <span id="modal-url-sitio" class="font-bold"></span></p>
+            </div>
     </div>
-
-    <div id="control-volumen" class="fixed bottom-8 right-8 z-50 hidden flex-col items-center space-y-2 glass-card p-3 rounded-lg">
-         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
-         <input id="volumen-slider" type="range" min="0" max="1" step="0.01" class="w-24 h-2 bg-gray-500 rounded-lg appearance-none cursor-pointer" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
-    </div>
-
+    
+    <script src="i18n.js"></script>
     <script src="index.js"></script>
 </body>
 </html>
