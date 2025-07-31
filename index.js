@@ -108,7 +108,7 @@ function limpiarEstadoJuego() {
     localStorage.removeItem('qplay_estado_partida');
 }
 
-// --- Music Logic (MODIFICADA) ---
+// --- Music Logic ---
 function inicializarAudio() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -119,7 +119,6 @@ function inicializarAudio() {
         audioElement.volume = volumenGuardado ? parseFloat(volumenGuardado) : 0.4;
         if (volumenSlider) volumenSlider.value = audioElement.volume;
         
-        // Cuando una canción termina, empieza otra del mismo tipo
         audioElement.addEventListener('ended', () => {
              if (tipoMusicaActual === 'principal' || tipoMusicaActual === 'juego') {
                 reproducirMusicaAleatoria(tipoMusicaActual);
@@ -168,7 +167,6 @@ function detenerMusica() {
     tipoMusicaActual = null;
 }
 
-// --- NUEVAS FUNCIONES DE PAUSA/REANUDACIÓN ---
 function pausarMusica() {
     if (audioElement && !audioElement.paused) {
         audioElement.pause();
@@ -191,7 +189,6 @@ function reproducirMusicaAleatoria(tipo) {
     }
 }
 
-// --- LÓGICA DE MÚSICA TOTALMENTE REESCRITA ---
 function gestionarMusicaPorEstado() {
     if (!audioContext) return;
 
@@ -202,39 +199,30 @@ function gestionarMusicaPorEstado() {
 
     switch (estadoJuego) {
         case 'lobby':
-            // Si la música no es la del lobby, la inicia
             if (tipoMusicaActual !== 'principal') {
-                detenerMusica(); // Asegura una transición limpia
+                detenerMusica();
                 reproducirMusicaAleatoria('principal');
             }
             break;
-
         case 'jugando':
-            // Si venimos del lobby o no hay música, empieza una nueva canción de juego
             if (tipoMusicaActual === 'principal' || tipoMusicaActual === null) {
                 detenerMusica();
                 reproducirMusicaAleatoria('juego');
             } else {
-                // Si ya hay una canción de juego (estaba pausada), la reanuda
                 reanudarMusica();
             }
             break;
-        
-        // En estos estados, la música se pausa
         case 'mostrando_correcta':
         case 'leaderboard':
             pausarMusica();
             break;
-
         case 'final':
-            // Pone la música de ganador
             if (tipoMusicaActual !== 'ganador') {
                 detenerMusica();
                 reproducirMusicaAleatoria('ganador');
             }
             break;
-
-        default: // 'carga' y cualquier otro estado
+        default:
             detenerMusica();
             break;
     }
@@ -259,7 +247,6 @@ function mostrarPantalla(id) {
     gestionarMusicaPorEstado();
 }
 
-// ... (El resto del archivo no necesita cambios) ...
 function actualizarListaJugadores() {
     if (!listaJugadoresEl) return;
     listaJugadoresEl.innerHTML = '';
@@ -398,13 +385,18 @@ function avanzarPregunta() {
 function mostrarPregunta() {
     const pregunta = cuestionario[preguntaActualIndex];
     isPaused = false;
-    pausaBtn.textContent = 'Pausar';
+    pausaBtn.textContent = t('pause_button');
     pausaOverlay.style.display = 'none';
     mostrarPantalla('pantalla-pregunta');
     controlesPostPregunta.classList.add('hidden');
     mostrarCorrectaBtn.disabled = false;
     saltarTiempoBtn.style.display = 'inline-block';
-    document.getElementById('contador-pregunta').textContent = `Pregunta ${preguntaActualIndex + 1} / ${cuestionario.length}`;
+    
+    document.getElementById('contador-pregunta').textContent = t('question_counter', {
+        current: preguntaActualIndex + 1,
+        total: cuestionario.length
+    });
+
     document.getElementById('texto-pregunta').textContent = pregunta.pregunta;
     const imgEl = document.getElementById('imagen-pregunta');
     if (pregunta.imagen_url) {
@@ -469,7 +461,6 @@ function finalizarRonda() {
         temporizadorInterval = null;
     }
     estadoJuego = 'mostrando_correcta';
-    // Se llama a gestionarMusicaPorEstado cuando se revela la respuesta o se va al leaderboard
     gestionarMusicaPorEstado(); 
     controlesPostPregunta.classList.remove('hidden');
     saltarTiempoBtn.style.display = 'none';
@@ -517,11 +508,12 @@ function gestionarPausa() {
             });
         }
     });
+
     if (isPaused) {
-        pausaBtn.textContent = 'Reanudar';
+        pausaBtn.textContent = t('resume_button');
         pausaOverlay.style.display = 'flex';
     } else {
-        pausaBtn.textContent = 'Pausar';
+        pausaBtn.textContent = t('pause_button');
         pausaOverlay.style.display = 'none';
     }
 }
@@ -603,7 +595,7 @@ function finalizarJuego() {
 
 function descargarResultados() {
     const jugadoresOrdenados = Object.values(jugadores).filter(j => j.nombre).sort((a, b) => b.puntaje - a.puntaje);
-    let csvContent = 'Puesto;Nombre;Puntuacion\n';
+    let csvContent = t('results_csv_header');
     jugadoresOrdenados.forEach((jugador, index) => {
         const fila = `${index + 1};"${jugador.nombre}";${jugador.puntaje}`;
         csvContent += fila + '\n';
@@ -613,7 +605,7 @@ function descargarResultados() {
     });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "resultados_partida.csv";
+    link.download = `${t('results_csv_filename')}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -710,7 +702,7 @@ function gestionarConexionJugador(conn, nombre) {
         conn.send({
             tipo: 'error',
             payload: {
-                mensaje: 'Ese nombre ya está en uso.'
+                mensaje: t('error_name_in_use')
             }
         });
         setTimeout(() => conn.close(), 100);
@@ -801,7 +793,7 @@ function procesarYEmpezar(csvText) {
         }
     }
     if (cuestionario.length === 0) {
-        alert("El archivo CSV está vacío o no tiene el formato correcto.");
+        alert(t('error_csv_format'));
         mostrarPantalla('pantalla-carga');
         return;
     }
@@ -816,7 +808,7 @@ if(cargarBtn) cargarBtn.addEventListener('click', () => {
     inicializarAudio();
 
     if (localStorage.getItem('qplay_estado_partida')) {
-        if (confirm('Hay una partida en curso. ¿Quieres empezar una nueva? Se perderá el progreso anterior.')) {
+        if (confirm(t('confirm_new_game'))) {
             limpiarEstadoJuego();
             fileInput.click();
         }
@@ -830,7 +822,7 @@ if(cargarEjemploBtn) {
         inicializarAudio();
         
         if (localStorage.getItem('qplay_estado_partida')) {
-            if (!confirm('Hay una partida en curso. ¿Quieres empezar una nueva? Se perderá el progreso anterior.')) {
+            if (!confirm(t('confirm_new_game'))) {
                 return; 
             }
         }
@@ -850,7 +842,7 @@ if(cargarEjemploBtn) {
             })
             .catch(error => {
                 console.error('Error al cargar el cuestionario de ejemplo:', error);
-                alert(`No se pudo cargar el ejemplo: ${error.message}`);
+                alert(t('error_load_example', { message: error.message }));
             });
     });
 }
@@ -904,7 +896,7 @@ if(reiniciarBtn) reiniciarBtn.addEventListener('click', () => {
 });
 
 if(reiniciarPartidaBtn) reiniciarPartidaBtn.addEventListener('click', () => {
-    if (confirm('¿Estás seguro de que quieres reiniciar la partida? Se perderá todo el progreso actual.')) {
+    if (confirm(t('confirm_restart_game'))) {
         reiniciarJuegoCompleto();
     }
 });
