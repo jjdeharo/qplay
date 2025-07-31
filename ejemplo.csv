@@ -1,0 +1,4 @@
+Tipo;Pregunta;R1;R2;R3;R4;Tiempo;Correcta;URL Imagen
+quiz;"¿Cuál es la capital de Francia?";"Moscú";"Sevilla";"París";"Roma";30;3;"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdbyFhTAQUaPf3oiRf4wBCTDCjttdHKimA_A&s"
+multiple;"¿Qué animales son comestibles?";"Araña";"Salmón";"Pollo";"Lombriz de tierra";30;2,3;"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-4xB3lE39d_0-aADETKLPZun27AYXg6WDvw&s"
+true-false;"Los elefantes vuelan";"Verdadero";"Falso";"";"";30;2;"https://www.publicdomainpictures.net/pictures/580000/nahled/image-1708502423XUf.jpg"
