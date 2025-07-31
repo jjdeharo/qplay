@@ -32,6 +32,9 @@ const modalUrlSitioEl = document.getElementById('modal-url-sitio');
 const modalCodigoPartidaEl = document.getElementById('modal-codigo-partida');
 const modalQrCodeEl = document.getElementById('modal-qrcode');
 const FULL_DASH_ARRAY = 283;
+// --- Referencias de audio ---
+const controlVolumenEl = document.getElementById('control-volumen');
+const volumenSlider = document.getElementById('volumen-slider');
 
 // --- State ---
 let peer;
@@ -46,6 +49,18 @@ let tiempoRestante;
 let tiempoPregunta;
 let isPaused = false;
 let gameId = '';
+// --- Estado del audio ---
+let audioContext;
+let audioElement;
+let cancionActual = null;
+let tipoMusicaActual = null; // 'lobby', 'juego', 'ganador'
+
+// --- Constantes de configuración de música ---
+// ¡Modifica estos números si añades más canciones!
+const CANTIDAD_MUSICA_LOBBY = 8;
+const CANTIDAD_MUSICA_JUEGO = 2; // Asumo que tienes 2, p.ej. 'juego01.mp3', 'juego02.mp3'
+const CANTIDAD_MUSICA_GANADOR = 2;
+
 
 // --- LocalStorage Logic ---
 function guardarEstadoJuego() {
@@ -94,6 +109,124 @@ function limpiarEstadoJuego() {
     localStorage.removeItem('qplay_estado_partida');
 }
 
+// --- Music Logic ---
+function inicializarAudio() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioElement = new Audio();
+        audioElement.crossOrigin = "anonymous";
+        
+        // Cargar volumen guardado o usar un valor por defecto
+        const volumenGuardado = localStorage.getItem('qplay_volumen');
+        audioElement.volume = volumenGuardado ? parseFloat(volumenGuardado) : 0.4;
+        if (volumenSlider) volumenSlider.value = audioElement.volume;
+        
+        // Evento para reproducir la siguiente canción cuando una termina
+        audioElement.addEventListener('ended', () => {
+             if (tipoMusicaActual === 'lobby') {
+                reproducirMusicaAleatoria('lobby');
+            } else if (tipoMusicaActual === 'juego') {
+                reproducirMusicaAleatoria('juego');
+            }
+            // La música de ganador no se repite
+        });
+    }
+}
+
+function obtenerPistaAleatoria(tipo) {
+    let cantidad, prefijo, padLength;
+    switch (tipo) {
+        case 'lobby':
+            cantidad = CANTIDAD_MUSICA_LOBBY;
+            prefijo = '';
+            padLength = 2;
+            break;
+        case 'juego':
+            cantidad = CANTIDAD_MUSICA_JUEGO;
+            prefijo = 'juego';
+            padLength = 2;
+            break;
+        case 'ganador':
+            cantidad = CANTIDAD_MUSICA_GANADOR;
+            prefijo = 'ganador';
+            padLength = 2;
+            break;
+        default:
+            return null;
+    }
+    const numero = Math.floor(Math.random() * cantidad) + 1;
+    const nombreArchivo = `${prefijo}${String(numero).padStart(padLength, '0')}.mp3`;
+    return `musica/${nombreArchivo}`;
+}
+
+function reproducirMusica(pista) {
+    if (!audioElement || !pista || cancionActual === pista) return;
+    
+    cancionActual = pista;
+    audioElement.src = pista;
+    audioElement.play().catch(error => {
+        console.warn("La reproducción automática fue bloqueada. Se requiere interacción del usuario.", error);
+    });
+}
+
+function detenerMusica() {
+    if (audioElement && !audioElement.paused) {
+        audioElement.pause();
+        cancionActual = null;
+        tipoMusicaActual = null;
+    }
+}
+
+function reproducirMusicaAleatoria(tipo) {
+    const nuevaPista = obtenerPistaAleatoria(tipo);
+    if (nuevaPista) {
+        tipoMusicaActual = tipo;
+        reproducirMusica(nuevaPista);
+    }
+}
+
+function gestionarMusicaPorEstado() {
+    if (!audioContext) return; // No hacer nada si el audio no está inicializado
+
+    // Mostrar siempre el control de volumen si la música no es nula
+    if (tipoMusicaActual) {
+        controlVolumenEl.style.display = 'flex';
+    } else {
+        controlVolumenEl.style.display = 'none';
+    }
+
+    switch (estadoJuego) {
+        case 'lobby':
+            if (tipoMusicaActual !== 'lobby') {
+                reproducirMusicaAleatoria('lobby');
+                controlVolumenEl.style.display = 'flex';
+            }
+            break;
+        case 'jugando':
+            // La música de juego empieza con la primera pregunta
+            if (preguntaActualIndex === 0 && tipoMusicaActual !== 'juego') {
+                reproducirMusicaAleatoria('juego');
+            }
+             if (tipoMusicaActual) controlVolumenEl.style.display = 'flex';
+            break;
+        case 'leaderboard':
+             if (tipoMusicaActual) controlVolumenEl.style.display = 'flex';
+            break;
+        case 'final':
+            if (tipoMusicaActual !== 'ganador') {
+                reproducirMusicaAleatoria('ganador');
+                controlVolumenEl.style.display = 'flex';
+            }
+            break;
+        default:
+            // Para 'carga' y otros estados, detenemos la música
+            detenerMusica();
+            controlVolumenEl.style.display = 'none';
+            break;
+    }
+}
+
+
 // --- UI Functions ---
 function mostrarPantalla(id) {
     pantallas.forEach(p => p.classList.remove('activa'));
@@ -101,7 +234,6 @@ function mostrarPantalla(id) {
     const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard' || id === 'pantalla-final');
     if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
     
-    // El botón de añadir jugador ya no aparece en el lobby
     if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-pregunta') ? 'flex' : 'none';
     
     if (id === 'pantalla-pregunta' && (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta')) {
@@ -109,6 +241,8 @@ function mostrarPantalla(id) {
     } else {
         estadoJugadoresPanel.style.display = 'none';
     }
+
+    gestionarMusicaPorEstado();
 }
 
 function actualizarListaJugadores() {
@@ -205,6 +339,8 @@ function reiniciarJuegoCompleto() {
     if (peer && !peer.destroyed) {
         peer.destroy();
     }
+    detenerMusica();
+    controlVolumenEl.style.display = 'none';
     // 2. Borrar los datos guardados
     limpiarEstadoJuego();
     // 3. Reiniciar las variables de estado en memoria
@@ -628,6 +764,8 @@ function gestionarDesconexionJugador(peerId) {
 
 // --- Event Listeners ---
 if(cargarBtn) cargarBtn.addEventListener('click', () => {
+    inicializarAudio();
+
     if (localStorage.getItem('qplay_estado_partida')) {
         if (confirm('Hay una partida en curso. ¿Quieres empezar una nueva? Se perderá el progreso anterior.')) {
             limpiarEstadoJuego();
@@ -710,7 +848,6 @@ if(saltarTiempoBtn) saltarTiempoBtn.addEventListener('click', finalizarRonda);
 if(mostrarCorrectaBtn) mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
 if(irAPuntuacionesBtn) irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
 
-// --- LÓGICA DE REINICIO CORREGIDA ---
 if(reiniciarBtn) reiniciarBtn.addEventListener('click', () => {
     reiniciarJuegoCompleto();
 });
@@ -723,11 +860,20 @@ if(reiniciarPartidaBtn) reiniciarPartidaBtn.addEventListener('click', () => {
 
 if(descargarResultadosBtn) descargarResultadosBtn.addEventListener('click', descargarResultados);
 
+if(volumenSlider) {
+    volumenSlider.addEventListener('input', (e) => {
+        const nuevoVolumen = parseFloat(e.target.value);
+        if(audioElement) audioElement.volume = nuevoVolumen;
+        localStorage.setItem('qplay_volumen', nuevoVolumen);
+    });
+}
+
 window.addEventListener('beforeunload', guardarEstadoJuego);
 
 // --- Initialization ---
 function reanudarPartida() {
     console.log("Restaurando partida...");
+    inicializarAudio();
     inicializarPeer(gameId);
     if (estadoJuego === 'lobby') {
         mostrarPantalla('pantalla-lobby');
