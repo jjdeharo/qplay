@@ -1,0 +1,57 @@
+body { 
+    font-family: 'Inter', sans-serif;
+}
+.font-poppins { 
+    font-family: 'Poppins', sans-serif; 
+}
+.pantalla { 
+    display: none; 
+}
+.pantalla.activa { 
+    display: flex; 
+}
+
+.animated-gradient {
+    background: linear-gradient(45deg, #6c2bd9, #b83280, #ff6b00, #2c89d9);
+    background-size: 400% 400%;
+    animation: gradient-animation 15s ease infinite;
+}
+
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.glass-card {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.game-code-text {
+    background: linear-gradient(45deg, #a2facf, #64acff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.respuesta-color-0 { background-color: #e53e3e; }
+.respuesta-color-1 { background-color: #3b82f6; }
+.respuesta-color-2 { background-color: #d97706; }
+.respuesta-color-3 { background-color: #10b981; }
+.text-shadow { 
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4); 
+}
+
+.respuesta-correcta {
+    box-shadow: 0 0 0 4px white, 0 0 0 8px #22c55e;
+    transform: scale(1.05);
+}
+#temporizador-circulo {
+    stroke-dasharray: 283;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
+}
