@@ -37,5 +37,5 @@
     "player_kicked": "You have been kicked from the game.",
     "results_csv_header": "Rank;Name;Score\n",
     "results_csv_filename": "game_results",
-    "load_ai_editor_link": "Create quiz with AI"
+    "load_ai_editor_link": "Create QPlay with AI"
 }
