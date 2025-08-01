@@ -1,6 +1,5 @@
 // --- DOM References ---
 const pantallas = document.querySelectorAll('.pantalla');
-const pantallaPregunta = document.getElementById('pantalla-pregunta');
 const cargarBtn = document.getElementById('cargar-cuestionario-btn');
 const cargarEjemploBtn = document.getElementById('cargar-ejemplo-btn');
 const fileInput = document.getElementById('csv-file-input');
@@ -33,13 +32,7 @@ const cerrarModalBtn = document.getElementById('cerrar-modal-btn');
 const modalUrlSitioEl = document.getElementById('modal-url-sitio');
 const modalCodigoPartidaEl = document.getElementById('modal-codigo-partida');
 const modalQrCodeEl = document.getElementById('modal-qrcode');
-const langSelectorEl = document.getElementById('lang-selector'); 
-const opcionPreguntasAleatorias = document.getElementById('opcion-preguntas-aleatorias');
-const opcionRespuestasAleatorias = document.getElementById('opcion-respuestas-aleatorias');
-// --- Referencias para maximizar ---
-const maximizarBtn = document.getElementById('maximizar-btn');
-const iconMaximize = document.getElementById('icon-maximize');
-const iconMinimize = document.getElementById('icon-minimize');
+const langSelectorEl = document.getElementById('lang-selector'); // Referencia añadida
 const FULL_DASH_ARRAY = 283;
 // --- Referencias de audio ---
 const controlVolumenEl = document.getElementById('control-volumen');
@@ -238,54 +231,25 @@ function gestionarMusicaPorEstado() {
 
 
 // --- UI Functions ---
-
-function toggleFullscreen() {
-    if (!pantallaPregunta || !iconMaximize || !iconMinimize) return;
-
-    const isMaximized = pantallaPregunta.classList.toggle('fullscreen-mode');
-    
-    if (isMaximized) {
-        iconMaximize.classList.add('hidden');
-        iconMinimize.classList.remove('hidden');
-    } else {
-        iconMaximize.classList.remove('hidden');
-        iconMinimize.classList.add('hidden');
-    }
-}
-
-function renderizarContenidoMixto(elemento, texto) {
-    if (!elemento) return;
-    const html = marked.parse(texto || '', { breaks: true, gfm: true });
-    elemento.innerHTML = html;
-    
-    if (window.renderMathInElement) {
-        renderMathInElement(elemento, {
-            delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '\\[', right: '\\]', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\(', right: '\\)', display: false}
-            ],
-            throwOnError: false,
-            ignoredTags: ["code", "pre", "script", "style", "textarea"]
-        });
-    }
-}
-
 function mostrarPantalla(id) {
     pantallas.forEach(p => p.classList.remove('activa'));
     document.getElementById(id).classList.add('activa');
 
+    // Muestra u oculta el selector de idioma según la pantalla activa
     if (langSelectorEl) {
-        langSelectorEl.style.display = (id === 'pantalla-carga') ? 'flex' : 'none';
+        if (id === 'pantalla-carga') {
+            langSelectorEl.style.display = 'flex';
+        } else {
+            langSelectorEl.style.display = 'none';
+        }
     }
 
-    const esPartidaActiva = ['pantalla-lobby', 'pantalla-pregunta', 'pantalla-leaderboard', 'pantalla-final'].includes(id);
+    const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard' || id === 'pantalla-final');
     if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
     
-    if(añadirJugadorBtn) añadirJugadorBtn.style.display = ['pantalla-leaderboard', 'pantalla-pregunta'].includes(id) ? 'flex' : 'none';
+    if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-pregunta') ? 'flex' : 'none';
     
-    if (id === 'pantalla-pregunta' && ['jugando', 'mostrando_correcta'].includes(estadoJuego)) {
+    if (id === 'pantalla-pregunta' && (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta')) {
         estadoJugadoresPanel.style.display = 'block';
     } else {
         estadoJugadoresPanel.style.display = 'none';
@@ -293,7 +257,6 @@ function mostrarPantalla(id) {
 
     gestionarMusicaPorEstado();
 }
-
 
 function actualizarListaJugadores() {
     if (!listaJugadoresEl) return;
@@ -405,7 +368,7 @@ function reiniciarJuegoCompleto() {
 
 function iniciarJuego() {
     estadoJuego = 'jugando';
-    if (opcionPreguntasAleatorias.checked) {
+    if (document.getElementById('opcion-preguntas-aleatorias').checked) {
         for (let i = cuestionario.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [cuestionario[i], cuestionario[j]] = [cuestionario[j], cuestionario[i]];
@@ -440,20 +403,12 @@ function mostrarPregunta() {
     mostrarCorrectaBtn.disabled = false;
     saltarTiempoBtn.style.display = 'inline-block';
     
-    if(maximizarBtn) {
-        maximizarBtn.classList.remove('hidden');
-        pantallaPregunta.classList.remove('fullscreen-mode');
-        iconMaximize.classList.remove('hidden');
-        iconMinimize.classList.add('hidden');
-    }
-
     document.getElementById('contador-pregunta').textContent = t('question_counter', {
         current: preguntaActualIndex + 1,
         total: cuestionario.length
     });
 
-    renderizarContenidoMixto(document.getElementById('texto-pregunta'), pregunta.pregunta);
-    
+    document.getElementById('texto-pregunta').textContent = pregunta.pregunta;
     const imgEl = document.getElementById('imagen-pregunta');
     if (pregunta.imagen_url) {
         imgEl.src = pregunta.imagen_url;
@@ -465,26 +420,15 @@ function mostrarPregunta() {
     respuestasGrid.innerHTML = '';
     const simbolos = ['▲', '◆', '●', '■'];
     let numRespuestasVisibles = 0;
-    
     pregunta.respuestas.forEach((respuesta, index) => {
         if (respuesta.trim() !== '') {
             numRespuestasVisibles++;
             const respuestaDiv = document.createElement('div');
             respuestaDiv.className = `respuesta-color-${index} text-white p-6 rounded-lg flex items-center text-3xl text-shadow`;
-            
-            const simboloSpan = document.createElement('span');
-            simboloSpan.className = 'mr-4 text-4xl';
-            simboloSpan.textContent = simbolos[index];
-            
-            const textoP = document.createElement('p');
-            renderizarContenidoMixto(textoP, respuesta);
-
-            respuestaDiv.appendChild(simboloSpan);
-            respuestaDiv.appendChild(textoP);
+            respuestaDiv.innerHTML = `<span class="mr-4 text-4xl">${simbolos[index]}</span> <p>${respuesta}</p>`;
             respuestasGrid.appendChild(respuestaDiv);
         }
     });
-    
     tiempoPregunta = pregunta.tiempo;
     tiempoRestante = tiempoPregunta;
     const temporizadorEl = document.getElementById('temporizador');
@@ -501,7 +445,6 @@ function mostrarPregunta() {
             finalizarRonda();
         }
     }, 1000);
-    
     Object.values(conexiones).forEach(nombre => {
         const jugador = jugadores[nombre];
         if (jugador.conectado && jugador.conn) {
@@ -516,7 +459,6 @@ function mostrarPregunta() {
     });
     actualizarEstadoJugadoresDisplay();
 }
-
 
 function setCircleDashoffset() {
     const rawTimeFraction = tiempoRestante / tiempoPregunta;
@@ -533,7 +475,6 @@ function finalizarRonda() {
     gestionarMusicaPorEstado(); 
     controlesPostPregunta.classList.remove('hidden');
     saltarTiempoBtn.style.display = 'none';
-    
     const pregunta = cuestionario[preguntaActualIndex];
     Object.keys(respuestasRonda).forEach(nombre => {
         const respJugador = respuestasRonda[nombre].respuesta;
@@ -743,7 +684,6 @@ function inicializarPeer(existingGameId = null) {
 
         if (!existingGameId) {
             mostrarPantalla('pantalla-lobby');
-            actualizarListaJugadores(); 
             guardarEstadoJuego();
         }
     });
@@ -875,177 +815,131 @@ function procesarYEmpezar(csvText) {
     inicializarPeer();
 }
 
-// --- INICIALIZACIÓN DE LISTENERS Y ESTADO ---
-document.addEventListener('DOMContentLoaded', () => {
-    
-    function inicializarEventos() {
-        if(maximizarBtn) maximizarBtn.addEventListener('click', toggleFullscreen);
-    
-        window.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && pantallaPregunta.classList.contains('fullscreen-mode')) {
-                toggleFullscreen();
-            }
-        });
-        
-        if(opcionPreguntasAleatorias) {
-            opcionPreguntasAleatorias.addEventListener('change', (e) => {
-                localStorage.setItem('qplay_opcion_preguntas_aleatorias', e.target.checked);
-            });
-        }
-        
-        if(opcionRespuestasAleatorias) {
-            opcionRespuestasAleatorias.addEventListener('change', (e) => {
-                localStorage.setItem('qplay_opcion_respuestas_aleatorias', e.target.checked);
-            });
-        }
-        
-        if(cargarBtn) cargarBtn.addEventListener('click', () => {
-            inicializarAudio();
-        
-            if (localStorage.getItem('qplay_estado_partida')) {
-                if (confirm(t('confirm_new_game'))) {
-                    limpiarEstadoJuego();
-                    fileInput.click();
-                }
-            } else {
-                fileInput.click();
-            }
-        });
-        
-        if(cargarEjemploBtn) {
-            cargarEjemploBtn.addEventListener('click', () => {
-                inicializarAudio();
-                
-                if (localStorage.getItem('qplay_estado_partida')) {
-                    if (!confirm(t('confirm_new_game'))) {
-                        return; 
-                    }
-                }
-                
-                limpiarEstadoJuego();
-                const urlEjemplo = 'https://raw.githubusercontent.com/jjdeharo/qplay/refs/heads/main/ejemplo.csv';
-        
-                fetch(urlEjemplo)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Error de red: ${response.statusText}`);
-                        }
-                        return response.text();
-                    })
-                    .then(csvText => {
-                        procesarYEmpezar(csvText);
-                    })
-                    .catch(error => {
-                        console.error('Error al cargar el cuestionario de ejemplo:', error);
-                        alert(t('error_load_example', { message: error.message }));
-                    });
-            });
-        }
-        
-        if(fileInput) fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+if(cargarBtn) cargarBtn.addEventListener('click', () => {
+    inicializarAudio();
+
+    if (localStorage.getItem('qplay_estado_partida')) {
+        if (confirm(t('confirm_new_game'))) {
             limpiarEstadoJuego();
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                procesarYEmpezar(event.target.result);
-            };
-            reader.readAsText(file);
-        });
-        
-        if(listaJugadoresEl) listaJugadoresEl.addEventListener('click', e => {
-            const boton = e.target.closest('.eliminar-jugador-btn');
-            if (boton) {
-                const peerId = boton.dataset.peerId;
-                const nombre = conexiones[peerId];
-                if (nombre && jugadores[nombre] && jugadores[nombre].conn) {
-                    jugadores[nombre].conn.send({
-                        tipo: 'expulsado'
-                    });
-                    setTimeout(() => jugadores[nombre].conn.close(), 100);
-                }
-                delete jugadores[nombre];
-                delete conexiones[peerId];
-                actualizarListaJugadores();
-                guardarEstadoJuego();
-            }
-        });
-        
-        if(añadirJugadorBtn) añadirJugadorBtn.addEventListener('click', mostrarModalAñadirJugador);
-        if(cerrarModalBtn) cerrarModalBtn.addEventListener('click', cerrarModalAñadirJugador);
-        if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
-            if (e.target.id === 'modal-añadir-jugador') {
-                cerrarModalAñadirJugador();
-            }
-        });
-        
-        if(iniciarJuegoBtn) iniciarJuegoBtn.addEventListener('click', iniciarJuego);
-        if(siguientePreguntaBtn) siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
-        if(pausaBtn) pausaBtn.addEventListener('click', gestionarPausa);
-        if(pausaOverlay) pausaOverlay.addEventListener('click', gestionarPausa);
-        if(saltarTiempoBtn) saltarTiempoBtn.addEventListener('click', finalizarRonda);
-        if(mostrarCorrectaBtn) mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
-        if(irAPuntuacionesBtn) irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
-        
-        if(reiniciarBtn) reiniciarBtn.addEventListener('click', () => {
-            reiniciarJuegoCompleto();
-        });
-        
-        if(reiniciarPartidaBtn) reiniciarPartidaBtn.addEventListener('click', () => {
-            if (confirm(t('confirm_restart_game'))) {
-                reiniciarJuegoCompleto();
-            }
-        });
-        
-        if(descargarResultadosBtn) descargarResultadosBtn.addEventListener('click', descargarResultados);
-        
-        if(volumenSlider) {
-            volumenSlider.addEventListener('input', (e) => {
-                const nuevoVolumen = parseFloat(e.target.value);
-                if(audioElement) audioElement.volume = nuevoVolumen;
-                localStorage.setItem('qplay_volumen', nuevoVolumen);
-            });
+            fileInput.click();
         }
-        
-        window.addEventListener('beforeunload', guardarEstadoJuego);
-    }
-    
-    function cargarOpcionesGuardadas() {
-        const pregAleatorias = localStorage.getItem('qplay_opcion_preguntas_aleatorias');
-        if (opcionPreguntasAleatorias && pregAleatorias !== null) {
-            opcionPreguntasAleatorias.checked = (pregAleatorias === 'true');
-        }
-    
-        const respAleatorias = localStorage.getItem('qplay_opcion_respuestas_aleatorias');
-        if (opcionRespuestasAleatorias && respAleatorias !== null) {
-            opcionRespuestasAleatorias.checked = (respAleatorias === 'true');
-        }
-    }
-
-    function reanudarPartida() {
-        console.log("Restaurando partida...");
-        inicializarAudio();
-        cargarOpcionesGuardadas();
-        inicializarPeer(gameId);
-        if (estadoJuego === 'lobby') {
-            mostrarPantalla('pantalla-lobby');
-            actualizarListaJugadores();
-        } else if (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta') {
-            mostrarPregunta();
-            actualizarEstadoJugadoresDisplay();
-        } else if (estadoJuego === 'leaderboard') {
-            mostrarLeaderboard();
-        }
-    }
-
-    // --- PUNTO DE ENTRADA PRINCIPAL ---
-    inicializarEventos();
-
-    if (cargarEstadoJuego()) {
-        reanudarPartida();
     } else {
-        cargarOpcionesGuardadas();
-        mostrarPantalla('pantalla-carga');
+        fileInput.click();
     }
-
 });
+
+if(cargarEjemploBtn) {
+    cargarEjemploBtn.addEventListener('click', () => {
+        inicializarAudio();
+        
+        if (localStorage.getItem('qplay_estado_partida')) {
+            if (!confirm(t('confirm_new_game'))) {
+                return; 
+            }
+        }
+        
+        limpiarEstadoJuego();
+        const urlEjemplo = 'https://raw.githubusercontent.com/jjdeharo/qplay/refs/heads/main/ejemplo.csv';
+
+        fetch(urlEjemplo)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error de red: ${response.statusText}`);
+                }
+                return response.text();
+            })
+            .then(csvText => {
+                procesarYEmpezar(csvText);
+            })
+            .catch(error => {
+                console.error('Error al cargar el cuestionario de ejemplo:', error);
+                alert(t('error_load_example', { message: error.message }));
+            });
+    });
+}
+
+if(fileInput) fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    limpiarEstadoJuego();
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        procesarYEmpezar(event.target.result);
+    };
+    reader.readAsText(file);
+});
+
+if(listaJugadoresEl) listaJugadoresEl.addEventListener('click', e => {
+    const boton = e.target.closest('.eliminar-jugador-btn');
+    if (boton) {
+        const peerId = boton.dataset.peerId;
+        const nombre = conexiones[peerId];
+        if (nombre && jugadores[nombre] && jugadores[nombre].conn) {
+            jugadores[nombre].conn.send({
+                tipo: 'expulsado'
+            });
+            setTimeout(() => jugadores[nombre].conn.close(), 100);
+        }
+        delete jugadores[nombre];
+        delete conexiones[peerId];
+        actualizarListaJugadores();
+        guardarEstadoJuego();
+    }
+});
+
+if(añadirJugadorBtn) añadirJugadorBtn.addEventListener('click', mostrarModalAñadirJugador);
+if(cerrarModalBtn) cerrarModalBtn.addEventListener('click', cerrarModalAñadirJugador);
+if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
+    if (e.target.id === 'modal-añadir-jugador') {
+        cerrarModalAñadirJugador();
+    }
+});
+
+if(iniciarJuegoBtn) iniciarJuegoBtn.addEventListener('click', iniciarJuego);
+if(siguientePreguntaBtn) siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
+if(pausaBtn) pausaBtn.addEventListener('click', gestionarPausa);
+if(saltarTiempoBtn) saltarTiempoBtn.addEventListener('click', finalizarRonda);
+if(mostrarCorrectaBtn) mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
+if(irAPuntuacionesBtn) irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
+
+if(reiniciarBtn) reiniciarBtn.addEventListener('click', () => {
+    reiniciarJuegoCompleto();
+});
+
+if(reiniciarPartidaBtn) reiniciarPartidaBtn.addEventListener('click', () => {
+    if (confirm(t('confirm_restart_game'))) {
+        reiniciarJuegoCompleto();
+    }
+});
+
+if(descargarResultadosBtn) descargarResultadosBtn.addEventListener('click', descargarResultados);
+
+if(volumenSlider) {
+    volumenSlider.addEventListener('input', (e) => {
+        const nuevoVolumen = parseFloat(e.target.value);
+        if(audioElement) audioElement.volume = nuevoVolumen;
+        localStorage.setItem('qplay_volumen', nuevoVolumen);
+    });
+}
+
+window.addEventListener('beforeunload', guardarEstadoJuego);
+
+function reanudarPartida() {
+    console.log("Restaurando partida...");
+    inicializarAudio();
+    inicializarPeer(gameId);
+    if (estadoJuego === 'lobby') {
+        mostrarPantalla('pantalla-lobby');
+        actualizarListaJugadores();
+    } else if (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta') {
+        mostrarPregunta();
+        actualizarEstadoJugadoresDisplay();
+    } else if (estadoJuego === 'leaderboard') {
+        mostrarLeaderboard();
+    }
+}
+if (cargarEstadoJuego()) {
+    reanudarPartida();
+} else {
+    mostrarPantalla('pantalla-carga');
+}
