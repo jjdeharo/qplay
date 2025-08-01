@@ -56,6 +56,10 @@ body {
     transition: stroke-dashoffset 1s linear;
 }
 
+#pausa-overlay {
+    cursor: pointer;
+}
+
 /* Estilos para el modo de respuestas maximizadas */
 #pantalla-pregunta.fullscreen-mode #estado-jugadores-panel,
 #pantalla-pregunta.fullscreen-mode #controles-post-pregunta,
