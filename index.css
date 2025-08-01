@@ -71,12 +71,22 @@ body {
     height: 100vh;
     max-width: 100vw;
     border-radius: 0;
-    z-index: 50;
-    padding: 2rem 4rem;
+    z-index: 50; /* Aumentamos el z-index para que se ponga por encima de todo */
     display: flex;
     flex-direction: column;
     justify-content: center;
+    overflow-y: auto; /* Permite el scroll si el contenido es muy alto */
+    padding: 2rem 4rem;
 }
+
+/* El botón de maximizar/minimizar necesita una posición fija en este modo */
+#pantalla-pregunta.fullscreen-mode #maximizar-btn {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 51; /* Por encima del panel maximizado */
+}
+
 
 #pantalla-pregunta.fullscreen-mode #respuestas-grid {
     flex-grow: 1;
