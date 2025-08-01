@@ -992,6 +992,7 @@ if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
 if(iniciarJuegoBtn) iniciarJuegoBtn.addEventListener('click', iniciarJuego);
 if(siguientePreguntaBtn) siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
 if(pausaBtn) pausaBtn.addEventListener('click', gestionarPausa);
+if(pausaOverlay) pausaOverlay.addEventListener('click', gestionarPausa);
 if(saltarTiempoBtn) saltarTiempoBtn.addEventListener('click', finalizarRonda);
 if(mostrarCorrectaBtn) mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
 if(irAPuntuacionesBtn) irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
