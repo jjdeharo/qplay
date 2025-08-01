@@ -719,6 +719,7 @@ function inicializarPeer(existingGameId = null) {
 
         if (!existingGameId) {
             mostrarPantalla('pantalla-lobby');
+            actualizarListaJugadores(); // <-- CORRECCIÓN AÑADIDA AQUÍ
             guardarEstadoJuego();
         }
     });
