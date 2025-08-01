@@ -89,10 +89,10 @@
         </div>
     </div>
     
-    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-start justify-center bg-gray-800 relative overflow-y-auto py-8">
+    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full flex flex-col bg-gray-800 relative overflow-y-auto pt-8 pb-8">
         <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white z-20 hidden" data-i18n-key="game_paused">JUEGO EN PAUSA</div>
         
-        <div id="estado-jugadores-panel" class="absolute left-8 top-1/2 -translate-y-1/2 glass-card p-4 rounded-lg w-64 hidden max-h-[80vh] overflow-y-auto">
+        <div id="estado-jugadores-panel" class="fixed left-8 top-1/2 -translate-y-1/2 glass-card p-4 rounded-lg w-64 hidden max-h-[80vh] overflow-y-auto">
             <div>
                 <h3 class="font-bold text-lg mb-2 text-green-300"><span data-i18n-key="voted_players">Han votado</span> (<span id="contador-votado">0</span>)</h3>
                 <ul id="jugadores-votado" class="space-y-1 text-sm"></ul>
@@ -103,7 +103,7 @@
             </div>
         </div>
 
-        <div id="pregunta-top-bar" class="w-full flex justify-between items-start absolute top-8 px-8 z-10">
+        <div id="pregunta-top-bar" class="w-full flex justify-between items-start px-8 mb-4">
             <div class="flex items-center space-x-4">
                 <span id="contador-pregunta" class="text-2xl font-bold"></span>
                 <div class="relative w-24 h-24">
@@ -120,7 +120,7 @@
             </div>
         </div>
         
-        <div class="relative w-full max-w-5xl mx-auto flex items-center justify-center px-8 mt-32">
+        <div class="relative w-full max-w-5xl mx-auto flex items-center justify-center px-8 flex-grow">
             <button id="maximizar-btn" class="absolute top-2 right-10 bg-gray-900 bg-opacity-50 hover:bg-opacity-70 text-white font-bold p-2 rounded-full hidden z-40" title="Maximizar/Restaurar Respuestas (Esc)">
                 <svg id="icon-maximize" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M4.5 9V4.5H9M14.5 4.5H19V9M19 14.5V19H14.5M9 19H4.5V14.5" />
@@ -141,7 +141,7 @@
             </div>
         </div>
 
-        <div id="controles-post-pregunta" class="absolute top-1/2 -translate-y-1/2 right-8 flex flex-col space-y-4 hidden">
+        <div id="controles-post-pregunta" class="fixed top-1/2 -translate-y-1/2 right-8 flex flex-col space-y-4 hidden">
             <button id="mostrar-correcta-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl" data-i18n-key="show_correct_button">Mostrar Correcta</button>
             <button id="ir-a-puntuaciones-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-xl inline-flex items-center">
                 <span data-i18n-key="view_scores_button">Ver Puntuaciones</span>
