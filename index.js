@@ -429,12 +429,12 @@ function mostrarPregunta() {
     mostrarCorrectaBtn.disabled = false;
     saltarTiempoBtn.style.display = 'inline-block';
     
-    // --- LÓGICA CORREGIDA ---
-    // Asegurarse de que el botón de maximizar esté visible y en su estado inicial.
-    if(maximizarBtn) maximizarBtn.classList.remove('hidden');
-    if(pantallaPregunta) pantallaPregunta.classList.remove('fullscreen-mode');
-    if(iconMaximize) iconMaximize.classList.remove('hidden');
-    if(iconMinimize) iconMinimize.classList.add('hidden');
+    if(maximizarBtn) {
+        maximizarBtn.classList.remove('hidden');
+        pantallaPregunta.classList.remove('fullscreen-mode');
+        iconMaximize.classList.remove('hidden');
+        iconMinimize.classList.add('hidden');
+    }
 
     document.getElementById('contador-pregunta').textContent = t('question_counter', {
         current: preguntaActualIndex + 1,
