@@ -36,5 +36,6 @@
     "error_name_in_use": "Ese nome xa está en uso.",
     "player_kicked": "Fuches expulsado da partida.",
     "results_csv_header": "Posto;Nome;Puntuación\n",
-    "results_csv_filename": "resultados_partida"
+    "results_csv_filename": "resultados_partida",
+    "load_ai_editor_link": "Facer cuestionario con IA"
 }
