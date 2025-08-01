@@ -23,8 +23,6 @@
         .dark .form-checkbox { border-color: #4b5563; }
         .form-checkbox:checked { border-color: #4f46e5; background-color: #4f46e5; }
         .form-checkbox:checked::after { content: '✓'; font-size: 0.8rem; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .history-item { cursor: pointer; }
-        .history-item:hover .history-text { text-decoration: underline; }
         .preview-question { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
         .dark .preview-question { border-color: #374151; }
         .preview-answer { display: flex; align-items: flex-start; padding: 0.5rem; border-radius: 0.25rem; }
@@ -111,10 +109,12 @@
             <div>
                 <label for="csv-paste-area" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pega aquí el CSV generado por la IA</label>
                 <textarea id="csv-paste-area" rows="6" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm" placeholder="Pega el contenido del bloque de código CSV aquí..."></textarea>
+                <input type="file" id="csv-preview-input" class="hidden" accept=".csv">
             </div>
-            <div class="flex gap-4 mt-4">
-                <button id="preview-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Generar Vista Previa</button>
-                <button id="edit-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Editar en editor.html</button>
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <button id="preview-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors lg:col-span-1">Vista Previa</button>
+                <button id="open-csv-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors lg:col-span-1">Abrir CSV</button>
+                <button id="edit-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed lg:col-span-1">Editar con el editor de QPlay</button>
             </div>
             <hr class="my-6 border-gray-300 dark:border-gray-700">
             <div id="full-preview-container" class="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
@@ -144,6 +144,8 @@
             const csvPasteArea = document.getElementById('csv-paste-area');
             const previewBtn = document.getElementById('preview-btn');
             const editBtn = document.getElementById('edit-btn');
+            const openCsvBtn = document.getElementById('open-csv-btn');
+            const csvPreviewInput = document.getElementById('csv-preview-input');
             const fullPreviewContainer = document.getElementById('full-preview-container');
 
             let finalJsonPrompt = '';
@@ -168,24 +170,29 @@
             };
             
             // --- PREVIEW LOGIC ---
-            previewBtn.addEventListener('click', () => {
+            const generatePreview = () => {
                 const csvText = csvPasteArea.value.trim();
                 if (!csvText) {
-                    alert('Por favor, pega el contenido del CSV en el área de texto.');
+                    alert('Por favor, pega o carga el contenido de un CSV en el área de texto.');
                     return;
                 }
 
                 const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
-                const lineas = csvText.split('\n').slice(1).filter(l => l.trim() !== '');
+                
+                const lineasRaw = csvText.split('\n');
+                const headerIndex = lineasRaw.findIndex(l => l.toLowerCase().includes('tipo;pregunta'));
+                const lineas = headerIndex !== -1 ? lineasRaw.slice(headerIndex + 1) : lineasRaw;
+                
+                const preguntasValidas = lineas.filter(l => l.trim() !== '');
 
                 fullPreviewContainer.innerHTML = '';
-                if(lineas.length === 0) {
+                if(preguntasValidas.length === 0) {
                      fullPreviewContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No se encontraron preguntas válidas en el CSV.</p>';
                      editBtn.disabled = true;
                      return;
                 }
 
-                lineas.forEach((linea, index) => {
+                preguntasValidas.forEach((linea, index) => {
                     const campos = Array.from(linea.matchAll(regex), m => (m[1]?.replace(/""/g, '"') || m[2] || '').trim());
                     if (campos.length < 8) return;
 
@@ -229,7 +236,9 @@
                     fullPreviewContainer.appendChild(questionEl);
                 });
                 editBtn.disabled = false;
-            });
+            }
+
+            previewBtn.addEventListener('click', generatePreview);
             
             editBtn.addEventListener('click', () => {
                 const csvText = csvPasteArea.value.trim();
@@ -241,6 +250,20 @@
                 window.open(`editor.html?data=${encodedData}`, '_blank');
             });
             
+            openCsvBtn.addEventListener('click', () => csvPreviewInput.click());
+            
+            csvPreviewInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    csvPasteArea.value = e.target.result;
+                    generatePreview(); // Generar vista previa automáticamente
+                };
+                reader.readAsText(file, 'UTF-8');
+                event.target.value = ''; // Reset para poder cargar el mismo archivo
+            });
+
             // --- THEME MANAGEMENT ---
             const applyTheme = (theme) => {
                 if (theme === 'dark') {
