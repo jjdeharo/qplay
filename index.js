@@ -34,6 +34,8 @@ const modalUrlSitioEl = document.getElementById('modal-url-sitio');
 const modalCodigoPartidaEl = document.getElementById('modal-codigo-partida');
 const modalQrCodeEl = document.getElementById('modal-qrcode');
 const langSelectorEl = document.getElementById('lang-selector'); 
+const opcionPreguntasAleatorias = document.getElementById('opcion-preguntas-aleatorias');
+const opcionRespuestasAleatorias = document.getElementById('opcion-respuestas-aleatorias');
 // --- Referencias para maximizar ---
 const maximizarBtn = document.getElementById('maximizar-btn');
 const iconMaximize = document.getElementById('icon-maximize');
@@ -237,11 +239,20 @@ function gestionarMusicaPorEstado() {
 
 // --- UI Functions ---
 
-/**
- * Renderiza texto con Markdown y KaTeX en un elemento HTML.
- * @param {HTMLElement} elemento El elemento de destino.
- * @param {string} texto El contenido de texto con posible Markdown y LaTeX.
- */
+function toggleFullscreen() {
+    if (!pantallaPregunta || !iconMaximize || !iconMinimize) return;
+
+    const isMaximized = pantallaPregunta.classList.toggle('fullscreen-mode');
+    
+    if (isMaximized) {
+        iconMaximize.classList.add('hidden');
+        iconMinimize.classList.remove('hidden');
+    } else {
+        iconMaximize.classList.remove('hidden');
+        iconMinimize.classList.add('hidden');
+    }
+}
+
 function renderizarContenidoMixto(elemento, texto) {
     if (!elemento) return;
     const html = marked.parse(texto || '', { breaks: true, gfm: true });
@@ -394,7 +405,7 @@ function reiniciarJuegoCompleto() {
 
 function iniciarJuego() {
     estadoJuego = 'jugando';
-    if (document.getElementById('opcion-preguntas-aleatorias').checked) {
+    if (opcionPreguntasAleatorias.checked) {
         for (let i = cuestionario.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [cuestionario[i], cuestionario[j]] = [cuestionario[j], cuestionario[i]];
@@ -864,6 +875,40 @@ function procesarYEmpezar(csvText) {
     inicializarPeer();
 }
 
+// --- INICIALIZACIÓN DE LISTENERS Y ESTADO ---
+
+if(maximizarBtn) maximizarBtn.addEventListener('click', toggleFullscreen);
+
+window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && pantallaPregunta.classList.contains('fullscreen-mode')) {
+        toggleFullscreen();
+    }
+});
+
+if(opcionPreguntasAleatorias) {
+    opcionPreguntasAleatorias.addEventListener('change', (e) => {
+        localStorage.setItem('qplay_opcion_preguntas_aleatorias', e.target.checked);
+    });
+}
+
+if(opcionRespuestasAleatorias) {
+    opcionRespuestasAleatorias.addEventListener('change', (e) => {
+        localStorage.setItem('qplay_opcion_respuestas_aleatorias', e.target.checked);
+    });
+}
+
+function cargarOpcionesGuardadas() {
+    const pregAleatorias = localStorage.getItem('qplay_opcion_preguntas_aleatorias');
+    if (opcionPreguntasAleatorias && pregAleatorias !== null) {
+        opcionPreguntasAleatorias.checked = (pregAleatorias === 'true');
+    }
+
+    const respAleatorias = localStorage.getItem('qplay_opcion_respuestas_aleatorias');
+    if (opcionRespuestasAleatorias && respAleatorias !== null) {
+        opcionRespuestasAleatorias.checked = (respAleatorias === 'true');
+    }
+}
+
 if(cargarBtn) cargarBtn.addEventListener('click', () => {
     inicializarAudio();
 
@@ -944,20 +989,6 @@ if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
     }
 });
 
-if (maximizarBtn) {
-    maximizarBtn.addEventListener('click', () => {
-        const isMaximized = pantallaPregunta.classList.toggle('fullscreen-mode');
-        
-        if (isMaximized) {
-            iconMaximize.classList.add('hidden');
-            iconMinimize.classList.remove('hidden');
-        } else {
-            iconMaximize.classList.remove('hidden');
-            iconMinimize.classList.add('hidden');
-        }
-    });
-}
-
 if(iniciarJuegoBtn) iniciarJuegoBtn.addEventListener('click', iniciarJuego);
 if(siguientePreguntaBtn) siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
 if(pausaBtn) pausaBtn.addEventListener('click', gestionarPausa);
@@ -990,6 +1021,7 @@ window.addEventListener('beforeunload', guardarEstadoJuego);
 function reanudarPartida() {
     console.log("Restaurando partida...");
     inicializarAudio();
+    cargarOpcionesGuardadas();
     inicializarPeer(gameId);
     if (estadoJuego === 'lobby') {
         mostrarPantalla('pantalla-lobby');
@@ -1004,5 +1036,6 @@ function reanudarPartida() {
 if (cargarEstadoJuego()) {
     reanudarPartida();
 } else {
+    cargarOpcionesGuardadas();
     mostrarPantalla('pantalla-carga');
 }
