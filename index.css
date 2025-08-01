@@ -55,3 +55,41 @@ body {
     stroke-dashoffset: 0;
     transition: stroke-dashoffset 1s linear;
 }
+
+/* Estilos para el modo de respuestas maximizadas */
+#pantalla-pregunta.fullscreen-mode #estado-jugadores-panel,
+#pantalla-pregunta.fullscreen-mode #controles-post-pregunta,
+#pantalla-pregunta.fullscreen-mode #pregunta-top-bar {
+    display: none;
+}
+
+#pantalla-pregunta.fullscreen-mode #pregunta-content-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    border-radius: 0;
+    z-index: 50;
+    padding: 2rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#pantalla-pregunta.fullscreen-mode #respuestas-grid {
+    flex-grow: 1;
+    height: 100%;
+    align-content: center;
+}
+
+#pantalla-pregunta.fullscreen-mode #respuestas-grid > div {
+    font-size: 1.5rem; /* Ajustar tamaño de fuente en modo maximizado */
+    padding: 1.5rem;
+}
+
+#pantalla-pregunta.fullscreen-mode #texto-pregunta {
+    font-size: 2.5rem; /* Reducir un poco el título para dar espacio */
+    margin-bottom: 2rem;
+}
