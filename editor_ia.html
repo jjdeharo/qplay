@@ -111,10 +111,11 @@
                 <textarea id="csv-paste-area" rows="6" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm" placeholder="Pega el contenido del bloque de código CSV aquí..."></textarea>
                 <input type="file" id="csv-preview-input" class="hidden" accept=".csv">
             </div>
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                <button id="preview-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors lg:col-span-1">Vista Previa</button>
-                <button id="open-csv-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors lg:col-span-1">Abrir CSV</button>
-                <button id="edit-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed lg:col-span-1">Editar con el editor de QPlay</button>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <button id="preview-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Vista Previa</button>
+                <button id="open-csv-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Abrir CSV</button>
+                <button id="save-csv-preview-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Guardar CSV</button>
+                <button id="edit-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">Editar con el editor de QPlay</button>
             </div>
             <hr class="my-6 border-gray-300 dark:border-gray-700">
             <div id="full-preview-container" class="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
@@ -146,6 +147,7 @@
             const editBtn = document.getElementById('edit-btn');
             const openCsvBtn = document.getElementById('open-csv-btn');
             const csvPreviewInput = document.getElementById('csv-preview-input');
+            const saveCsvPreviewBtn = document.getElementById('save-csv-preview-btn');
             const fullPreviewContainer = document.getElementById('full-preview-container');
 
             let finalJsonPrompt = '';
@@ -238,6 +240,27 @@
                 editBtn.disabled = false;
             }
 
+            const saveCsvFromPreview = () => {
+                let csvText = csvPasteArea.value.trim();
+                if (!csvText) {
+                    alert('No hay contenido en el área de texto para guardar.');
+                    return;
+                }
+
+                const header = 'Tipo;Pregunta;R1;R2;R3;R4;Tiempo;Correcta;URL Imagen';
+                if (!csvText.toLowerCase().includes('tipo;pregunta')) {
+                    csvText = header + '\n' + csvText;
+                }
+
+                const blob = new Blob([`\uFEFF${csvText}`], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "cuestionario_generado.csv";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
             previewBtn.addEventListener('click', generatePreview);
             
             editBtn.addEventListener('click', () => {
@@ -251,6 +274,7 @@
             });
             
             openCsvBtn.addEventListener('click', () => csvPreviewInput.click());
+            saveCsvPreviewBtn.addEventListener('click', saveCsvFromPreview);
             
             csvPreviewInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
@@ -258,10 +282,10 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     csvPasteArea.value = e.target.result;
-                    generatePreview(); // Generar vista previa automáticamente
+                    generatePreview();
                 };
                 reader.readAsText(file, 'UTF-8');
-                event.target.value = ''; // Reset para poder cargar el mismo archivo
+                event.target.value = '';
             });
 
             // --- THEME MANAGEMENT ---
