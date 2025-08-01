@@ -429,8 +429,9 @@ function mostrarPregunta() {
     mostrarCorrectaBtn.disabled = false;
     saltarTiempoBtn.style.display = 'inline-block';
     
-    // Ocultar y resetear el botón de maximizar
-    if(maximizarBtn) maximizarBtn.classList.add('hidden');
+    // --- LÓGICA CORREGIDA ---
+    // Asegurarse de que el botón de maximizar esté visible y en su estado inicial.
+    if(maximizarBtn) maximizarBtn.classList.remove('hidden');
     if(pantallaPregunta) pantallaPregunta.classList.remove('fullscreen-mode');
     if(iconMaximize) iconMaximize.classList.remove('hidden');
     if(iconMinimize) iconMinimize.classList.add('hidden');
@@ -521,8 +522,7 @@ function finalizarRonda() {
     gestionarMusicaPorEstado(); 
     controlesPostPregunta.classList.remove('hidden');
     saltarTiempoBtn.style.display = 'none';
-    if(maximizarBtn) maximizarBtn.classList.remove('hidden'); // Mostrar el botón de maximizar
-
+    
     const pregunta = cuestionario[preguntaActualIndex];
     Object.keys(respuestasRonda).forEach(nombre => {
         const respJugador = respuestasRonda[nombre].respuesta;
@@ -944,13 +944,10 @@ if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
     }
 });
 
-// --- CORRECCIÓN EN LA LÓGICA DEL BOTÓN ---
 if (maximizarBtn) {
     maximizarBtn.addEventListener('click', () => {
-        // classList.toggle devuelve true si la clase se añadió, y false si se quitó.
         const isMaximized = pantallaPregunta.classList.toggle('fullscreen-mode');
         
-        // Se actualizan los iconos de forma explícita para evitar errores.
         if (isMaximized) {
             iconMaximize.classList.add('hidden');
             iconMinimize.classList.remove('hidden');
