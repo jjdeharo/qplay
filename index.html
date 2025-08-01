@@ -89,7 +89,7 @@
         </div>
     </div>
     
-    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-center justify-center p-8 bg-gray-800 relative">
+    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-center justify-center bg-gray-800 relative">
         <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white z-20 hidden" data-i18n-key="game_paused">JUEGO EN PAUSA</div>
         
         <div id="estado-jugadores-panel" class="absolute left-8 top-1/2 -translate-y-1/2 glass-card p-4 rounded-lg w-64 hidden max-h-[80vh] overflow-y-auto">
@@ -119,10 +119,9 @@
                 <button id="saltar-tiempo-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg" data-i18n-key="skip_time_button">Saltar Tiempo</button>
             </div>
         </div>
-
-        <div class="relative w-full max-w-5xl mx-auto flex items-center justify-center">
-            
-            <button id="maximizar-btn" class="absolute top-2 right-2 bg-gray-900 bg-opacity-50 hover:bg-opacity-70 text-white font-bold p-2 rounded-full hidden z-30" title="Maximizar/Restaurar Respuestas">
+        
+        <div class="relative w-full max-w-5xl mx-auto flex items-center justify-center px-8">
+            <button id="maximizar-btn" class="absolute top-2 right-10 bg-gray-900 bg-opacity-50 hover:bg-opacity-70 text-white font-bold p-2 rounded-full hidden z-40" title="Maximizar/Restaurar Respuestas (Esc)">
                 <svg id="icon-maximize" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1v4m0 0h-4m4 0l-5-5M4 16v4m0 0h4m-4 0l5-5m11 1v-4m0 0h-4m4 0l-5 5" /></svg>
                 <svg id="icon-minimize" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m6 6v-4m0 4h-4m-11-4l-6 6m6-6v4m0-4H4m0 0l6-6m-6 6h4m0-4V4m0 0h4M4 4l6 6" /></svg>
             </button>
@@ -137,6 +136,7 @@
                 </div>
             </div>
         </div>
+
         <div id="controles-post-pregunta" class="absolute top-1/2 -translate-y-1/2 right-8 flex flex-col space-y-4 hidden">
             <button id="mostrar-correcta-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-xl" data-i18n-key="show_correct_button">Mostrar Correcta</button>
             <button id="ir-a-puntuaciones-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-xl inline-flex items-center">
@@ -154,10 +154,10 @@
         </div>
     </div>
 
-    <button id="añadir-jugador-btn" class="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white font-bold p-4 rounded-full shadow-lg transition-transform hover:scale-110 items-center z-10 hidden" data-i18n-title-key="add_player_button_tooltip">
+    <button id="añadir-jugador-btn" class="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white font-bold p-4 rounded-full shadow-lg transition-transform hover:scale-110 items-center z-30 hidden" data-i18n-title-key="add_player_button_tooltip">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
     </button>
-    <button id="reiniciar-partida-btn" class="fixed bottom-8 left-8 bg-red-600 hover:bg-red-700 text-white font-bold p-4 rounded-full shadow-lg transition-transform hover:scale-110 items-center z-10 hidden" data-i18n-title-key="restart_game_button_tooltip">
+    <button id="reiniciar-partida-btn" class="fixed bottom-8 left-8 bg-red-600 hover:bg-red-700 text-white font-bold p-4 rounded-full shadow-lg transition-transform hover:scale-110 items-center z-30 hidden" data-i18n-title-key="restart_game_button_tooltip">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
     </button>
 
