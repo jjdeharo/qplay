@@ -228,7 +228,6 @@
             
             // --- CORE LOGIC ---
             const generarPromptDesdeObjeto = (promptObject) => {
-                // Rellenar formulario desde objeto
                 const params = promptObject.parametros;
                 nivelInput.value = params.nivel_alumnado || '';
                 temaInput.value = params.tema || '';
@@ -241,7 +240,6 @@
                 tonoInput.value = params.tono || '';
                 cognitivoInput.value = params.nivel_cognitivo || '';
 
-                // Generar y mostrar JSON
                 finalJsonPrompt = JSON.stringify(promptObject, null, 2);
                 promptContainer.textContent = finalJsonPrompt;
                 promptContainer.classList.remove('text-gray-500', 'dark:text-gray-400');
@@ -275,7 +273,8 @@
                 
                 const promptObject = {
                   "accion": "GenerarCuestionarioCSV",
-                  "instruccion_principal": "Actúa como un profesor experto y crea un cuestionario en formato CSV basado en los siguientes parámetros. Tu respuesta debe ser ÚNICAMENTE el texto del CSV, sin explicaciones ni texto adicional.",
+                  "instruccion_principal": "Actúa como un profesor experto y crea un cuestionario en formato CSV. Tu respuesta debe tener dos partes: primero, un enlace de descarga en formato Markdown para el archivo (usando un Data URL), y segundo, el contenido completo del CSV en un bloque de código.",
+                  "formato_respuesta_esperado": "[Descargar Cuestionario.csv](data:text/csv;charset=utf-8,CONTENIDO_CSV_CODIFICADO_URL)\\n\\n```csv\\nTipo;Pregunta;...\\n```",
                   "parametros": {
                     "tema": temaInput.value,
                     "nivel_alumnado": nivelInput.value,
@@ -285,11 +284,17 @@
                   "formato_salida_csv": {
                     "delimitador": ";",
                     "cabecera": "Tipo;Pregunta;R1;R2;R3;R4;Tiempo;Correcta;URL Imagen",
-                    "reglas_columnas": { /* ... */ }
+                    "reglas_columnas": {
+                      "Tipo": "Valores: 'quiz', 'multiple', 'true-false'.",
+                      "Pregunta_y_Respuestas": "Admite Markdown (**negrita**, *cursiva*) y LaTeX ($inline$, $$bloque$$).",
+                      "Correcta": "Índice basado en 1. Para 'multiple', usar comas (ej: '1,4').",
+                      "Tiempo": "Número de segundos (ej: 30).",
+                      "Respuestas_TrueFalse": "Para tipo 'true-false', R1 'Verdadero' y R2 'Falso'. R3 y R4 vacías.",
+                      "Campos_Texto": "Todo el texto en cada campo debe estar entre comillas dobles (\"\")."
+                    }
                   }
                 };
 
-                // Añadir opciones avanzadas si existen
                 if(tonoInput.value) promptObject.parametros.tono = tonoInput.value;
                 if(cognitivoInput.value) promptObject.parametros.nivel_cognitivo = cognitivoInput.value;
                 
