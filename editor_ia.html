@@ -301,8 +301,8 @@
                 
                 const promptObject = {
                   "accion": "GenerarCuestionarioCSV",
-                  "instruccion_principal": "Tu única misión es generar un cuestionario. La respuesta DEBE contener OBLIGATORIAMENTE dos elementos en este orden y sin ningún texto adicional: 1. El enlace de descarga. 2. El bloque de código CSV completo.",
-                  "formato_respuesta_esperado": "[Descargar Cuestionario.csv](data:text/csv;charset=utf-8,URL_ENCODED_CSV_CONTENT)\\n\\n```csv\\n(Aquí va el contenido idéntico al del enlace, pero en texto plano)\\nTipo;Pregunta;R1;...\\n```",
+                  "instruccion_principal": "Tu única misión es generar un cuestionario en formato CSV. Tu respuesta debe ser ÚNICAMENTE el bloque de código con el contenido del CSV, sin saludos, explicaciones ni ningún otro texto adicional.",
+                  "formato_respuesta_esperado": "```csv\\nTipo;Pregunta;R1;R2;R3;R4;Tiempo;Correcta;URL Imagen\\n...\\n```",
                   "parametros": {
                     "tema": temaInput.value,
                     "nivel_alumnado": nivelInput.value,
