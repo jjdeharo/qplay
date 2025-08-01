@@ -11,6 +11,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
         body { font-family: 'Inter', sans-serif; }
         .form-checkbox { appearance: none; -webkit-appearance: none; width: 1.25rem; height: 1.25rem; border: 2px solid #9ca3af; border-radius: 0.25rem; display: inline-block; position: relative; cursor: pointer; margin-right: 0.5rem; flex-shrink: 0; }
@@ -19,12 +25,19 @@
         .form-checkbox:checked::after { content: '✓'; font-size: 0.8rem; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .history-item { cursor: pointer; }
         .history-item:hover .history-text { text-decoration: underline; }
+        .preview-question { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .dark .preview-question { border-color: #374151; }
+        .preview-answer { display: flex; align-items: flex-start; padding: 0.5rem; border-radius: 0.25rem; }
+        .preview-answer.correct { background-color: #dcfce7; }
+        .dark .preview-answer.correct { background-color: #166534; }
+        .preview-answer p { margin: 0; }
+        .katex-display { margin: 0.5em 0; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
 
-    <div class="w-full max-w-4xl mx-auto p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 relative">
+    <div class="w-full max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 relative h-fit">
             <button id="theme-toggle" class="absolute top-6 right-6 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                 <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                 <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
@@ -34,77 +47,79 @@
                 <p class="text-gray-500 dark:text-gray-400 mt-2">Define tu cuestionario y crea un prompt JSON para ChatGPT.</p>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <section>
-                    <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">1. Define los parámetros</h2>
-                    <form id="prompt-form" class="space-y-4">
-                        <div>
-                            <label for="nivel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nivel del alumnado</label>
-                            <input type="text" id="nivel" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Ej: 2º de Bachillerato" required>
-                        </div>
-                        <div>
-                            <label for="tema" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tema del cuestionario</label>
-                            <input type="text" id="tema" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Ej: La célula eucariota" required>
-                        </div>
-                        <div>
-                            <label for="num-preguntas" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de preguntas</label>
-                            <input type="number" id="num-preguntas" min="1" max="50" value="10" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipos de pregunta</label>
-                            <div id="tipos-container" class="space-y-2">
-                                <label class="flex items-center"><input type="checkbox" class="form-checkbox" name="tipo" value="quiz" checked> Quiz (1 correcta)</label>
-                                <label class="flex items-center"><input type="checkbox" class="form-checkbox" name="tipo" value="multiple"> Respuesta Múltiple</label>
-                                <label class="flex items-center"><input type="checkbox" class="form-checkbox" name="tipo" value="true-false"> Verdadero / Falso</label>
-                                <hr class="border-gray-300 dark:border-gray-600 my-2">
-                                <label class="flex items-center"><input type="checkbox" class="form-checkbox" id="aleatorio-check"> Usar distribución aleatoria</label>
-                            </div>
-                        </div>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">1. Define los parámetros</h2>
+            <form id="prompt-form" class="space-y-4">
+                <div>
+                    <label for="nivel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nivel del alumnado</label>
+                    <input type="text" id="nivel" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Ej: 2º de Bachillerato" required>
+                </div>
+                <div>
+                    <label for="tema" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tema del cuestionario</label>
+                    <input type="text" id="tema" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Ej: La célula eucariota" required>
+                </div>
+                <div>
+                    <label for="num-preguntas" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de preguntas</label>
+                    <input type="number" id="num-preguntas" min="1" max="50" value="10" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipos de pregunta</label>
+                    <div id="tipos-container" class="space-y-2">
+                        <label class="flex items-center"><input type="checkbox" class="form-checkbox" name="tipo" value="quiz" checked> Quiz (1 correcta)</label>
+                        <label class="flex items-center"><input type="checkbox" class="form-checkbox" name="tipo" value="multiple"> Respuesta Múltiple</label>
+                        <label class="flex items-center"><input type="checkbox" class="form-checkbox" name="tipo" value="true-false"> Verdadero / Falso</label>
+                        <hr class="border-gray-300 dark:border-gray-600 my-2">
+                        <label class="flex items-center"><input type="checkbox" class="form-checkbox" id="aleatorio-check"> Usar distribución aleatoria</label>
+                    </div>
+                </div>
 
-                        <details class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg">
-                            <summary class="font-medium text-gray-700 dark:text-gray-300 cursor-pointer">Opciones avanzadas</summary>
-                            <div class="mt-4 space-y-3">
-                                <div>
-                                    <label for="tono" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tono de las preguntas</label>
-                                    <input type="text" id="tono" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm text-gray-900 dark:text-white" placeholder="Ej: Lúdico, formal, crítico">
-                                </div>
-                                <div>
-                                    <label for="cognitivo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nivel cognitivo</label>
-                                    <input type="text" id="cognitivo" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm text-gray-900 dark:text-white" placeholder="Ej: Memorización, aplicación, análisis">
-                                </div>
-                            </div>
-                        </details>
-                        
-                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Generar Prompt JSON</button>
-                    </form>
-                </section>
-
-                <section>
-                    <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">2. Utiliza el prompt</h2>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Copia y pega este prompt (en formato JSON) en tu IA favorita o ábrelo directamente en ChatGPT.</label>
-                        <div class="relative">
-                            <pre id="prompt-container" class="w-full h-64 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm overflow-auto whitespace-pre-wrap text-gray-500 dark:text-gray-400">Aquí aparecerá el prompt generado...</pre>
-                            <button id="copy-btn" class="absolute top-2 right-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-bold py-1 px-2 rounded-md text-xs hidden">Copiar</button>
+                <details class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg">
+                    <summary class="font-medium text-gray-700 dark:text-gray-300 cursor-pointer">Opciones avanzadas</summary>
+                    <div class="mt-4 space-y-3">
+                        <div>
+                            <label for="tono" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tono de las preguntas</label>
+                            <input type="text" id="tono" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm text-gray-900 dark:text-white" placeholder="Ej: Lúdico, formal, crítico">
+                        </div>
+                        <div>
+                            <label for="cognitivo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nivel cognitivo</label>
+                            <input type="text" id="cognitivo" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm text-gray-900 dark:text-white" placeholder="Ej: Memorización, aplicación, análisis">
+                        </div>
+                        <div>
+                            <label for="instrucciones-adicionales" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instrucciones adicionales</label>
+                            <textarea id="instrucciones-adicionales" rows="3" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm text-gray-900 dark:text-white" placeholder="Ej: Incluye 2 problemas prácticos, enfócate en el razonamiento..."></textarea>
                         </div>
                     </div>
-                    <button id="launch-btn" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Abrir en ChatGPT</button>
-                    
-                    <hr class="my-6 border-gray-300 dark:border-gray-700">
+                </details>
+                
+                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Generar Prompt JSON</button>
+            </form>
 
-                    <div>
-                        <h3 class="text-lg font-bold mb-3 text-gray-800 dark:text-gray-200">Configuración e Historial</h3>
-                        <div class="flex gap-2 mb-4">
-                            <button id="guardar-config-btn" class="w-full text-sm bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-lg transition-colors">Guardar Config.</button>
-                            <button id="cargar-config-btn" class="w-full text-sm bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-lg transition-colors">Cargar Config.</button>
-                        </div>
-                        <div id="historial-container" class="space-y-2">
-                           <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300">Últimos prompts generados:</h4>
-                           <div id="historial-lista" class="text-sm text-gray-600 dark:text-gray-400"></div>
-                           <button id="borrar-historial-btn" class="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400 mt-2 hidden">Borrar historial</button>
-                        </div>
-                    </div>
-                </section>
+            <hr class="my-6 border-gray-300 dark:border-gray-700">
+            
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">2. Utiliza el prompt</h2>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Copia y pega este prompt (en formato JSON) en tu IA favorita o ábrelo directamente en ChatGPT.</label>
+                <div class="relative">
+                    <pre id="prompt-container" class="w-full h-64 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm overflow-auto whitespace-pre-wrap text-gray-500 dark:text-gray-400">Aquí aparecerá el prompt generado...</pre>
+                    <button id="copy-btn" class="absolute top-2 right-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-bold py-1 px-2 rounded-md text-xs hidden">Copiar</button>
+                </div>
+            </div>
+            <button id="launch-btn" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Abrir en ChatGPT</button>
+
+            </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 h-fit">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">3. Previsualiza y edita</h2>
+            <div>
+                <label for="csv-paste-area" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pega aquí el CSV generado por la IA</label>
+                <textarea id="csv-paste-area" rows="6" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm" placeholder="Pega el contenido del bloque de código CSV aquí..."></textarea>
+            </div>
+            <div class="flex gap-4 mt-4">
+                <button id="preview-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Generar Vista Previa</button>
+                <button id="edit-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Editar en editor.html</button>
+            </div>
+            <hr class="my-6 border-gray-300 dark:border-gray-700">
+            <div id="full-preview-container" class="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
+                <p class="text-gray-500 dark:text-gray-400">La vista previa del cuestionario aparecerá aquí.</p>
             </div>
         </div>
     </div>
@@ -120,24 +135,122 @@
             const aleatorioCheck = document.getElementById('aleatorio-check');
             const tonoInput = document.getElementById('tono');
             const cognitivoInput = document.getElementById('cognitivo');
-            
+            const instruccionesInput = document.getElementById('instrucciones-adicionales');
             const promptContainer = document.getElementById('prompt-container');
             const copyBtn = document.getElementById('copy-btn');
             const launchBtn = document.getElementById('launch-btn');
-
             const themeToggleBtn = document.getElementById('theme-toggle');
             const sunIcon = document.getElementById('theme-icon-sun');
             const moonIcon = document.getElementById('theme-icon-moon');
+            const csvPasteArea = document.getElementById('csv-paste-area');
+            const previewBtn = document.getElementById('preview-btn');
+            const editBtn = document.getElementById('edit-btn');
+            const fullPreviewContainer = document.getElementById('full-preview-container');
 
-            const guardarConfigBtn = document.getElementById('guardar-config-btn');
-            const cargarConfigBtn = document.getElementById('cargar-config-btn');
-            const historialLista = document.getElementById('historial-lista');
-            const borrarHistorialBtn = document.getElementById('borrar-historial-btn');
+            // --- RENDERER ---
+            const renderizarContenidoMixto = (elemento, texto) => {
+                // Primero, parseamos el Markdown
+                const html = marked.parse(texto || '', { breaks: true, gfm: true });
+                elemento.innerHTML = html;
+                // Luego, renderizamos el LaTeX dentro del HTML generado
+                if (window.renderMathInElement) {
+                    try {
+                        renderMathInElement(elemento, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true}, {left: '\\[', right: '\\]', display: true},
+                                {left: '$', right: '$', display: false}, {left: '\\(', right: '\\)', display: false}
+                            ],
+                            throwOnError: false
+                        });
+                    } catch (error) {
+                        console.error("Error rendering KaTeX:", error);
+                    }
+                }
+            };
+            
+            // --- PREVIEW LOGIC ---
+            previewBtn.addEventListener('click', () => {
+                const csvText = csvPasteArea.value.trim();
+                if (!csvText) {
+                    alert('Por favor, pega el contenido del CSV en el área de texto.');
+                    return;
+                }
 
-            // --- APP STATE ---
-            let finalJsonPrompt = '';
-            let historial = [];
+                // Expresión regular para parsear CSV con campos entrecomillados
+                const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
+                
+                // Ignorar la primera línea (cabecera)
+                const lineas = csvText.split('\n').slice(1).filter(l => l.trim() !== '');
 
+                fullPreviewContainer.innerHTML = '';
+                if(lineas.length === 0) {
+                     fullPreviewContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No se encontraron preguntas válidas en el CSV.</p>';
+                     editBtn.disabled = true;
+                     return;
+                }
+
+                lineas.forEach((linea, index) => {
+                    const campos = Array.from(linea.matchAll(regex), m => (m[1]?.replace(/""/g, '"') || m[2] || '').trim());
+                    if (campos.length < 8) return;
+
+                    const pregunta = {
+                        tipo: campos[0],
+                        texto: campos[1],
+                        respuestas: campos.slice(2, 6),
+                        tiempo: campos[6],
+                        correcta: campos[7],
+                        imagen_url: campos[8]
+                    };
+
+                    const correctasIndices = pregunta.correcta.split(',').map(n => parseInt(n, 10) - 1);
+                    
+                    const questionEl = document.createElement('div');
+                    questionEl.className = 'preview-question bg-gray-50 dark:bg-gray-900/50';
+
+                    const textoPregunta = document.createElement('div');
+                    renderizarContenidoMixto(textoPregunta, `**${index + 1}.** ${pregunta.texto}`);
+                    questionEl.appendChild(textoPregunta);
+
+                    if (pregunta.imagen_url) {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = pregunta.imagen_url;
+                        imgEl.alt = 'Imagen de la pregunta';
+                        imgEl.className = 'my-4 rounded-lg max-w-sm mx-auto';
+                        questionEl.appendChild(imgEl);
+                    }
+
+                    const answersContainer = document.createElement('div');
+                    answersContainer.className = 'mt-4 space-y-2';
+
+                    pregunta.respuestas.forEach((respuesta, i) => {
+                        if (!respuesta) return;
+                        const esCorrecta = correctasIndices.includes(i);
+                        const answerEl = document.createElement('div');
+                        answerEl.className = 'preview-answer';
+                        if (esCorrecta) answerEl.classList.add('correct');
+                        
+                        const icon = esCorrecta ? '✅' : '⚪️';
+                        answerEl.innerHTML = `<span class="mr-3">${icon}</span><div class="w-full"></div>`;
+                        renderizarContenidoMixto(answerEl.querySelector('div'), respuesta);
+                        answersContainer.appendChild(answerEl);
+                    });
+                    
+                    questionEl.appendChild(answersContainer);
+                    fullPreviewContainer.appendChild(questionEl);
+                });
+                editBtn.disabled = false;
+            });
+            
+            editBtn.addEventListener('click', () => {
+                const csvText = csvPasteArea.value.trim();
+                if(!csvText){
+                    alert("No hay nada que editar.");
+                    return;
+                }
+                const encodedData = encodeURIComponent(csvText);
+                window.open(`editor.html?data=${encodedData}`, '_blank');
+            });
+            
             // --- THEME MANAGEMENT ---
             const applyTheme = (theme) => {
                 if (theme === 'dark') {
@@ -155,109 +268,11 @@
               localStorage.setItem('theme', newTheme);
               applyTheme(newTheme);
             };
+            themeToggleBtn.addEventListener('click', toggleTheme);
 
-            // --- HISTORY MANAGEMENT ---
-            const cargarHistorial = () => {
-                historial = JSON.parse(localStorage.getItem('promptHistory')) || [];
-                renderizarHistorial();
-            };
-            const guardarHistorial = () => {
-                localStorage.setItem('promptHistory', JSON.stringify(historial));
-            };
-            const anadirAHistorial = (promptObject) => {
-                historial.unshift(promptObject);
-                if (historial.length > 5) {
-                    historial.pop();
-                }
-                guardarHistorial();
-                renderizarHistorial();
-            };
-            const renderizarHistorial = () => {
-                historialLista.innerHTML = '';
-                if(historial.length === 0) {
-                    historialLista.innerHTML = '<p>No hay prompts en el historial.</p>';
-                    borrarHistorialBtn.classList.add('hidden');
-                    return;
-                }
-                borrarHistorialBtn.classList.remove('hidden');
-                historial.forEach((item, index) => {
-                    const el = document.createElement('div');
-                    el.className = 'history-item flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-md';
-                    el.innerHTML = `<span class="history-text truncate" title="${item.parametros.tema}">${index + 1}. ${item.parametros.tema || 'Sin tema'}</span>`;
-                    el.dataset.index = index;
-                    historialLista.appendChild(el);
-                });
-            };
-            const borrarHistorial = () => {
-                if(confirm('¿Seguro que quieres borrar todo el historial?')) {
-                    historial = [];
-                    guardarHistorial();
-                    renderizarHistorial();
-                }
-            };
-
-            // --- CONFIG MANAGEMENT ---
-            const guardarConfiguracion = () => {
-                const config = {
-                    nivel: nivelInput.value,
-                    tema: temaInput.value,
-                    numPreguntas: numPreguntasInput.value,
-                    tipos: Array.from(tiposCheckboxes).map(cb => cb.checked),
-                    aleatorio: aleatorioCheck.checked,
-                    tono: tonoInput.value,
-                    cognitivo: cognitivoInput.value
-                };
-                localStorage.setItem('promptConfig', JSON.stringify(config));
-                alert('Configuración guardada.');
-            };
-            const cargarConfiguracion = () => {
-                const config = JSON.parse(localStorage.getItem('promptConfig'));
-                if (config) {
-                    nivelInput.value = config.nivel || '';
-                    temaInput.value = config.tema || '';
-                    numPreguntasInput.value = config.numPreguntas || 10;
-                    tiposCheckboxes.forEach((cb, i) => cb.checked = config.tipos[i]);
-                    aleatorioCheck.checked = config.aleatorio;
-                    tonoInput.value = config.tono || '';
-                    cognitivoInput.value = config.cognitivo || '';
-                    if (aleatorioCheck.checked) {
-                        tiposCheckboxes.forEach(cb => cb.disabled = true);
-                    }
-                }
-            };
-            
-            // --- CORE LOGIC ---
-            const generarPromptDesdeObjeto = (promptObject) => {
-                const params = promptObject.parametros;
-                nivelInput.value = params.nivel_alumnado || '';
-                temaInput.value = params.tema || '';
-                numPreguntasInput.value = params.numero_preguntas || 10;
-                aleatorioCheck.checked = params.tipos_pregunta.includes('aleatorio');
-                tiposCheckboxes.forEach(cb => {
-                    cb.checked = params.tipos_pregunta.includes(cb.value);
-                    cb.disabled = aleatorioCheck.checked;
-                });
-                tonoInput.value = params.tono || '';
-                cognitivoInput.value = params.nivel_cognitivo || '';
-
-                finalJsonPrompt = JSON.stringify(promptObject, null, 2);
-                promptContainer.textContent = finalJsonPrompt;
-                promptContainer.classList.remove('text-gray-500', 'dark:text-gray-400');
-                copyBtn.classList.remove('hidden');
-                launchBtn.disabled = false;
-            };
-
-            // --- EVENT LISTENERS ---
-            aleatorioCheck.addEventListener('change', () => {
-                tiposCheckboxes.forEach(cb => {
-                    cb.disabled = aleatorioCheck.checked;
-                    if (aleatorioCheck.checked) cb.checked = false;
-                });
-            });
-
+            // --- PROMPT GENERATION ---
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-
                 let tiposSeleccionados = [];
                 if (aleatorioCheck.checked) {
                     tiposSeleccionados.push('aleatorio');
@@ -286,7 +301,7 @@
                     "cabecera": "Tipo;Pregunta;R1;R2;R3;R4;Tiempo;Correcta;URL Imagen",
                     "reglas_columnas": {
                       "Tipo": "Valores: 'quiz', 'multiple', 'true-false'.",
-                      "Pregunta_y_Respuestas": "Admite Markdown (**negrita**, *cursiva*) y LaTeX ($inline$, $$bloque$$).",
+                      "Pregunta_y_Respuestas": "Admite Markdown y LaTeX. Usa el formato (negrita, cursiva, listas, etc.) solo si aporta valor semántico a la pregunta o respuesta, no para decorar frases enteras.",
                       "Correcta": "Índice basado en 1. Para 'multiple', usar comas (ej: '1,4').",
                       "Tiempo": "Número de segundos (ej: 30).",
                       "Respuestas_TrueFalse": "Para tipo 'true-false', R1 'Verdadero' y R2 'Falso'. R3 y R4 vacías.",
@@ -295,22 +310,19 @@
                   }
                 };
 
-                if(tonoInput.value) promptObject.parametros.tono = tonoInput.value;
-                if(cognitivoInput.value) promptObject.parametros.nivel_cognitivo = cognitivoInput.value;
+                if(tonoInput.value.trim()) promptObject.parametros.tono = tonoInput.value.trim();
+                if(cognitivoInput.value.trim()) promptObject.parametros.nivel_cognitivo = cognitivoInput.value.trim();
+                if(instruccionesInput.value.trim()) promptObject.parametros.instrucciones_adicionales = instruccionesInput.value.trim();
                 
-                generarPromptDesdeObjeto(promptObject);
-                anadirAHistorial(promptObject);
+                // Muestra el prompt generado
+                finalJsonPrompt = JSON.stringify(promptObject, null, 2);
+                promptContainer.textContent = finalJsonPrompt;
+                promptContainer.classList.remove('text-gray-500', 'dark:text-gray-400');
+                copyBtn.classList.remove('hidden');
+                launchBtn.disabled = false;
             });
             
-            copyBtn.addEventListener('click', () => {
-                if (finalJsonPrompt) {
-                    navigator.clipboard.writeText(finalJsonPrompt).then(() => {
-                        copyBtn.textContent = '¡Copiado!';
-                        setTimeout(() => { copyBtn.textContent = 'Copiar'; }, 2000);
-                    });
-                }
-            });
-
+            // --- OTHER LISTENERS ---
             launchBtn.addEventListener('click', () => {
                 if (finalJsonPrompt) {
                     const encodedPrompt = encodeURIComponent(finalJsonPrompt);
@@ -319,25 +331,17 @@
                 }
             });
 
-            themeToggleBtn.addEventListener('click', toggleTheme);
-            guardarConfigBtn.addEventListener('click', guardarConfiguracion);
-            cargarConfigBtn.addEventListener('click', cargarConfiguracion);
-            borrarHistorialBtn.addEventListener('click', borrarHistorial);
-            historialLista.addEventListener('click', (e) => {
-                const item = e.target.closest('.history-item');
-                if(item) {
-                    const index = parseInt(item.dataset.index, 10);
-                    const promptObject = historial[index];
-                    if(promptObject) {
-                        generarPromptDesdeObjeto(promptObject);
-                    }
+            copyBtn.addEventListener('click', () => {
+                if (finalJsonPrompt) {
+                    navigator.clipboard.writeText(finalJsonPrompt).then(() => {
+                        copyBtn.textContent = '¡Copiado!';
+                        setTimeout(() => { copyBtn.textContent = 'Copiar'; }, 2000);
+                    });
                 }
             });
-
+            
             // --- INITIALIZATION ---
             applyTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
-            cargarConfiguracion();
-            cargarHistorial();
         });
     </script>
 </body>
