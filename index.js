@@ -1,5 +1,6 @@
 // --- DOM References ---
 const pantallas = document.querySelectorAll('.pantalla');
+const pantallaPregunta = document.getElementById('pantalla-pregunta');
 const cargarBtn = document.getElementById('cargar-cuestionario-btn');
 const cargarEjemploBtn = document.getElementById('cargar-ejemplo-btn');
 const fileInput = document.getElementById('csv-file-input');
@@ -32,7 +33,11 @@ const cerrarModalBtn = document.getElementById('cerrar-modal-btn');
 const modalUrlSitioEl = document.getElementById('modal-url-sitio');
 const modalCodigoPartidaEl = document.getElementById('modal-codigo-partida');
 const modalQrCodeEl = document.getElementById('modal-qrcode');
-const langSelectorEl = document.getElementById('lang-selector'); // Referencia añadida
+const langSelectorEl = document.getElementById('lang-selector'); 
+// --- Referencias para maximizar ---
+const maximizarBtn = document.getElementById('maximizar-btn');
+const iconMaximize = document.getElementById('icon-maximize');
+const iconMinimize = document.getElementById('icon-minimize');
 const FULL_DASH_ARRAY = 283;
 // --- Referencias de audio ---
 const controlVolumenEl = document.getElementById('control-volumen');
@@ -424,6 +429,12 @@ function mostrarPregunta() {
     mostrarCorrectaBtn.disabled = false;
     saltarTiempoBtn.style.display = 'inline-block';
     
+    // Ocultar y resetear el botón de maximizar
+    if(maximizarBtn) maximizarBtn.classList.add('hidden');
+    if(pantallaPregunta) pantallaPregunta.classList.remove('fullscreen-mode');
+    if(iconMaximize) iconMaximize.classList.remove('hidden');
+    if(iconMinimize) iconMinimize.classList.add('hidden');
+
     document.getElementById('contador-pregunta').textContent = t('question_counter', {
         current: preguntaActualIndex + 1,
         total: cuestionario.length
@@ -510,6 +521,8 @@ function finalizarRonda() {
     gestionarMusicaPorEstado(); 
     controlesPostPregunta.classList.remove('hidden');
     saltarTiempoBtn.style.display = 'none';
+    if(maximizarBtn) maximizarBtn.classList.remove('hidden'); // Mostrar el botón de maximizar
+
     const pregunta = cuestionario[preguntaActualIndex];
     Object.keys(respuestasRonda).forEach(nombre => {
         const respJugador = respuestasRonda[nombre].respuesta;
@@ -719,7 +732,7 @@ function inicializarPeer(existingGameId = null) {
 
         if (!existingGameId) {
             mostrarPantalla('pantalla-lobby');
-            actualizarListaJugadores(); // <-- CORRECCIÓN AÑADIDA AQUÍ
+            actualizarListaJugadores(); 
             guardarEstadoJuego();
         }
     });
@@ -930,6 +943,14 @@ if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
         cerrarModalAñadirJugador();
     }
 });
+
+if (maximizarBtn) {
+    maximizarBtn.addEventListener('click', () => {
+        pantallaPregunta.classList.toggle('fullscreen-mode');
+        iconMaximize.classList.toggle('hidden');
+        iconMinimize.classList.toggle('hidden');
+    });
+}
 
 if(iniciarJuegoBtn) iniciarJuegoBtn.addEventListener('click', iniciarJuego);
 if(siguientePreguntaBtn) siguientePreguntaBtn.addEventListener('click', avanzarPregunta);
