@@ -37,7 +37,7 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
 
     <div class="w-full max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 relative h-fit">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 h-fit">
             <button id="theme-toggle" class="absolute top-6 right-6 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                 <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                 <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
@@ -100,12 +100,11 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Copia y pega este prompt (en formato JSON) en tu IA favorita o ábrelo directamente en ChatGPT.</label>
                 <div class="relative">
                     <pre id="prompt-container" class="w-full h-64 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm overflow-auto whitespace-pre-wrap text-gray-500 dark:text-gray-400">Aquí aparecerá el prompt generado...</pre>
-                    <button id="copy-btn" class="absolute top-2 right-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-bold py-1 px-2 rounded-md text-xs hidden">Copiar</button>
+                    <button id="copy-btn" class="absolute top-2 right-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-bold py-1 px-2 rounded-md text-xs hidden">Copiar</button>
                 </div>
             </div>
             <button id="launch-btn" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Abrir en ChatGPT</button>
-
-            </div>
+        </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 h-fit">
             <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">3. Previsualiza y edita</h2>
@@ -147,12 +146,12 @@
             const editBtn = document.getElementById('edit-btn');
             const fullPreviewContainer = document.getElementById('full-preview-container');
 
+            let finalJsonPrompt = '';
+
             // --- RENDERER ---
             const renderizarContenidoMixto = (elemento, texto) => {
-                // Primero, parseamos el Markdown
                 const html = marked.parse(texto || '', { breaks: true, gfm: true });
                 elemento.innerHTML = html;
-                // Luego, renderizamos el LaTeX dentro del HTML generado
                 if (window.renderMathInElement) {
                     try {
                         renderMathInElement(elemento, {
@@ -176,10 +175,7 @@
                     return;
                 }
 
-                // Expresión regular para parsear CSV con campos entrecomillados
                 const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
-                
-                // Ignorar la primera línea (cabecera)
                 const lineas = csvText.split('\n').slice(1).filter(l => l.trim() !== '');
 
                 fullPreviewContainer.innerHTML = '';
@@ -194,14 +190,9 @@
                     if (campos.length < 8) return;
 
                     const pregunta = {
-                        tipo: campos[0],
-                        texto: campos[1],
-                        respuestas: campos.slice(2, 6),
-                        tiempo: campos[6],
-                        correcta: campos[7],
-                        imagen_url: campos[8]
+                        tipo: campos[0], texto: campos[1], respuestas: campos.slice(2, 6),
+                        tiempo: campos[6], correcta: campos[7], imagen_url: campos[8]
                     };
-
                     const correctasIndices = pregunta.correcta.split(',').map(n => parseInt(n, 10) - 1);
                     
                     const questionEl = document.createElement('div');
@@ -221,7 +212,6 @@
 
                     const answersContainer = document.createElement('div');
                     answersContainer.className = 'mt-4 space-y-2';
-
                     pregunta.respuestas.forEach((respuesta, i) => {
                         if (!respuesta) return;
                         const esCorrecta = correctasIndices.includes(i);
@@ -288,8 +278,8 @@
                 
                 const promptObject = {
                   "accion": "GenerarCuestionarioCSV",
-                  "instruccion_principal": "Actúa como un profesor experto y crea un cuestionario en formato CSV. Tu respuesta debe tener dos partes: primero, un enlace de descarga en formato Markdown para el archivo (usando un Data URL), y segundo, el contenido completo del CSV en un bloque de código.",
-                  "formato_respuesta_esperado": "[Descargar Cuestionario.csv](data:text/csv;charset=utf-8,CONTENIDO_CSV_CODIFICADO_URL)\\n\\n```csv\\nTipo;Pregunta;...\\n```",
+                  "instruccion_principal": "Tu única misión es generar un cuestionario. La respuesta DEBE contener OBLIGATORIAMENTE dos elementos en este orden y sin ningún texto adicional: 1. El enlace de descarga. 2. El bloque de código CSV completo.",
+                  "formato_respuesta_esperado": "[Descargar Cuestionario.csv](data:text/csv;charset=utf-8,URL_ENCODED_CSV_CONTENT)\\n\\n```csv\\n(Aquí va el contenido idéntico al del enlace, pero en texto plano)\\nTipo;Pregunta;R1;...\\n```",
                   "parametros": {
                     "tema": temaInput.value,
                     "nivel_alumnado": nivelInput.value,
@@ -314,7 +304,6 @@
                 if(cognitivoInput.value.trim()) promptObject.parametros.nivel_cognitivo = cognitivoInput.value.trim();
                 if(instruccionesInput.value.trim()) promptObject.parametros.instrucciones_adicionales = instruccionesInput.value.trim();
                 
-                // Muestra el prompt generado
                 finalJsonPrompt = JSON.stringify(promptObject, null, 2);
                 promptContainer.textContent = finalJsonPrompt;
                 promptContainer.classList.remove('text-gray-500', 'dark:text-gray-400');
