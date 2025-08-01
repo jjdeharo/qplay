@@ -944,11 +944,20 @@ if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
     }
 });
 
+// --- CORRECCIÓN EN LA LÓGICA DEL BOTÓN ---
 if (maximizarBtn) {
     maximizarBtn.addEventListener('click', () => {
-        pantallaPregunta.classList.toggle('fullscreen-mode');
-        iconMaximize.classList.toggle('hidden');
-        iconMinimize.classList.toggle('hidden');
+        // classList.toggle devuelve true si la clase se añadió, y false si se quitó.
+        const isMaximized = pantallaPregunta.classList.toggle('fullscreen-mode');
+        
+        // Se actualizan los iconos de forma explícita para evitar errores.
+        if (isMaximized) {
+            iconMaximize.classList.add('hidden');
+            iconMinimize.classList.remove('hidden');
+        } else {
+            iconMaximize.classList.remove('hidden');
+            iconMinimize.classList.add('hidden');
+        }
     });
 }
 
