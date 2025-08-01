@@ -89,7 +89,7 @@
         </div>
     </div>
     
-    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-center justify-center bg-gray-800 relative">
+    <div id="pantalla-pregunta" class="pantalla min-h-screen w-full items-start justify-center bg-gray-800 relative overflow-y-auto py-8">
         <div id="pausa-overlay" class="absolute inset-0 bg-black bg-opacity-70 items-center justify-center text-6xl font-bold text-white z-20 hidden" data-i18n-key="game_paused">JUEGO EN PAUSA</div>
         
         <div id="estado-jugadores-panel" class="absolute left-8 top-1/2 -translate-y-1/2 glass-card p-4 rounded-lg w-64 hidden max-h-[80vh] overflow-y-auto">
@@ -120,7 +120,7 @@
             </div>
         </div>
         
-        <div class="relative w-full max-w-5xl mx-auto flex items-center justify-center px-8">
+        <div class="relative w-full max-w-5xl mx-auto flex items-center justify-center px-8 mt-32">
             <button id="maximizar-btn" class="absolute top-2 right-10 bg-gray-900 bg-opacity-50 hover:bg-opacity-70 text-white font-bold p-2 rounded-full hidden z-40" title="Maximizar/Restaurar Respuestas (Esc)">
                 <svg id="icon-maximize" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M4.5 9V4.5H9M14.5 4.5H19V9M19 14.5V19H14.5M9 19H4.5V14.5" />
