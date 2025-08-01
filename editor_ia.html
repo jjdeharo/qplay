@@ -22,7 +22,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8">
             <header class="mb-8 text-center">
                 <h1 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Generador de Prompts</h1>
-                <p class="text-gray-500 dark:text-gray-400 mt-2">Define tu cuestionario y crea un prompt para ChatGPT.</p>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Define tu cuestionario y crea un prompt JSON para ChatGPT.</p>
             </header>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -51,7 +51,7 @@
                                 <label class="flex items-center"><input type="checkbox" class="form-checkbox" id="aleatorio-check"> Usar distribución aleatoria</label>
                             </div>
                         </div>
-                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Generar Prompt</button>
+                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Generar Prompt JSON</button>
                     </form>
                 </section>
 
@@ -85,22 +85,18 @@
             const copyBtn = document.getElementById('copy-btn');
             const launchBtn = document.getElementById('launch-btn');
 
-            let rawPromptContent = '';
+            let finalJsonPrompt = '';
 
             aleatorioCheck.addEventListener('change', () => {
                 tiposCheckboxes.forEach(cb => {
                     cb.disabled = aleatorioCheck.checked;
-                    cb.checked = !aleatorioCheck.checked;
+                    if (aleatorioCheck.checked) cb.checked = false;
                 });
             });
 
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
 
-                const nivel = nivelInput.value;
-                const tema = temaInput.value;
-                const numPreguntas = numPreguntasInput.value;
-                
                 let tiposSeleccionados = [];
                 if (aleatorioCheck.checked) {
                     tiposSeleccionados.push('aleatorio');
@@ -114,53 +110,52 @@
                     alert('Debes seleccionar al menos un tipo de pregunta o la opción aleatoria.');
                     return;
                 }
-
-                const promptInstructions = `Actúa como un experto en '${tema}' y como un profesor de '${nivel}'. Tu tarea es generar un cuestionario de ${numPreguntas} preguntas sobre este tema.
-Las preguntas deben ser de los siguientes tipos: ${tiposSeleccionados.join(', ')}. Si se ha elegido 'aleatorio', distribuye los tipos de forma variada.
-
-El resultado debe ser ÚNICAMENTE el contenido de un archivo CSV, sin ninguna introducción, explicación o código adicional. El CSV debe seguir estrictamente las siguientes reglas:
-1.  **Cabecera**: La primera línea debe ser exactamente: Tipo;Pregunta;R1;R2;R3;R4;Tiempo;Correcta;URL Imagen
-2.  **Delimitador**: Usa el punto y coma (;) como separador de columnas.
-3.  **Comillas**: Todo el texto de cada campo debe estar entre comillas dobles ("). Si el texto contiene comillas dobles, escápalas duplicándolas ("").
-4.  **Columna 'Tipo'**: Solo puede contener los valores 'quiz', 'multiple', o 'true-false'.
-5.  **Columna 'Pregunta' y Respuestas (R1-R4)**: Pueden contener formato Markdown (negrita **texto**, cursiva *texto*) y LaTeX para fórmulas (inline con $...$ y en bloque con $$...$$).
-6.  **Preguntas 'true-false'**: La respuesta R1 debe ser "Verdadero" y R2 "Falso". Las columnas R3 y R4 deben quedar vacías ("").
-7.  **Columna 'Tiempo'**: Un número entero en segundos (ej: "30", "60", "120").
-8.  **Columna 'Correcta'**: El índice de la respuesta correcta (empezando en 1). Para el tipo 'multiple', si hay varias correctas, los índices van separados por comas (ej: "1,4"). Para 'quiz' y 'true-false', es un solo número.
-9.  **Columna 'URL Imagen'**: Puede dejarse vacía ("").
-
-Ejemplo de una fila para una pregunta tipo 'quiz':
-"quiz";"¿Cuál es el valor de $x$ en la ecuación $\\frac{2x - 4}{3} = 6$?";"$x = 11$";"$x = 9$";"$x = 10$";"$x=22/3$";"60";"3";""
-
-Genera ahora el cuestionario siguiendo estas instrucciones al pie de la letra.`;
-
-                rawPromptContent = promptInstructions;
-
-                const promptJson = {
-                    "model": "gpt-4",
-                    "messages": [{
-                        "role": "user",
-                        "content": rawPromptContent
-                    }],
-                    "response_format": { "type": "text" }
-                };
                 
-                promptContainer.textContent = JSON.stringify(promptJson, null, 2);
+                // Objeto JSON estructurado
+                const promptObject = {
+                  "accion": "GenerarCuestionarioCSV",
+                  "instruccion_principal": "Actúa como un profesor experto y crea un cuestionario en formato CSV basado en los siguientes parámetros. Tu respuesta debe ser ÚNICAMENTE el texto del CSV, sin explicaciones ni texto adicional.",
+                  "parametros": {
+                    "tema": temaInput.value,
+                    "nivel_alumnado": nivelInput.value,
+                    "numero_preguntas": parseInt(numPreguntasInput.value, 10),
+                    "tipos_pregunta": tiposSeleccionados
+                  },
+                  "formato_salida_csv": {
+                    "delimitador": ";",
+                    "cabecera": "Tipo;Pregunta;R1;R2;R3;R4;Tiempo;Correcta;URL Imagen",
+                    "reglas_columnas": {
+                      "Tipo": "Valores permitidos: 'quiz', 'multiple', 'true-false'.",
+                      "Pregunta_y_Respuestas": "Admite Markdown (**negrita**, *cursiva*) y LaTeX ($inline$, $$bloque$$).",
+                      "Correcta": "Índice basado en 1. Para 'multiple', usar comas (ej: '1,4').",
+                      "Tiempo": "Número de segundos (ej: 30).",
+                      "Respuestas_TrueFalse": "Para tipo 'true-false', R1 debe ser 'Verdadero' y R2 'Falso'. R3 y R4 vacías.",
+                      "Campos_Texto": "Todo el texto en cada campo debe estar entre comillas dobles (\"\"). Escapar comillas internas duplicándolas."
+                    },
+                    "ejemplo_fila": "\"quiz\";\"¿Cuál es el valor de $x$ en la ecuación $\\frac{2x - 4}{3} = 6$?\";\"$x = 11$\";\"$x = 9$\";\"$x = 10$\";\"$x=22/3$\";\"60\";\"3\";\"\""
+                  }
+                };
+
+                finalJsonPrompt = JSON.stringify(promptObject, null, 2);
+                
+                promptContainer.textContent = finalJsonPrompt;
                 promptContainer.classList.remove('text-gray-500', 'dark:text-gray-400');
                 copyBtn.classList.remove('hidden');
                 launchBtn.disabled = false;
             });
             
             copyBtn.addEventListener('click', () => {
-                navigator.clipboard.writeText(promptContainer.textContent).then(() => {
-                    copyBtn.textContent = '¡Copiado!';
-                    setTimeout(() => { copyBtn.textContent = 'Copiar'; }, 2000);
-                });
+                if (finalJsonPrompt) {
+                    navigator.clipboard.writeText(finalJsonPrompt).then(() => {
+                        copyBtn.textContent = '¡Copiado!';
+                        setTimeout(() => { copyBtn.textContent = 'Copiar'; }, 2000);
+                    });
+                }
             });
 
             launchBtn.addEventListener('click', () => {
-                if (rawPromptContent) {
-                    const encodedPrompt = encodeURIComponent(rawPromptContent);
+                if (finalJsonPrompt) {
+                    const encodedPrompt = encodeURIComponent(finalJsonPrompt);
                     const url = `https://chatgpt.com/?q=${encodedPrompt}`;
                     window.open(url, '_blank');
                 }
