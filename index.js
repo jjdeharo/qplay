@@ -231,25 +231,45 @@ function gestionarMusicaPorEstado() {
 
 
 // --- UI Functions ---
+
+/**
+ * Renderiza texto con Markdown y KaTeX en un elemento HTML.
+ * @param {HTMLElement} elemento El elemento de destino.
+ * @param {string} texto El contenido de texto con posible Markdown y LaTeX.
+ */
+function renderizarContenidoMixto(elemento, texto) {
+    if (!elemento) return;
+    const html = marked.parse(texto || '', { breaks: true, gfm: true });
+    elemento.innerHTML = html;
+    
+    if (window.renderMathInElement) {
+        renderMathInElement(elemento, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '\\[', right: '\\]', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false,
+            ignoredTags: ["code", "pre", "script", "style", "textarea"]
+        });
+    }
+}
+
 function mostrarPantalla(id) {
     pantallas.forEach(p => p.classList.remove('activa'));
     document.getElementById(id).classList.add('activa');
 
-    // Muestra u oculta el selector de idioma según la pantalla activa
     if (langSelectorEl) {
-        if (id === 'pantalla-carga') {
-            langSelectorEl.style.display = 'flex';
-        } else {
-            langSelectorEl.style.display = 'none';
-        }
+        langSelectorEl.style.display = (id === 'pantalla-carga') ? 'flex' : 'none';
     }
 
-    const esPartidaActiva = (id === 'pantalla-lobby' || id === 'pantalla-pregunta' || id === 'pantalla-leaderboard' || id === 'pantalla-final');
+    const esPartidaActiva = ['pantalla-lobby', 'pantalla-pregunta', 'pantalla-leaderboard', 'pantalla-final'].includes(id);
     if(reiniciarPartidaBtn) reiniciarPartidaBtn.style.display = esPartidaActiva ? 'flex' : 'none';
     
-    if(añadirJugadorBtn) añadirJugadorBtn.style.display = (id === 'pantalla-leaderboard' || id === 'pantalla-pregunta') ? 'flex' : 'none';
+    if(añadirJugadorBtn) añadirJugadorBtn.style.display = ['pantalla-leaderboard', 'pantalla-pregunta'].includes(id) ? 'flex' : 'none';
     
-    if (id === 'pantalla-pregunta' && (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta')) {
+    if (id === 'pantalla-pregunta' && ['jugando', 'mostrando_correcta'].includes(estadoJuego)) {
         estadoJugadoresPanel.style.display = 'block';
     } else {
         estadoJugadoresPanel.style.display = 'none';
@@ -257,6 +277,7 @@ function mostrarPantalla(id) {
 
     gestionarMusicaPorEstado();
 }
+
 
 function actualizarListaJugadores() {
     if (!listaJugadoresEl) return;
@@ -408,7 +429,8 @@ function mostrarPregunta() {
         total: cuestionario.length
     });
 
-    document.getElementById('texto-pregunta').textContent = pregunta.pregunta;
+    renderizarContenidoMixto(document.getElementById('texto-pregunta'), pregunta.pregunta);
+    
     const imgEl = document.getElementById('imagen-pregunta');
     if (pregunta.imagen_url) {
         imgEl.src = pregunta.imagen_url;
@@ -420,15 +442,26 @@ function mostrarPregunta() {
     respuestasGrid.innerHTML = '';
     const simbolos = ['▲', '◆', '●', '■'];
     let numRespuestasVisibles = 0;
+    
     pregunta.respuestas.forEach((respuesta, index) => {
         if (respuesta.trim() !== '') {
             numRespuestasVisibles++;
             const respuestaDiv = document.createElement('div');
             respuestaDiv.className = `respuesta-color-${index} text-white p-6 rounded-lg flex items-center text-3xl text-shadow`;
-            respuestaDiv.innerHTML = `<span class="mr-4 text-4xl">${simbolos[index]}</span> <p>${respuesta}</p>`;
+            
+            const simboloSpan = document.createElement('span');
+            simboloSpan.className = 'mr-4 text-4xl';
+            simboloSpan.textContent = simbolos[index];
+            
+            const textoP = document.createElement('p');
+            renderizarContenidoMixto(textoP, respuesta);
+
+            respuestaDiv.appendChild(simboloSpan);
+            respuestaDiv.appendChild(textoP);
             respuestasGrid.appendChild(respuestaDiv);
         }
     });
+    
     tiempoPregunta = pregunta.tiempo;
     tiempoRestante = tiempoPregunta;
     const temporizadorEl = document.getElementById('temporizador');
@@ -445,6 +478,7 @@ function mostrarPregunta() {
             finalizarRonda();
         }
     }, 1000);
+    
     Object.values(conexiones).forEach(nombre => {
         const jugador = jugadores[nombre];
         if (jugador.conectado && jugador.conn) {
@@ -459,6 +493,7 @@ function mostrarPregunta() {
     });
     actualizarEstadoJugadoresDisplay();
 }
+
 
 function setCircleDashoffset() {
     const rawTimeFraction = tiempoRestante / tiempoPregunta;
