@@ -37,5 +37,5 @@
     "player_kicked": "Has sido expulsado de la partida.",
     "results_csv_header": "Puesto;Nombre;Puntuacion\n",
     "results_csv_filename": "resultados_partida",
-    "load_ai_editor_link": "Hacer cuestionario con IA"
+    "load_ai_editor_link": "Hacer QPlay con IA"
 }
