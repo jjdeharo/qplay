@@ -388,6 +388,45 @@
                     renderizarPreguntas();
                 }
             };
+            
+            // --- CSV AND URL PROCESSING ---
+            const procesarContenidoCSV = (csvText, origen) => {
+                // Regex para parsear CSV con campos entrecomillados
+                const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
+                // Ignorar la cabecera si existe
+                const lineas = csvText.split('\n').filter(l => l.trim() !== '');
+                const startIndex = lineas[0] && lineas[0].toLowerCase().includes('tipo;pregunta') ? 1 : 0;
+                
+                const nuevasPreguntas = lineas.slice(startIndex).map(linea => {
+                    const campos = Array.from(linea.matchAll(regex), m => (m[1]?.replace(/""/g, '"') || m[2] || '').trim());
+                    if (campos.length < 8) return null;
+
+                    let correcta;
+                    if (campos[7].includes(',')) {
+                        correcta = campos[7].split(',').map(n => parseInt(n, 10) - 1).filter(n => !isNaN(n));
+                    } else {
+                        const num = parseInt(campos[7], 10) - 1;
+                        correcta = isNaN(num) ? -1 : num;
+                    }
+                    
+                    return { 
+                        tipo: campos[0], 
+                        pregunta: campos[1], 
+                        respuestas: campos.slice(2, 6), 
+                        tiempo: parseInt(campos[6], 10) || 30, 
+                        correcta: correcta, 
+                        imagen_url: campos[8] || '' 
+                    };
+                }).filter(p => p !== null && p.tipo && p.pregunta);
+
+                if(nuevasPreguntas.length > 0) {
+                    preguntas = nuevasPreguntas;
+                    renderizarPreguntas();
+                    if(origen) alert(`${preguntas.length} preguntas cargadas desde ${origen}.`);
+                } else if (origen) {
+                    alert(`No se encontraron preguntas válidas para cargar desde ${origen}.`);
+                }
+            };
 
             const guardarCSV = () => {
                 if (preguntas.length === 0) return alert('No hay preguntas para guardar.');
@@ -405,24 +444,11 @@
                 link.click();
             };
 
-            const cargarCSV = (event) => {
+            const cargarCSVDesdeFichero = (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    const text = e.target.result;
-                    const lineas = text.split('\n').filter(l => l.trim() !== '').slice(1);
-                    const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
-                    preguntas = lineas.map(linea => {
-                        const campos = Array.from(linea.matchAll(regex), m => (m[1]?.replace(/""/g, '"') || m[2] || '').trim());
-                        if (campos.length < 8) return null;
-                        let correcta = campos[7].includes(',') ? campos[7].split(',').map(n => parseInt(n, 10) - 1) : parseInt(campos[7], 10) - 1;
-                        if(isNaN(correcta)) correcta = -1;
-                        return { tipo: campos[0], pregunta: campos[1], respuestas: campos.slice(2, 6), tiempo: parseInt(campos[6], 10), correcta: correcta, imagen_url: campos[8] || '' };
-                    }).filter(p => p !== null);
-                    renderizarPreguntas();
-                    alert(`${preguntas.length} preguntas cargadas.`);
-                };
+                reader.onload = (e) => procesarContenidoCSV(e.target.result, 'fichero');
                 reader.readAsText(file, 'UTF-8');
                 fileInput.value = '';
             };
@@ -439,25 +465,39 @@
             listaPreguntasContainer.addEventListener('click', gestionarClickLista);
             guardarBtn.addEventListener('click', guardarCSV);
             cargarBtn.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', cargarCSV);
+            fileInput.addEventListener('change', cargarCSVDesdeFichero);
             themeToggleBtn.addEventListener('click', toggleTheme);
             
-            // Listeners para el popover de previsualización
             [preguntaInput, ...respuestasInputs].forEach(textarea => {
                 textarea.addEventListener('mouseenter', () => mostrarPreview(textarea));
                 textarea.addEventListener('mouseleave', ocultarPreview);
                 textarea.addEventListener('keyup', () => {
-                    if (previewPopover.dataset.activeFor === textarea.id) {
-                        mostrarPreview(textarea);
-                    }
+                    if (previewPopover.dataset.activeFor === textarea.id) mostrarPreview(textarea);
                 });
             });
             
             // --- INITIALIZATION ---
+            const procesarURL = () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const csvData = urlParams.get('data');
+                if (csvData) {
+                    try {
+                        const decodedCsv = decodeURIComponent(csvData);
+                        procesarContenidoCSV(decodedCsv, 'URL');
+                        // Limpia la URL para que no se recargue al refrescar
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    } catch (error) {
+                        console.error("Error al procesar datos de la URL:", error);
+                        alert("No se han podido cargar las preguntas desde la URL. El formato podría ser incorrecto.");
+                    }
+                }
+            };
+
             applyTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
             renderizarPreguntas();
             gestionarCambioTipoPregunta();
             gestionarCambioTiempo();
+            procesarURL(); // Comprueba la URL al cargar la página
         });
     </script>
 </body>
