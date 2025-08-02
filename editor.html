@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Cuestionarios Simplificado</title>
+    <title data-i18n-key="editor_page_title">Editor de Cuestionarios Simplificado</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -44,17 +44,20 @@
         .editor-toolbar button { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white">
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-white flex flex-col min-h-screen">
 
     <div class="w-full max-w-4xl mx-auto p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 relative">
-            <button id="theme-toggle" class="absolute top-6 right-6 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-            </button>
+            <div class="absolute top-6 right-6 flex items-center space-x-4 z-10">
+                <div id="lang-selector" class="flex space-x-1 bg-white/50 dark:bg-black/50 backdrop-blur-sm p-2 rounded-lg"></div>
+                <button id="theme-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <svg id="theme-icon-sun" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    <svg id="theme-icon-moon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                </button>
+            </div>
             <header class="mb-8 text-center">
-                <h1 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Editor de Cuestionarios</h1>
-                <p class="text-gray-500 dark:text-gray-400 mt-2">Crea, edita, guarda y carga tus preguntas.</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400" data-i18n-key="editor_main_title">Editor de Cuestionarios</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-2" data-i18n-key="editor_subtitle">Crea, edita, guarda y carga tus preguntas.</p>
             </header>
 
             <form id="pregunta-form" class="mb-8 bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
@@ -62,33 +65,33 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label for="tipo-pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de pregunta</label>
+                        <label for="tipo-pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_q_type_label">Tipo de pregunta</label>
                         <select id="tipo-pregunta" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                            <option value="quiz">Quiz (4 opciones, 1 correcta)</option>
-                            <option value="multiple">Respuesta Múltiple (varias correctas)</option>
-                            <option value="true-false">Verdadero / Falso</option>
+                            <option value="quiz" data-i18n-key="editor_q_type_quiz">Quiz (4 opciones, 1 correcta)</option>
+                            <option value="multiple" data-i18n-key="editor_q_type_multiple">Respuesta Múltiple (varias correctas)</option>
+                            <option value="true-false" data-i18n-key="editor_q_type_tf">Verdadero / Falso</option>
                         </select>
                     </div>
                     <div>
-                        <label for="tiempo-limite" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tiempo límite</label>
+                        <label for="tiempo-limite" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_time_limit_label">Tiempo límite</label>
                         <select id="tiempo-limite" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                            <option value="20">20 segundos</option>
-                            <option value="30" selected>30 segundos</option>
-                            <option value="60">1 minuto</option>
-                            <option value="90">1.5 minutos</option>
-                            <option value="120">2 minutos</option>
-                            <option value="custom">Personalizado</option>
+                            <option value="20" data-i18n-key="editor_time_20s">20 segundos</option>
+                            <option value="30" selected data-i18n-key="editor_time_30s">30 segundos</option>
+                            <option value="60" data-i18n-key="editor_time_1m">1 minuto</option>
+                            <option value="90" data-i18n-key="editor_time_1.5m">1.5 minutos</option>
+                            <option value="120" data-i18n-key="editor_time_2m">2 minutos</option>
+                            <option value="custom" data-i18n-key="editor_time_custom">Personalizado</option>
                         </select>
                     </div>
                 </div>
                 
                 <div id="tiempo-personalizado-container" class="grid grid-cols-2 gap-4 mb-4 hidden-important">
                     <div>
-                        <label for="minutos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Minutos</label>
+                        <label for="minutos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_minutes">Minutos</label>
                         <input type="number" id="minutos" min="0" max="99" placeholder="0" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label for="segundos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Segundos</label>
+                        <label for="segundos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_seconds">Segundos</label>
                         <input type="number" id="segundos" min="0" max="59" placeholder="45" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
@@ -96,47 +99,47 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4">
                         <div>
-                            <label for="pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pregunta</label>
+                            <label for="pregunta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_question_label">Pregunta</label>
                             
                             <div class="editor-toolbar flex items-center space-x-2 bg-gray-200 dark:bg-gray-700 p-1.5 rounded-t-md border-x border-t border-gray-300 dark:border-gray-600">
-                                <button type="button" id="btn-bold" class="px-3 py-1 rounded font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" title="Negrita">B</button>
-                                <button type="button" id="btn-italic" class="px-3 py-1 rounded italic font-serif text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" title="Cursiva">I</button>
+                                <button type="button" id="btn-bold" class="px-3 py-1 rounded font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" data-i18n-title-key="editor_bold_tooltip" title="Negrita">B</button>
+                                <button type="button" id="btn-italic" class="px-3 py-1 rounded italic font-serif text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" data-i18n-title-key="editor_italic_tooltip" title="Cursiva">I</button>
                                 <div class="w-px h-5 bg-gray-400 dark:bg-gray-500"></div>
-                                <button type="button" id="btn-inline-math" class="px-3 py-1 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" title="Fórmula en línea">$ f(x) $</button>
-                                <button type="button" id="btn-block-math" class="px-3 py-1 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" title="Fórmula en bloque">$$ f(x) $$</button>
+                                <button type="button" id="btn-inline-math" class="px-3 py-1 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" data-i18n-title-key="editor_inline_math_tooltip" title="Fórmula en línea">$ f(x) $</button>
+                                <button type="button" id="btn-block-math" class="px-3 py-1 rounded text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600" data-i18n-title-key="editor_block_math_tooltip" title="Fórmula en bloque">$$ f(x) $$</button>
                             </div>
 
-                            <textarea id="pregunta" rows="5" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-b-md p-2 text-gray-900 dark:text-white focus:ring-0" placeholder="Escribe texto y fórmulas..."></textarea>
+                            <textarea id="pregunta" rows="5" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-b-md p-2 text-gray-900 dark:text-white focus:ring-0" data-i18n-key="editor_question_placeholder" placeholder="Escribe texto y fórmulas..."></textarea>
                         </div>
                         <div>
-                            <label for="imagen_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL de la Imagen (Opcional)</label>
-                            <input type="url" id="imagen_url" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="https://ejemplo.com/imagen.png">
+                            <label for="imagen_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_image_url_label">URL de la Imagen (Opcional)</label>
+                            <input type="url" id="imagen_url" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" data-i18n-key="editor_image_url_placeholder" placeholder="https://ejemplo.com/imagen.png">
                         </div>
                     </div>
                     <div class="space-y-3" id="respuestas-container">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Respuestas (Marcar la/s correcta/s)</label>
-                        <div class="flex items-start" id="respuesta-wrapper-1"><input type="radio" id="correcta-1" name="correcta" value="0" class="form-check-input radio mt-2" checked><textarea id="respuesta-1" rows="2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Respuesta 1 (admite Markdown)"></textarea></div>
-                        <div class="flex items-start" id="respuesta-wrapper-2"><input type="radio" id="correcta-2" name="correcta" value="1" class="form-check-input radio mt-2"><textarea id="respuesta-2" rows="2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Respuesta 2 (admite Markdown)"></textarea></div>
-                        <div class="flex items-start" id="respuesta-wrapper-3"><input type="radio" id="correcta-3" name="correcta" value="2" class="form-check-input radio mt-2"><textarea id="respuesta-3" rows="2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Respuesta 3 (admite Markdown)"></textarea></div>
-                        <div class="flex items-start" id="respuesta-wrapper-4"><input type="radio" id="correcta-4" name="correcta" value="3" class="form-check-input radio mt-2"><textarea id="respuesta-4" rows="2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" placeholder="Respuesta 4 (admite Markdown)"></textarea></div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_answers_label">Respuestas (Marcar la/s correcta/s)</label>
+                        <div class="flex items-start" id="respuesta-wrapper-1"><input type="radio" id="correcta-1" name="correcta" value="0" class="form-check-input radio mt-2" checked><textarea id="respuesta-1" rows="2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" data-i18n-key="editor_answer1_placeholder" placeholder="Respuesta 1 (admite Markdown)"></textarea></div>
+                        <div class="flex items-start" id="respuesta-wrapper-2"><input type="radio" id="correcta-2" name="correcta" value="1" class="form-check-input radio mt-2"><textarea id="respuesta-2" rows="2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" data-i18n-key="editor_answer2_placeholder" placeholder="Respuesta 2 (admite Markdown)"></textarea></div>
+                        <div class="flex items-start" id="respuesta-wrapper-3"><input type="radio" id="correcta-3" name="correcta" value="2" class="form-check-input radio mt-2"><textarea id="respuesta-3" rows="2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" data-i18n-key="editor_answer3_placeholder" placeholder="Respuesta 3 (admite Markdown)"></textarea></div>
+                        <div class="flex items-start" id="respuesta-wrapper-4"><input type="radio" id="correcta-4" name="correcta" value="3" class="form-check-input radio mt-2"><textarea id="respuesta-4" rows="2" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" data-i18n-key="editor_answer4_placeholder" placeholder="Respuesta 4 (admite Markdown)"></textarea></div>
                     </div>
                 </div>
                 <div class="mt-6 flex space-x-4">
-                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Añadir Pregunta</button>
-                    <button type="button" id="cancel-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors hidden-important">Cancelar Edición</button>
+                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors" data-i18n-key="editor_add_q_button">Añadir Pregunta</button>
+                    <button type="button" id="cancel-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors hidden-important" data-i18n-key="editor_cancel_edit_button">Cancelar Edición</button>
                 </div>
             </form>
 
             <div class="mb-8">
-                <h2 class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">Cuestionario Actual</h2>
+                <h2 class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400" data-i18n-key="editor_current_quiz_title">Cuestionario Actual</h2>
                 <div id="lista-preguntas" class="space-y-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg max-h-72 overflow-y-auto">
-                    <p class="text-gray-500 dark:text-gray-400">Aún no has añadido ninguna pregunta.</p>
+                    <p class="text-gray-500 dark:text-gray-400" data-i18n-key="editor_no_questions_yet">Aún no has añadido ninguna pregunta.</p>
                 </div>
             </div>
 
             <div class="flex flex-col md:flex-row gap-4">
-                <button id="guardar-csv" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Guardar en CSV</button>
-                <button id="cargar-csv" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Cargar desde CSV</button>
+                <button id="guardar-csv" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors" data-i18n-key="editor_save_csv_button">Guardar en CSV</button>
+                <button id="cargar-csv" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors" data-i18n-key="editor_load_csv_button">Cargar desde CSV</button>
                 <input type="file" id="csv-file-input" class="hidden" accept=".csv">
             </div>
         </div>
@@ -144,6 +147,21 @@
 
     <div id="preview-popover" class="hidden absolute z-50 p-3 rounded-lg shadow-xl bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 max-w-sm preview-box"></div>
 
+    <footer class="text-center p-4 text-sm text-gray-500 dark:text-gray-400 mt-auto">
+        <p>
+            <span data-i18n-key="footer_created_by">Aplicación hecha por</span> 
+            <a href="https://bilatria.org" target="_blank" class="underline hover:text-indigo-500">Juan José de Haro</a>.
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" class="underline hover:text-indigo-500" data-i18n-key="footer_license">Licencia CC BY-SA 4.0</a>.
+        </p>
+        <p class="mt-2 flex items-center justify-center space-x-2">
+            <a href="https://github.com/jjdeharo/qplay/" target="_blank" class="hover:text-indigo-500" aria-label="GitHub Repository">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            </a>
+            <a href="https://github.com/jjdeharo/qplay/issues" target="_blank" class="underline hover:text-indigo-500" data-i18n-key="footer_suggestions">Escribe un comentario o sugerencia</a>.
+        </p>
+    </footer>
+
+    <script src="i18n.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM REFERENCES ---
@@ -256,7 +274,7 @@
             const renderizarPreguntas = () => {
                 listaPreguntasContainer.innerHTML = '';
                 if (preguntas.length === 0) {
-                    listaPreguntasContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400">Aún no has añadido ninguna pregunta.</p>';
+                    listaPreguntasContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400" data-i18n-key="editor_no_questions_yet">Aún no has añadido ninguna pregunta.</p>`;
                     return;
                 }
                 preguntas.forEach((p, index) => {
@@ -278,11 +296,25 @@
                         </div>`;
                     
                     el.appendChild(container);
-                    el.innerHTML += `
-                        <div class="flex space-x-2 flex-shrink-0">
-                            <button data-index="${index}" class="editar-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md text-sm">Editar</button>
-                            <button data-index="${index}" class="eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm">Eliminar</button>
-                        </div>`;
+
+                    const buttonsDiv = document.createElement('div');
+                    buttonsDiv.className = 'flex space-x-2 flex-shrink-0';
+
+                    const editButton = document.createElement('button');
+                    editButton.dataset.index = index;
+                    editButton.className = 'editar-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md text-sm';
+                    editButton.setAttribute('data-i18n-key', 'editor_edit_button');
+                    editButton.textContent = t('editor_edit_button') || 'Editar';
+                    buttonsDiv.appendChild(editButton);
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.dataset.index = index;
+                    deleteButton.className = 'eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm';
+                    deleteButton.setAttribute('data-i18n-key', 'editor_delete_button');
+                    deleteButton.textContent = t('editor_delete_button') || 'Eliminar';
+                    buttonsDiv.appendChild(deleteButton);
+                    
+                    el.appendChild(buttonsDiv);
                     listaPreguntasContainer.appendChild(el);
                 });
             };
@@ -299,8 +331,8 @@
                 respuestasWrappers.forEach((w, i) => w.classList.remove('hidden-important'));
                 respuestasInputs.forEach((input, i) => { input.value = ''; input.disabled = false; });
                 if (tipo === 'true-false') {
-                    respuestasInputs[0].value = "Verdadero"; 
-                    respuestasInputs[1].value = "Falso";
+                    respuestasInputs[0].value = t('editor_true_default') || "Verdadero"; 
+                    respuestasInputs[1].value = t('editor_false_default') || "Falso";
                     respuestasInputs[0].disabled = true; 
                     respuestasInputs[1].disabled = true;
                     respuestasWrappers[2].classList.add('hidden-important'); 
@@ -324,7 +356,8 @@
             const resetearFormulario = () => {
                 form.reset();
                 editIndexInput.value = "-1";
-                submitBtn.textContent = "Añadir Pregunta";
+                submitBtn.setAttribute('data-i18n-key', 'editor_add_q_button');
+                submitBtn.textContent = t('editor_add_q_button') || 'Añadir Pregunta';
                 submitBtn.classList.replace('bg-yellow-600', 'bg-indigo-600');
                 submitBtn.classList.replace('hover:bg-yellow-700', 'hover:bg-indigo-700');
                 cancelBtn.classList.add('hidden-important');
@@ -343,7 +376,10 @@
                 imagenUrlInput.value = p.imagen_url;
                 respuestasInputs.forEach((input, i) => input.value = p.respuestas[i] || '');
                 correctasInputs.forEach((input, i) => input.checked = Array.isArray(p.correcta) ? p.correcta.includes(i) : (p.correcta === i));
-                submitBtn.textContent = "Actualizar Pregunta";
+                
+                submitBtn.setAttribute('data-i18n-key', 'editor_update_q_button');
+                submitBtn.textContent = t('editor_update_q_button') || 'Actualizar Pregunta';
+
                 submitBtn.classList.replace('bg-indigo-600', 'bg-yellow-600');
                 submitBtn.classList.replace('hover:bg-indigo-700', 'hover:bg-yellow-700');
                 cancelBtn.classList.remove('hidden-important');
@@ -391,9 +427,7 @@
             
             // --- CSV AND URL PROCESSING ---
             const procesarContenidoCSV = (csvText, origen) => {
-                // Regex para parsear CSV con campos entrecomillados
                 const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
-                // Ignorar la cabecera si existe
                 const lineas = csvText.split('\n').filter(l => l.trim() !== '');
                 const startIndex = lineas[0] && lineas[0].toLowerCase().includes('tipo;pregunta') ? 1 : 0;
                 
@@ -422,14 +456,14 @@
                 if(nuevasPreguntas.length > 0) {
                     preguntas = nuevasPreguntas;
                     renderizarPreguntas();
-                    if(origen) alert(`${preguntas.length} preguntas cargadas desde ${origen}.`);
+                    alert(t('alert_questions_loaded', {count: preguntas.length, source: origen}));
                 } else if (origen) {
-                    alert(`No se encontraron preguntas válidas para cargar desde ${origen}.`);
+                    alert(t('alert_no_questions_found', {source: origen}));
                 }
             };
 
             const guardarCSV = () => {
-                if (preguntas.length === 0) return alert('No hay preguntas para guardar.');
+                if (preguntas.length === 0) return alert(t('alert_no_questions_to_save'));
                 const headers = ['Tipo', 'Pregunta', 'R1', 'R2', 'R3', 'R4', 'Tiempo', 'Correcta', 'URL Imagen'];
                 const csvRows = preguntas.map(p => {
                     const correctaStr = Array.isArray(p.correcta) ? p.correcta.map(c => c + 1).join(',') : (p.correcta !== -1 ? p.correcta + 1 : '');
@@ -484,20 +518,28 @@
                     try {
                         const decodedCsv = decodeURIComponent(csvData);
                         procesarContenidoCSV(decodedCsv, 'URL');
-                        // Limpia la URL para que no se recargue al refrescar
                         window.history.replaceState({}, document.title, window.location.pathname);
                     } catch (error) {
                         console.error("Error al procesar datos de la URL:", error);
-                        alert("No se han podido cargar las preguntas desde la URL. El formato podría ser incorrecto.");
+                        alert(t('alert_url_load_error'));
                     }
                 }
             };
 
             applyTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
-            renderizarPreguntas();
-            gestionarCambioTipoPregunta();
-            gestionarCambioTiempo();
-            procesarURL(); // Comprueba la URL al cargar la página
+            // La llamada a renderizarPreguntas se hará después de cargar las traducciones
+            // para asegurar que los botones dinámicos se creen con el texto correcto.
+            document.addEventListener('DOMContentLoaded', () => {
+                // Sobrescribimos el evento 'DOMContentLoaded' del script i18n.js para controlar el orden.
+                const originalDOMContentLoaded = window.onload;
+                window.onload = function() {
+                    if (originalDOMContentLoaded) originalDOMContentLoaded();
+                    renderizarPreguntas();
+                    gestionarCambioTipoPregunta();
+                    gestionarCambioTiempo();
+                    procesarURL();
+                };
+            });
         });
     </script>
 </body>
