@@ -73,6 +73,7 @@ function guardarEstadoJuego() {
             conectado: false,
             haVotado: jugadores[nombre].haVotado,
             correctas: jugadores[nombre].correctas,
+            respuestasDetalladas: jugadores[nombre].respuestasDetalladas, // MODIFICADO
         };
     }
     const estado = {
@@ -510,34 +511,60 @@ function finalizarRonda() {
     gestionarMusicaPorEstado(); 
     controlesPostPregunta.classList.remove('hidden');
     saltarTiempoBtn.style.display = 'none';
+
     const pregunta = cuestionario[preguntaActualIndex];
-    Object.keys(respuestasRonda).forEach(nombre => {
-        const respJugador = respuestasRonda[nombre].respuesta;
-        const respCorrecta = pregunta.correcta;
+
+    Object.values(jugadores).forEach(jugador => {
+        if (!jugador.nombre) return; // Skip si algo está mal
+
+        // Asegurarse de que el array existe (para retrocompatibilidad)
+        if (!jugador.respuestasDetalladas) {
+            jugador.respuestasDetalladas = [];
+        }
+
         let esCorrecta = false;
-        if (Array.isArray(respCorrecta)) {
-            esCorrecta = respCorrecta.length === respJugador.length && respCorrecta.every(val => respJugador.includes(val));
+        let puntosRonda = 0;
+
+        if (respuestasRonda[jugador.nombre]) {
+            // El jugador ha respondido
+            const respJugador = respuestasRonda[jugador.nombre].respuesta;
+            const respCorrecta = pregunta.correcta;
+
+            if (Array.isArray(respCorrecta)) {
+                esCorrecta = respCorrecta.length === respJugador.length && respCorrecta.every(val => respJugador.includes(val));
+            } else {
+                esCorrecta = respCorrecta === respJugador;
+            }
+
+            if (esCorrecta) {
+                jugador.correctas = (jugador.correctas || 0) + 1;
+                puntosRonda = (500 + respuestasRonda[jugador.nombre].tiempoRespuesta * 10);
+                jugador.puntaje += puntosRonda;
+                jugador.respuestasDetalladas[preguntaActualIndex] = 1; // 1 para correcto
+            } else {
+                jugador.respuestasDetalladas[preguntaActualIndex] = 0; // 0 para incorrecto
+            }
         } else {
-            esCorrecta = respCorrecta === respJugador;
+            // El jugador no ha respondido
+            jugador.respuestasDetalladas[preguntaActualIndex] = -1; // -1 para sin respuesta
         }
-        if (esCorrecta) {
-            jugadores[nombre].correctas = (jugadores[nombre].correctas || 0) + 1;
-        }
-        const puntosRonda = esCorrecta ? (500 + respuestasRonda[nombre].tiempoRespuesta * 10) : 0;
-        jugadores[nombre].puntaje += puntosRonda;
-        if (jugadores[nombre].conectado && jugadores[nombre].conn) {
-            jugadores[nombre].conn.send({
+
+        // Enviar resultado individual al jugador si está conectado
+        if (jugador.conectado && jugador.conn) {
+            jugador.conn.send({
                 tipo: 'resultado',
                 payload: {
                     esCorrecta: esCorrecta,
                     puntosRonda: puntosRonda,
-                    puntosTotal: jugadores[nombre].puntaje
+                    puntosTotal: jugador.puntaje
                 }
             });
         }
     });
+
     guardarEstadoJuego();
 }
+
 
 function gestionarPausa() {
     isPaused = !isPaused;
@@ -641,21 +668,50 @@ function finalizarJuego() {
 
 function descargarResultados() {
     const jugadoresOrdenados = Object.values(jugadores).filter(j => j.nombre).sort((a, b) => b.puntaje - a.puntaje);
-    let csvContent = t('results_csv_header');
+    
+    // 1. Crear cabecera con totales y enunciados de preguntas
+    let cabeceras = ['Posición', 'Nombre', 'Puntuación Total', 'Total Correctos'];
+    cuestionario.forEach(pregunta => {
+        // Se limpia el texto de la pregunta para evitar conflictos con el formato CSV
+        const textoPreguntaLimpio = `"${pregunta.pregunta.replace(/"/g, '""')}"`;
+        cabeceras.push(textoPreguntaLimpio);
+    });
+    let csvContent = cabeceras.join(';') + '\n';
+
+    // 2. Crear una fila por cada jugador
     jugadoresOrdenados.forEach((jugador, index) => {
-        const fila = `${index + 1};"${jugador.nombre}";${jugador.puntaje}`;
-        csvContent += fila + '\n';
+        // Se añaden los datos del jugador, incluyendo el total de aciertos
+        let fila = [
+            index + 1,
+            `"${jugador.nombre}"`,
+            jugador.puntaje,
+            jugador.correctas || 0 // Se añade el total de respuestas correctas
+        ];
+        
+        // 3. Añadir el resultado de cada pregunta a la fila
+        for (let i = 0; i < cuestionario.length; i++) {
+            const resultado = jugador.respuestasDetalladas ? jugador.respuestasDetalladas[i] : undefined;
+            let textoResultado = '';
+            switch(resultado) {
+                case 1: textoResultado = 'Correcto'; break;
+                case 0: textoResultado = 'Incorrecto'; break;
+                default: textoResultado = 'Sin respuesta';
+            }
+            fila.push(textoResultado);
+        }
+        csvContent += fila.join(';') + '\n';
     });
-    const blob = new Blob([csvContent], {
-        type: 'text/csv;charset=utf-8;'
-    });
+
+    // 4. Lógica de descarga (sin cambios)
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `${t('results_csv_filename')}.csv`;
+    link.download = `${t('results_csv_filename')}_detallado_completo.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
+
 
 function inicializarPeer(existingGameId = null) {
     if (peer) {
@@ -766,7 +822,8 @@ function gestionarConexionJugador(conn, nombre) {
             conn: conn,
             conectado: true,
             haVotado: false,
-            correctas: 0
+            correctas: 0,
+            respuestasDetalladas: [] // MODIFICADO
         };
         jugadores[nombre] = jugador;
     }
