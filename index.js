@@ -442,10 +442,37 @@ function mostrarPregunta() {
     const respuestasGrid = document.getElementById('respuestas-grid');
     respuestasGrid.innerHTML = '';
     const simbolos = ['▲', '◆', '●', '■'];
+    
+    // --- INICIO DE LA MODIFICACIÓN ---
+    let respuestasParaMostrar = pregunta.respuestas.map((texto, index) => ({ texto, originalIndex: index }));
+    let indicesCorrectosOriginales = Array.isArray(pregunta.correcta) ? pregunta.correcta : [pregunta.correcta];
+
+    if (document.getElementById('opcion-respuestas-aleatorias').checked) {
+        // Algoritmo de desordenación Fisher-Yates
+        for (let i = respuestasParaMostrar.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [respuestasParaMostrar[i], respuestasParaMostrar[j]] = [respuestasParaMostrar[j], respuestasParaMostrar[i]];
+        }
+
+        // Actualizar el índice de la respuesta correcta a su nueva posición
+        const nuevosIndicesCorrectos = respuestasParaMostrar
+            .map((resp, nuevaPosicion) => (indicesCorrectosOriginales.includes(resp.originalIndex) ? nuevaPosicion : -1))
+            .filter(index => index !== -1);
+        
+        // Asignar los nuevos índices correctos a la pregunta actual para esta ronda
+        if (Array.isArray(pregunta.correcta)) {
+            pregunta.correcta = nuevosIndicesCorrectos.sort();
+        } else {
+            pregunta.correcta = nuevosIndicesCorrectos[0];
+        }
+    }
+    // --- FIN DE LA MODIFICACIÓN ---
+
     let numRespuestasVisibles = 0;
     
-    pregunta.respuestas.forEach((respuesta, index) => {
-        if (respuesta.trim() !== '') {
+    // Usar el array (potencialmente desordenado) para crear los elementos
+    respuestasParaMostrar.forEach((respuesta, index) => {
+        if (respuesta.texto.trim() !== '') {
             numRespuestasVisibles++;
             const respuestaDiv = document.createElement('div');
             respuestaDiv.className = `respuesta-color-${index} text-white p-6 rounded-lg flex items-center text-3xl text-shadow`;
@@ -455,7 +482,7 @@ function mostrarPregunta() {
             simboloSpan.textContent = simbolos[index];
             
             const textoP = document.createElement('p');
-            renderizarContenidoMixto(textoP, respuesta);
+            renderizarContenidoMixto(textoP, respuesta.texto);
 
             respuestaDiv.appendChild(simboloSpan);
             respuestaDiv.appendChild(textoP);
