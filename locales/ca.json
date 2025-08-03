@@ -162,5 +162,6 @@
     "alert_url_load_error": "No s'han pogut carregar les preguntes des de la URL. El format podria ser incorrecte.",
     "footer_created_by": "Aplicació feta per",
     "footer_license": "Llicència CC BY-SA 4.0",
-    "footer_suggestions": "Escriu un comentari o suggeriment"
+    "footer_suggestions": "Escriu un comentari o suggeriment",
+    "back_to_qplay_button": "Tornar a QPlay"
 }
