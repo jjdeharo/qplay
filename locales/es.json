@@ -162,5 +162,6 @@
     "alert_url_load_error": "No se han podido cargar las preguntas desde la URL. El formato podría ser incorrecto.",
     "footer_created_by": "Aplicación hecha por",
     "footer_license": "Licencia CC BY-SA 4.0",
-    "footer_suggestions": "Escribe un comentario o sugerencia"
+    "footer_suggestions": "Escribe un comentario o sugerencia",
+    "back_to_qplay_button": "Volver a QPlay"
 }
