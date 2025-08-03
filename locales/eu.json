@@ -162,5 +162,6 @@
     "alert_url_load_error": "Ezin izan dira galderak URLtik kargatu. Baliteke formatua okerra izatea.",
     "footer_created_by": "Aplikazioa egilea:",
     "footer_license": "Lizentzia CC BY-SA 4.0",
-    "footer_suggestions": "Idatzi iruzkin edo iradokizun bat"
+    "footer_suggestions": "Idatzi iruzkin edo iradokizun bat",
+    "back_to_qplay_button": "Itzuli QPlay-ra"
 }
