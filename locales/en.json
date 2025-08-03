@@ -162,5 +162,6 @@
     "alert_url_load_error": "Could not load questions from the URL. The format might be incorrect.",
     "footer_created_by": "Application made by",
     "footer_license": "License CC BY-SA 4.0",
-    "footer_suggestions": "Write a comment or suggestion"
+    "footer_suggestions": "Write a comment or suggestion",
+    "back_to_qplay_button": "Back to QPlay"
 }
