@@ -55,3 +55,50 @@ body {
     stroke-dashoffset: 0;
     transition: stroke-dashoffset 1s linear;
 }
+
+#volumen-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 7rem;
+    height: 0.5rem;
+    background-color: rgba(148, 163, 184, 0.45);
+    border-radius: 9999px;
+    outline: none;
+    overflow: hidden;
+}
+
+#volumen-slider::-webkit-slider-runnable-track {
+    height: 0.5rem;
+    background-color: transparent;
+}
+
+#volumen-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    background-color: #3b82f6;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    box-shadow: -200px 0 0 200px rgba(59, 130, 246, 0.35);
+    margin-top: -0.25rem;
+}
+
+#volumen-slider::-moz-range-track {
+    height: 0.5rem;
+    background-color: rgba(148, 163, 184, 0.45);
+    border-radius: 9999px;
+}
+
+#volumen-slider::-moz-range-progress {
+    height: 0.5rem;
+    background-color: rgba(59, 130, 246, 0.35);
+    border-radius: 9999px;
+}
+
+#volumen-slider::-moz-range-thumb {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    background-color: #3b82f6;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+}

@@ -37,6 +37,12 @@ const FULL_DASH_ARRAY = 283;
 // --- Referencias de audio ---
 const controlVolumenEl = document.getElementById('control-volumen');
 const volumenSlider = document.getElementById('volumen-slider');
+const toggleVolumenBtn = document.getElementById('toggle-volumen-btn');
+const iconoVolumenActivo = document.getElementById('icono-volumen-activo');
+const iconoVolumenMute = document.getElementById('icono-volumen-mute');
+
+const VOLUME_STORAGE_KEY = 'qplay_volumen';
+const MUTE_STORAGE_KEY = 'qplay_muted';
 
 // --- State ---
 let peer;
@@ -56,6 +62,7 @@ let audioContext;
 let audioElement;
 let cancionActual = null;
 let tipoMusicaActual = null; // 'principal', 'juego', 'ganador'
+let ultimoVolumenActivo = 0.4;
 
 // --- Constantes de configuración de música (Simplificadas) ---
 const CANTIDAD_MUSICA_PRINCIPAL = 8;
@@ -116,16 +123,30 @@ function inicializarAudio() {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         audioElement = new Audio();
         audioElement.crossOrigin = "anonymous";
-        
-        const volumenGuardado = localStorage.getItem('qplay_volumen');
-        audioElement.volume = volumenGuardado ? parseFloat(volumenGuardado) : 0.4;
-        if (volumenSlider) volumenSlider.value = audioElement.volume;
-        
+
+        const volumenGuardado = parseFloat(localStorage.getItem(VOLUME_STORAGE_KEY));
+        const volumenInicial = isNaN(volumenGuardado) ? 0.4 : volumenGuardado;
+        const volumenInicialClamped = Math.min(Math.max(volumenInicial, 0), 1);
+        const muteGuardado = localStorage.getItem(MUTE_STORAGE_KEY) === 'true';
+
+        audioElement.volume = volumenInicialClamped;
+        audioElement.muted = muteGuardado || volumenInicialClamped === 0;
+
+        if (volumenSlider) {
+            volumenSlider.value = volumenInicialClamped;
+        }
+
+        if (volumenInicialClamped > 0) {
+            ultimoVolumenActivo = volumenInicialClamped;
+        }
+
         audioElement.addEventListener('ended', () => {
              if (tipoMusicaActual === 'principal' || tipoMusicaActual === 'juego') {
                 reproducirMusicaAleatoria(tipoMusicaActual);
             }
         });
+
+        actualizarIconoVolumen();
     }
 }
 
@@ -183,6 +204,20 @@ function reanudarMusica() {
     }
 }
 
+function actualizarIconoVolumen() {
+    if (!toggleVolumenBtn) return;
+    const silenciado = !audioElement || audioElement.muted || audioElement.volume === 0;
+    toggleVolumenBtn.setAttribute('aria-pressed', silenciado ? 'true' : 'false');
+    toggleVolumenBtn.classList.toggle('opacity-60', silenciado);
+
+    if (iconoVolumenActivo) {
+        iconoVolumenActivo.classList.toggle('hidden', silenciado);
+    }
+    if (iconoVolumenMute) {
+        iconoVolumenMute.classList.toggle('hidden', !silenciado);
+    }
+}
+
 function reproducirMusicaAleatoria(tipo) {
     const nuevaPista = obtenerPistaAleatoria(tipo);
     if (nuevaPista) {
@@ -198,6 +233,7 @@ function gestionarMusicaPorEstado() {
     if (controlVolumenEl) {
         controlVolumenEl.style.display = musicaDeberiaSonar ? 'flex' : 'none';
     }
+    actualizarIconoVolumen();
 
     switch (estadoJuego) {
         case 'lobby':
@@ -1036,9 +1072,60 @@ if(descargarResultadosBtn) descargarResultadosBtn.addEventListener('click', desc
 
 if(volumenSlider) {
     volumenSlider.addEventListener('input', (e) => {
-        const nuevoVolumen = parseFloat(e.target.value);
-        if(audioElement) audioElement.volume = nuevoVolumen;
-        localStorage.setItem('qplay_volumen', nuevoVolumen);
+        let nuevoVolumen = parseFloat(e.target.value);
+        if (isNaN(nuevoVolumen)) {
+            nuevoVolumen = 0;
+        }
+        nuevoVolumen = Math.min(Math.max(nuevoVolumen, 0), 1);
+
+        if (!audioContext) {
+            inicializarAudio();
+        }
+
+        if (audioElement) {
+            audioElement.volume = nuevoVolumen;
+            audioElement.muted = nuevoVolumen === 0;
+            if (nuevoVolumen > 0) {
+                ultimoVolumenActivo = nuevoVolumen;
+            }
+        }
+
+        volumenSlider.value = nuevoVolumen;
+
+        localStorage.setItem(VOLUME_STORAGE_KEY, nuevoVolumen);
+        localStorage.setItem(MUTE_STORAGE_KEY, (audioElement && audioElement.muted) ? 'true' : 'false');
+        actualizarIconoVolumen();
+    });
+}
+
+if (toggleVolumenBtn) {
+    toggleVolumenBtn.addEventListener('click', () => {
+        if (!audioContext) {
+            inicializarAudio();
+        }
+
+        if (!audioElement) return;
+
+        const silenciado = audioElement.muted || audioElement.volume === 0;
+
+        if (silenciado) {
+            const volumenRestaurado = Math.min(Math.max(ultimoVolumenActivo > 0 ? ultimoVolumenActivo : 0.4, 0), 1);
+            audioElement.muted = false;
+            audioElement.volume = volumenRestaurado;
+            if (volumenSlider) {
+                volumenSlider.value = volumenRestaurado;
+            }
+            localStorage.setItem(VOLUME_STORAGE_KEY, volumenRestaurado);
+            localStorage.setItem(MUTE_STORAGE_KEY, 'false');
+        } else {
+            if (audioElement.volume > 0) {
+                ultimoVolumenActivo = audioElement.volume;
+            }
+            audioElement.muted = true;
+            localStorage.setItem(MUTE_STORAGE_KEY, 'true');
+        }
+
+        actualizarIconoVolumen();
     });
 }
 
