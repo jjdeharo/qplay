@@ -119,8 +119,8 @@
                             <textarea id="pregunta" rows="5" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-b-md p-2 text-gray-900 dark:text-white focus:ring-0" data-i18n-key="editor_question_placeholder" placeholder="Escribe texto y fórmulas..."></textarea>
                         </div>
                         <div>
-                            <label for="imagen_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_image_url_label">URL de la Imagen (Opcional)</label>
-                            <input type="url" id="imagen_url" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" data-i18n-key="editor_image_url_placeholder" placeholder="https://ejemplo.com/imagen.png">
+                            <label for="imagen_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="editor_image_url_label">URL de imagen o vídeo (opcional)</label>
+                            <input type="url" id="imagen_url" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500" data-i18n-key="editor_image_url_placeholder" placeholder="https://ejemplo.com/imagen.png o https://ejemplo.com/video.mp4">
                         </div>
                     </div>
                     <div class="space-y-3" id="respuestas-container">
@@ -346,13 +346,66 @@
                     renderizarContenidoMixto(textoPregunta, p.pregunta);
                     questionEl.appendChild(textoPregunta);
 
-                    // Image if present
+                    // Imagen, vídeo local o embed (YouTube/Vimeo) si está presente
                     if (p.imagen_url) {
-                        const imgEl = document.createElement('img');
-                        imgEl.src = p.imagen_url;
-                        imgEl.alt = 'Imagen de la pregunta';
-                        imgEl.className = 'my-4 rounded-lg max-w-sm';
-                        questionEl.appendChild(imgEl);
+                        const url = p.imagen_url.trim();
+                        const obtenerEmbed = (rawUrl) => {
+                            try {
+                                const u = new URL(rawUrl);
+                                const host = u.hostname.replace(/^www\./, '').toLowerCase();
+                                if (host === 'youtu.be') {
+                                    const id = u.pathname.split('/').filter(Boolean)[0];
+                                    if (id) return `https://www.youtube.com/embed/${id}?rel=0`;
+                                }
+                                if (host.endsWith('youtube.com')) {
+                                    if (u.pathname.startsWith('/watch')) {
+                                        const id = u.searchParams.get('v');
+                                        if (id) return `https://www.youtube.com/embed/${id}?rel=0`;
+                                    }
+                                    if (u.pathname.startsWith('/shorts/')) {
+                                        const id = u.pathname.split('/')[2];
+                                        if (id) return `https://www.youtube.com/embed/${id}?rel=0`;
+                                    }
+                                    if (u.pathname.startsWith('/embed/')) {
+                                        return `https://www.youtube.com${u.pathname}${u.search}`;
+                                    }
+                                }
+                                if (host.endsWith('vimeo.com')) {
+                                    if (host === 'player.vimeo.com' && u.pathname.startsWith('/video/')) {
+                                        return `https://player.vimeo.com${u.pathname}${u.search}`;
+                                    }
+                                    const seg = u.pathname.split('/').filter(Boolean);
+                                    const id = seg.find(s => /^\d+$/.test(s));
+                                    if (id) return `https://player.vimeo.com/video/${id}`;
+                                }
+                            } catch (e) {}
+                            return null;
+                        };
+
+                        const embed = obtenerEmbed(url);
+                        if (embed) {
+                            const iframe = document.createElement('iframe');
+                            iframe.src = embed;
+                            iframe.className = 'my-4 rounded-lg w-full max-w-xl';
+                            iframe.style.aspectRatio = '16 / 9';
+                            iframe.frameBorder = '0';
+                            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+                            iframe.allowFullscreen = true;
+                            questionEl.appendChild(iframe);
+                        } else if (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(url)) {
+                            const videoEl = document.createElement('video');
+                            videoEl.src = url;
+                            videoEl.controls = true;
+                            videoEl.playsInline = true;
+                            videoEl.className = 'my-4 rounded-lg max-w-sm';
+                            questionEl.appendChild(videoEl);
+                        } else {
+                            const imgEl = document.createElement('img');
+                            imgEl.src = url;
+                            imgEl.alt = 'Imagen de la pregunta';
+                            imgEl.className = 'my-4 rounded-lg max-w-sm';
+                            questionEl.appendChild(imgEl);
+                        }
                     }
 
                     // Answers list

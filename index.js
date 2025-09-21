@@ -488,11 +488,71 @@ function mostrarPregunta() {
     renderizarContenidoMixto(document.getElementById('texto-pregunta'), pregunta.pregunta);
     
     const imgEl = document.getElementById('imagen-pregunta');
+    const videoEl = document.getElementById('video-pregunta');
+    const embedEl = document.getElementById('embed-pregunta');
+
+    // Helpers para detectar y generar URL de embed
+    const obtenerEmbed = (rawUrl) => {
+        try {
+            const u = new URL(rawUrl);
+            const host = u.hostname.replace(/^www\./, '').toLowerCase();
+            // YouTube
+            if (host === 'youtu.be') {
+                const id = u.pathname.split('/').filter(Boolean)[0];
+                if (id) return `https://www.youtube.com/embed/${id}?rel=0`;
+            }
+            if (host.endsWith('youtube.com')) {
+                if (u.pathname.startsWith('/watch')) {
+                    const id = u.searchParams.get('v');
+                    if (id) return `https://www.youtube.com/embed/${id}?rel=0`;
+                }
+                if (u.pathname.startsWith('/shorts/')) {
+                    const id = u.pathname.split('/')[2];
+                    if (id) return `https://www.youtube.com/embed/${id}?rel=0`;
+                }
+                if (u.pathname.startsWith('/embed/')) {
+                    return `https://www.youtube.com${u.pathname}${u.search}`;
+                }
+            }
+            // Vimeo
+            if (host.endsWith('vimeo.com')) {
+                if (host === 'player.vimeo.com' && u.pathname.startsWith('/video/')) {
+                    return `https://player.vimeo.com${u.pathname}${u.search}`;
+                }
+                const seg = u.pathname.split('/').filter(Boolean);
+                const id = seg.find(s => /^\d+$/.test(s));
+                if (id) return `https://player.vimeo.com/video/${id}`;
+            }
+        } catch (e) { /* noop */ }
+        return null;
+    };
+
+    // Reset de medios
+    imgEl.classList.add('hidden');
+    videoEl.classList.add('hidden');
+    embedEl.classList.add('hidden');
+    if (videoEl.src) {
+        try { videoEl.pause(); } catch (e) {}
+        videoEl.removeAttribute('src');
+        videoEl.load();
+    }
+    if (imgEl.getAttribute('src')) imgEl.removeAttribute('src');
+    if (embedEl.getAttribute('src')) embedEl.removeAttribute('src');
+
+    // Mostrar imagen, vídeo de archivo o embed (YouTube/Vimeo)
     if (pregunta.imagen_url) {
-        imgEl.src = pregunta.imagen_url;
-        imgEl.classList.remove('hidden');
-    } else {
-        imgEl.classList.add('hidden');
+        const url = pregunta.imagen_url.trim();
+        const embed = obtenerEmbed(url);
+        if (embed) {
+            embedEl.src = embed;
+            embedEl.classList.remove('hidden');
+        } else if (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(url)) {
+            videoEl.src = url;
+            videoEl.classList.remove('hidden');
+        } else {
+            imgEl.src = url;
+            imgEl.classList.remove('hidden');
+        }
     }
     const respuestasGrid = document.getElementById('respuestas-grid');
     respuestasGrid.innerHTML = '';
