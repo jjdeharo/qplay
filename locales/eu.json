@@ -167,5 +167,7 @@
     "footer_created_by": "Aplikazioa egilea:",
     "footer_license": "Lizentzia CC BY-SA 4.0",
     "footer_suggestions": "Idatzi iruzkin edo iradokizun bat",
-    "back_to_qplay_button": "Itzuli QPlay-ra"
+    "back_to_qplay_button": "Itzuli QPlay-ra",
+    "lobby_click_to_copy": "Egin klik kodean elkartzeko URLa kopiatzeko",
+    "lobby_copied": "URLa kopiatu da!"
 }

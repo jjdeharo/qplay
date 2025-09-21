@@ -813,6 +813,27 @@ function inicializarPeer(existingGameId = null) {
         if(urlSitioEl) urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
         urlUnion.searchParams.set('partida', id);
         if(codigoPartidaEl) codigoPartidaEl.textContent = id;
+        // Click-to-copy full join URL on the code element
+        try {
+            const fullJoinUrl = urlUnion.href;
+            if (codigoPartidaEl) {
+                codigoPartidaEl.title = fullJoinUrl;
+                codigoPartidaEl.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(fullJoinUrl);
+                        const hint = document.getElementById('copy-join-hint');
+                        if (hint) {
+                            const original = hint.textContent;
+                            hint.textContent = (typeof t === 'function' ? t('lobby_copied') : 'URL copiada');
+                            setTimeout(() => { hint.textContent = original; }, 1500);
+                        }
+                    } catch (e) {
+                        // Fallback: prompt if clipboard API not available
+                        window.prompt('Copia la URL:', fullJoinUrl);
+                    }
+                });
+            }
+        } catch (_e) {}
         if (qrCodeEl) {
             qrCodeEl.innerHTML = "";
             new QRCode(qrCodeEl, {

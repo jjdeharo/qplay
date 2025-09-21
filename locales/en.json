@@ -167,5 +167,7 @@
     "footer_created_by": "Application made by",
     "footer_license": "License CC BY-SA 4.0",
     "footer_suggestions": "Write a comment or suggestion",
-    "back_to_qplay_button": "Back to QPlay"
+    "back_to_qplay_button": "Back to QPlay",
+    "lobby_click_to_copy": "Click the code to copy the join URL",
+    "lobby_copied": "URL copied!"
 }

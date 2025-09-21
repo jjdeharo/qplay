@@ -167,5 +167,7 @@
     "footer_created_by": "Aplicació feta per",
     "footer_license": "Llicència CC BY-SA 4.0",
     "footer_suggestions": "Escriu un comentari o suggeriment",
-    "back_to_qplay_button": "Tornar a QPlay"
+    "back_to_qplay_button": "Tornar a QPlay",
+    "lobby_click_to_copy": "Fes clic al codi per copiar l'URL d'unió",
+    "lobby_copied": "URL copiada!"
 }
