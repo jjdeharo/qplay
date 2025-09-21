@@ -276,9 +276,28 @@ function gestionarMusicaPorEstado() {
  */
 function renderizarContenidoMixto(elemento, texto) {
     if (!elemento) return;
-    const html = marked.parse(texto || '', { breaks: true, gfm: true });
+    const src = String(texto || '');
+    // Proteger delimitadores \( \) y \[ \] de la fase Markdown, que elimina las barras invertidas.
+    const PLACE_LP = '%%KATEX_LP%%';
+    const PLACE_RP = '%%KATEX_RP%%';
+    const PLACE_LB = '%%KATEX_LB%%';
+    const PLACE_RB = '%%KATEX_RB%%';
+    const protegido = src
+        .replace(/\\\(/g, PLACE_LP)
+        .replace(/\\\)/g, PLACE_RP)
+        .replace(/\\\[/g, PLACE_LB)
+        .replace(/\\\]/g, PLACE_RB);
+
+    let html = marked.parse(protegido, { breaks: true, gfm: true });
+    // Restaurar delimitadores para que KaTeX pueda detectarlos en el DOM.
+    html = html
+        .replace(new RegExp(PLACE_LP, 'g'), '\\(')
+        .replace(new RegExp(PLACE_RP, 'g'), '\\)')
+        .replace(new RegExp(PLACE_LB, 'g'), '\\[')
+        .replace(new RegExp(PLACE_RB, 'g'), '\\]');
+
     elemento.innerHTML = html;
-    
+
     if (window.renderMathInElement) {
         renderMathInElement(elemento, {
             delimiters: [
