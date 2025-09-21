@@ -139,7 +139,7 @@
 
             <div class="mb-8">
                 <h2 class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400" data-i18n-key="editor_current_quiz_title">Cuestionario Actual</h2>
-                <div id="lista-preguntas" class="space-y-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg max-h-72 overflow-y-auto">
+                <div id="lista-preguntas" class="space-y-3 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg max-h-[80vh] overflow-y-auto pr-2">
                     <p class="text-gray-500 dark:text-gray-400" data-i18n-key="editor_no_questions_yet">Aún no has añadido ninguna pregunta.</p>
                 </div>
             </div>
@@ -281,48 +281,87 @@
             const renderizarPreguntas = () => {
                 listaPreguntasContainer.innerHTML = '';
                 if (preguntas.length === 0) {
-                    listaPreguntasContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400" data-i18n-key="editor_no_questions_yet">Aún no has añadido ninguna pregunta.</p>`;
+                    listaPreguntasContainer.innerHTML = `<p class=\"text-gray-500 dark:text-gray-400\" data-i18n-key=\"editor_no_questions_yet\">Aún no has añadido ninguna pregunta.</p>`;
                     return;
                 }
                 preguntas.forEach((p, index) => {
-                    const el = document.createElement('div');
-                    el.className = 'bg-gray-100 dark:bg-gray-800 p-3 rounded-md flex justify-between items-center';
-                    
-                    const preguntaTextoDiv = document.createElement('div');
-                    preguntaTextoDiv.className = "pregunta-texto text-gray-800 dark:text-gray-200 truncate";
-                    preguntaTextoDiv.title = p.pregunta;
-                    renderizarContenidoMixto(preguntaTextoDiv, `${index + 1}. ${p.pregunta}`);
+                    const questionEl = document.createElement('div');
+                    questionEl.className = 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 rounded-lg';
 
-                    const container = document.createElement('div');
-                    container.className = 'flex-grow truncate mr-4';
-                    container.appendChild(preguntaTextoDiv);
-                    container.innerHTML += `
-                        <div class="flex items-center space-x-2 mt-1 text-xs">
-                            <span class="bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">${formatTipo(p.tipo)}</span>
-                            <span class="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full font-medium">${formatTiempo(p.tiempo)}</span>
-                        </div>`;
-                    
-                    el.appendChild(container);
+                    // Header with number, tags and action buttons
+                    const headerEl = document.createElement('div');
+                    headerEl.className = 'flex items-start justify-between mb-2';
 
-                    const buttonsDiv = document.createElement('div');
-                    buttonsDiv.className = 'flex space-x-2 flex-shrink-0';
+                    const leftMeta = document.createElement('div');
+                    leftMeta.className = 'flex items-center space-x-2';
+                    const numBadge = document.createElement('span');
+                    numBadge.className = 'inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold';
+                    numBadge.textContent = String(index + 1);
+                    const tipoTag = document.createElement('span');
+                    tipoTag.className = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-medium';
+                    tipoTag.textContent = formatTipo(p.tipo);
+                    const tiempoTag = document.createElement('span');
+                    tiempoTag.className = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full text-xs font-medium';
+                    tiempoTag.textContent = formatTiempo(p.tiempo);
+                    leftMeta.appendChild(numBadge);
+                    leftMeta.appendChild(tipoTag);
+                    leftMeta.appendChild(tiempoTag);
 
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'flex space-x-2';
                     const editButton = document.createElement('button');
                     editButton.dataset.index = index;
                     editButton.className = 'editar-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded-md text-sm';
                     editButton.setAttribute('data-i18n-key', 'editor_edit_button');
                     editButton.textContent = t('editor_edit_button') || 'Editar';
-                    buttonsDiv.appendChild(editButton);
-
                     const deleteButton = document.createElement('button');
                     deleteButton.dataset.index = index;
                     deleteButton.className = 'eliminar-btn bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-sm';
                     deleteButton.setAttribute('data-i18n-key', 'editor_delete_button');
                     deleteButton.textContent = t('editor_delete_button') || 'Eliminar';
-                    buttonsDiv.appendChild(deleteButton);
-                    
-                    el.appendChild(buttonsDiv);
-                    listaPreguntasContainer.appendChild(el);
+                    actionsDiv.appendChild(editButton);
+                    actionsDiv.appendChild(deleteButton);
+
+                    headerEl.appendChild(leftMeta);
+                    headerEl.appendChild(actionsDiv);
+                    questionEl.appendChild(headerEl);
+
+                    // Full question text
+                    const textoPregunta = document.createElement('div');
+                    renderizarContenidoMixto(textoPregunta, p.pregunta);
+                    questionEl.appendChild(textoPregunta);
+
+                    // Image if present
+                    if (p.imagen_url) {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = p.imagen_url;
+                        imgEl.alt = 'Imagen de la pregunta';
+                        imgEl.className = 'my-4 rounded-lg max-w-sm';
+                        questionEl.appendChild(imgEl);
+                    }
+
+                    // Answers list
+                    const answersContainer = document.createElement('div');
+                    answersContainer.className = 'mt-3 space-y-2';
+                    const isMulti = Array.isArray(p.correcta);
+                    p.respuestas.forEach((respuesta, i) => {
+                        if (!respuesta) return;
+                        const esCorrecta = isMulti ? p.correcta.includes(i) : (p.correcta === i);
+                        const ansEl = document.createElement('div');
+                        ansEl.className = 'flex items-start p-2 rounded';
+                        if (esCorrecta) ansEl.classList.add('bg-green-100', 'dark:bg-green-900');
+                        const icon = document.createElement('span');
+                        icon.className = 'mr-3';
+                        icon.textContent = esCorrecta ? '✅' : '⚪️';
+                        const textDiv = document.createElement('div');
+                        renderizarContenidoMixto(textDiv, respuesta);
+                        ansEl.appendChild(icon);
+                        ansEl.appendChild(textDiv);
+                        answersContainer.appendChild(ansEl);
+                    });
+                    questionEl.appendChild(answersContainer);
+
+                    listaPreguntasContainer.appendChild(questionEl);
                 });
             };
             
@@ -520,11 +559,28 @@
             // --- INITIALIZATION ---
             const procesarURL = () => {
                 const urlParams = new URLSearchParams(window.location.search);
+                const transferKey = urlParams.get('transfer');
                 const csvData = urlParams.get('data');
+
+                if (transferKey) {
+                    try {
+                        const storageKey = `qplay_csv_transfer_${transferKey}`;
+                        const csvFromStorage = localStorage.getItem(storageKey);
+                        if (csvFromStorage) {
+                            procesarContenidoCSV(csvFromStorage, 'transfer');
+                            localStorage.removeItem(storageKey);
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error('Error leyendo transfer desde localStorage', e);
+                    }
+                }
+
                 if (csvData) {
                     try {
-                        const decodedCsv = decodeURIComponent(csvData);
-                        procesarContenidoCSV(decodedCsv, 'URL');
+                        // csvData from URLSearchParams is already decoded
+                        if (preguntas.length === 0) procesarContenidoCSV(csvData, 'URL');
                         window.history.replaceState({}, document.title, window.location.pathname);
                     } catch (error) {
                         console.error("Error al procesar datos de la URL:", error);
@@ -534,18 +590,31 @@
             };
 
             applyTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
-            // La llamada a renderizarPreguntas se hará después de cargar las traducciones
-            // para asegurar que los botones dinámicos se creen con el texto correcto.
+            // Mensajería: aceptar CSV por postMessage desde editor_ia.html
+            window.addEventListener('message', (evt) => {
+                try {
+                    if (evt && evt.data && evt.data.type === 'qplay_csv' && typeof evt.data.csv === 'string') {
+                        if (preguntas.length === 0) {
+                            procesarContenidoCSV(evt.data.csv, 'message');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error procesando postMessage', e);
+                }
+            });
+
+            // Inicialización directa al tener el DOM listo
             document.addEventListener('DOMContentLoaded', () => {
-                // Sobrescribimos el evento 'DOMContentLoaded' del script i18n.js para controlar el orden.
-                const originalDOMContentLoaded = window.onload;
-                window.onload = function() {
-                    if (originalDOMContentLoaded) originalDOMContentLoaded();
-                    renderizarPreguntas();
-                    gestionarCambioTipoPregunta();
-                    gestionarCambioTiempo();
-                    procesarURL();
-                };
+                renderizarPreguntas();
+                gestionarCambioTipoPregunta();
+                gestionarCambioTiempo();
+                procesarURL();
+                // Handshake para el opener si existe
+                try {
+                    if (window.opener && typeof window.opener.postMessage === 'function') {
+                        window.opener.postMessage({ type: 'qplay_ready' }, '*');
+                    }
+                } catch (e) { /* ignore */ }
             });
         });
     </script>

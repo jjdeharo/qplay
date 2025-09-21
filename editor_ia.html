@@ -64,6 +64,13 @@
                 <div>
                     <label for="tema" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="ia_topic_label">Tema del cuestionario</label>
                     <input type="text" id="tema" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-900 dark:text-white" data-i18n-key="ia_topic_placeholder" placeholder="Ej: La célula eucariota" required>
+                    <div class="mt-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="usar-docs-check" class="form-checkbox">
+                            <label for="usar-docs-check" class="ml-2" data-i18n-key="ia_docs_use_files">Usar documentos como conocimiento exclusivo</label>
+                        </div>
+                        <p id="docs-hint" class="hidden text-sm text-gray-600 dark:text-gray-300 mt-2" data-i18n-key="ia_docs_hint">Cuando ejecutes este prompt en la IA, te pedirá que adjuntes los documentos. No subas nada aquí: adjunta los archivos allí y las preguntas se generarán exclusivamente a partir de esos documentos.</p>
+                    </div>
                 </div>
                 <div>
                     <label for="idioma-salida" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="ia_output_lang_label">Idioma del cuestionario</label>
@@ -107,14 +114,17 @@
                             <label for="instrucciones-adicionales" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="ia_instructions_label">Instrucciones adicionales</label>
                             <textarea id="instrucciones-adicionales" rows="3" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-sm text-gray-900 dark:text-white" data-i18n-key="ia_instructions_placeholder" placeholder="Ej: Incluye 2 problemas prácticos, enfócate en el razonamiento..."></textarea>
                         </div>
+
+                        
                     </div>
                 </details>
                 
                  <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors" data-i18n-key="ia_generate_prompt_button">Generar Prompt JSON</button>
             </form>
 
-            <hr class="my-6 border-gray-300 dark:border-gray-700">
-            
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 h-fit">
             <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200" data-i18n-key="ia_step2_title">2. Utiliza el prompt</h2>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="ia_copy_prompt_label">Copia y pega este prompt (en formato JSON) en tu IA favorita o ábrelo directamente en ChatGPT.</label>
@@ -124,9 +134,7 @@
                 </div>
             </div>
             <button id="launch-btn" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" data-i18n-key="ia_launch_button" disabled>Abrir en ChatGPT</button>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 h-fit">
+            <hr class="my-6 border-gray-300 dark:border-gray-700">
             <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200" data-i18n-key="ia_step3_title">3. Previsualiza y edita</h2>
             <div>
                 <label for="csv-paste-area" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n-key="ia_paste_area_label">Pega aquí el CSV generado por la IA</label>
@@ -162,6 +170,8 @@
             const tonoInput = document.getElementById('tono');
             const cognitivoInput = document.getElementById('cognitivo');
             const instruccionesInput = document.getElementById('instrucciones-adicionales');
+            const usarDocsCheck = document.getElementById('usar-docs-check');
+            const docsHint = document.getElementById('docs-hint');
             const promptContainer = document.getElementById('prompt-container');
             const copyBtn = document.getElementById('copy-btn');
             const launchBtn = document.getElementById('launch-btn');
@@ -266,6 +276,21 @@
                 editBtn.disabled = false;
             }
 
+            // Simple CSV validation to enable Edit button without requiring preview
+            const isValidCsv = (text) => {
+                if (!text) return false;
+                const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
+                const lineasRaw = text.split('\n');
+                const headerIndex = lineasRaw.findIndex(l => l.toLowerCase().includes('tipo;pregunta'));
+                const lineas = headerIndex !== -1 ? lineasRaw.slice(headerIndex + 1) : lineasRaw;
+                const preguntasValidas = lineas
+                    .map(l => l.trim())
+                    .filter(l => l !== '')
+                    .map(l => Array.from(l.matchAll(regex), m => (m[1]?.replace(/""/g, '"') || m[2] || '').trim()))
+                    .filter(campos => campos.length >= 8);
+                return preguntasValidas.length > 0;
+            };
+
             const saveCsvFromPreview = () => {
                 let csvText = csvPasteArea.value.trim();
                 if (!csvText) {
@@ -295,8 +320,39 @@
                     alert(t('alert_nothing_to_edit'));
                     return;
                 }
-                const encodedData = encodeURIComponent(csvText);
-                window.open(`editor.html?data=${encodedData}`, '_blank');
+                // Prefer localStorage transfer to avoid URL length limits
+                try {
+                    const key = `t${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+                    localStorage.setItem(`qplay_csv_transfer_${key}`, csvText);
+                    const encodedData = encodeURIComponent(csvText);
+                    // Open editor with both transfer hints
+                    const win = window.open(`editor.html?transfer=${encodeURIComponent(key)}&data=${encodedData}`, '_blank');
+
+                    // Also try a postMessage transfer for maximum robustness
+                    if (win) {
+                        let sent = false;
+                        const sendCsv = () => {
+                            if (sent) return;
+                            try {
+                                win.postMessage({ type: 'qplay_csv', csv: csvText }, '*');
+                                sent = true;
+                            } catch (e) { /* ignore */ }
+                        };
+                        const onReady = (evt) => {
+                            if (evt && evt.source === win && evt.data && evt.data.type === 'qplay_ready') {
+                                window.removeEventListener('message', onReady);
+                                sendCsv();
+                            }
+                        };
+                        window.addEventListener('message', onReady);
+                        // Fallback send after a short delay (if no handshake)
+                        setTimeout(sendCsv, 1200);
+                    }
+                } catch (err) {
+                    // Fallback to query param if storage fails
+                    const encodedData = encodeURIComponent(csvText);
+                    window.open(`editor.html?data=${encodedData}`, '_blank');
+                }
             });
             
             openCsvBtn.addEventListener('click', () => csvPreviewInput.click());
@@ -308,10 +364,16 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     csvPasteArea.value = e.target.result;
-                    generatePreview();
+                    // Update edit button based on validity; preview remains optional
+                    editBtn.disabled = !isValidCsv(csvPasteArea.value.trim());
                 };
                 reader.readAsText(file, 'UTF-8');
                 event.target.value = '';
+            });
+
+            // Enable Edit button when a valid CSV is present even without preview
+            csvPasteArea.addEventListener('input', () => {
+                editBtn.disabled = !isValidCsv(csvPasteArea.value.trim());
             });
 
             // --- THEME & PERSISTENCE MANAGEMENT ---
@@ -332,6 +394,24 @@
               applyTheme(newTheme);
             };
             themeToggleBtn.addEventListener('click', toggleTheme);
+
+            // --- DOCUMENTS MODE ---
+            const actualizarUIUsoDocs = () => {
+                const active = usarDocsCheck.checked;
+                if (active) {
+                    temaInput.disabled = true;
+                    temaInput.classList.add('opacity-60', 'cursor-not-allowed');
+                    docsHint.classList.remove('hidden');
+                } else {
+                    temaInput.disabled = false;
+                    temaInput.classList.remove('opacity-60', 'cursor-not-allowed');
+                    docsHint.classList.add('hidden');
+                }
+            };
+            usarDocsCheck.addEventListener('change', () => {
+                localStorage.setItem('qplay_use_docs_mode', usarDocsCheck.checked ? '1' : '0');
+                actualizarUIUsoDocs();
+            });
 
             idiomaSalidaSelect.addEventListener('change', () => {
                 const selection = idiomaSalidaSelect.value;
@@ -362,6 +442,11 @@
                         }
                     }
                 }
+
+                // Restore docs mode
+                const savedDocsMode = localStorage.getItem('qplay_use_docs_mode') === '1';
+                usarDocsCheck.checked = savedDocsMode;
+                actualizarUIUsoDocs();
             };
 
             // --- PROMPT GENERATION ---
@@ -422,6 +507,15 @@
                 if(tonoInput.value.trim()) promptObject.parameters.tone = tonoInput.value.trim();
                 if(cognitivoInput.value.trim()) promptObject.parameters.cognitive_level = cognitivoInput.value.trim();
                 if(instruccionesInput.value.trim()) promptObject.parameters.additional_instructions = instruccionesInput.value.trim();
+
+                // If document mode is enabled, instruct the model to wait for documents
+                if (usarDocsCheck.checked) {
+                    const extraInstruction = " Before generating the quiz, WAIT for the user to attach one or more documents. Then generate questions based EXCLUSIVELY on the provided documents. If documents are missing or unrelated, ask for the correct documents and do not proceed until they are provided.";
+                    promptObject.main_instruction += extraInstruction;
+                    promptObject.parameters.use_documents = true;
+                    promptObject.parameters.source_restriction = "documents_only";
+                    promptObject.parameters.topic_from_documents = true;
+                }
                 
                 finalJsonPrompt = JSON.stringify(promptObject, null, 2);
                 promptContainer.textContent = finalJsonPrompt;
