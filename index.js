@@ -723,13 +723,10 @@ function gestionarPausa() {
             });
         }
     });
-
     if (isPaused) {
         pausaBtn.textContent = t('resume_button');
-        pausaOverlay.style.display = 'flex';
     } else {
         pausaBtn.textContent = t('pause_button');
-        pausaOverlay.style.display = 'none';
     }
 }
 
