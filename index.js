@@ -889,26 +889,51 @@ function inicializarPeer(existingGameId = null) {
         if(urlSitioEl) urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
         urlUnion.searchParams.set('partida', id);
         if(codigoPartidaEl) codigoPartidaEl.textContent = id;
-        // Click-to-copy full join URL on the code element
+        // Click-to-copy full join URL on the code element (sin ventanas de prompt)
         try {
             const fullJoinUrl = urlUnion.href;
-            if (codigoPartidaEl) {
-                codigoPartidaEl.title = fullJoinUrl;
-                codigoPartidaEl.addEventListener('click', async () => {
-                    try {
-                        await navigator.clipboard.writeText(fullJoinUrl);
-                        const hint = document.getElementById('copy-join-hint');
-                        if (hint) {
-                            const original = hint.textContent;
-                            hint.textContent = (typeof t === 'function' ? t('lobby_copied') : 'URL copiada');
-                            setTimeout(() => { hint.textContent = original; }, 1500);
-                        }
-                    } catch (e) {
-                        // Fallback: prompt if clipboard API not available
-                        window.prompt('Copia la URL:', fullJoinUrl);
+
+            const copiarAlPortapapeles = (texto) => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    return navigator.clipboard.writeText(texto).then(() => true).catch(() => fallbackCopy(texto));
+                }
+                return Promise.resolve(fallbackCopy(texto));
+            };
+
+            const fallbackCopy = (texto) => {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = texto;
+                    ta.setAttribute('readonly', '');
+                    ta.style.position = 'fixed';
+                    ta.style.top = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    ta.setSelectionRange(0, ta.value.length);
+                    const ok = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    return ok;
+                } catch (_e) {
+                    return false;
+                }
+            };
+
+            const attachCopyHandler = (el) => {
+                if (!el) return;
+                el.title = fullJoinUrl;
+                el.addEventListener('click', async () => {
+                    const ok = await copiarAlPortapapeles(fullJoinUrl);
+                    const hint = document.getElementById('copy-join-hint');
+                    if (hint) {
+                        const original = hint.textContent;
+                        hint.textContent = ok ? (typeof t === 'function' ? t('lobby_copied') : 'URL copiada') : original;
+                        setTimeout(() => { hint.textContent = original; }, 1500);
                     }
                 });
-            }
+            };
+
+            attachCopyHandler(codigoPartidaEl);
+            attachCopyHandler(modalCodigoPartidaEl);
         } catch (_e) {}
         if (qrCodeEl) {
             qrCodeEl.innerHTML = "";
