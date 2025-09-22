@@ -944,6 +944,13 @@ function inicializarPeer(existingGameId = null) {
                 colorDark: "#000000",
                 colorLight: "#ffffff",
             });
+            // Evitar tooltips con la URL en el QR
+            const qrMedia = qrCodeEl.querySelector('img, canvas');
+            if (qrMedia) {
+                qrMedia.removeAttribute('title');
+                qrMedia.removeAttribute('alt');
+                qrMedia.setAttribute('aria-label', 'Código QR');
+            }
         }
         if(modalUrlSitioEl) modalUrlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
         if(modalCodigoPartidaEl) modalCodigoPartidaEl.textContent = id;
@@ -956,6 +963,12 @@ function inicializarPeer(existingGameId = null) {
                 colorDark: "#000000",
                 colorLight: "#ffffff",
             });
+            const modalQrMedia = modalQrCodeEl.querySelector('img, canvas');
+            if (modalQrMedia) {
+                modalQrMedia.removeAttribute('title');
+                modalQrMedia.removeAttribute('alt');
+                modalQrMedia.setAttribute('aria-label', 'Código QR');
+            }
         }
 
         if (!existingGameId) {
