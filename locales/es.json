@@ -12,6 +12,7 @@
     "lobby_options": "Opciones",
     "lobby_random_questions": "Preguntas aleatorias",
     "lobby_random_answers": "Respuestas aleatorias",
+    "lobby_send_questions_to_devices": "Enviar pregunta a los móviles",
     "question_counter": "Pregunta {current} / {total}",
     "pause_button": "Pausar",
     "resume_button": "Reanudar",
@@ -168,6 +169,6 @@
     "footer_license": "Licencia CC BY-SA 4.0",
     "footer_suggestions": "Escribe un comentario o sugerencia",
     "back_to_qplay_button": "Volver a QPlay",
-    "lobby_click_to_copy": "Haz clic en el código para copiar la URL de unión",
+    "lobby_click_to_copy": "Haz clic en el código de arriba para copiar la URL de unión",
     "lobby_copied": "¡URL copiada!"
 }

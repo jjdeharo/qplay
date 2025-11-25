@@ -12,6 +12,7 @@
     "lobby_options": "Opcions",
     "lobby_random_questions": "Preguntes aleatòries",
     "lobby_random_answers": "Respostes aleatòries",
+    "lobby_send_questions_to_devices": "Enviar la pregunta als mòbils",
     "question_counter": "Pregunta {current} / {total}",
     "pause_button": "Pausa",
     "resume_button": "Reprèn",
@@ -168,6 +169,6 @@
     "footer_license": "Llicència CC BY-SA 4.0",
     "footer_suggestions": "Escriu un comentari o suggeriment",
     "back_to_qplay_button": "Tornar a QPlay",
-    "lobby_click_to_copy": "Fes clic al codi per copiar l'URL d'unió",
+    "lobby_click_to_copy": "Fes clic al codi de dalt per copiar l'URL d'unió",
     "lobby_copied": "URL copiada!"
 }

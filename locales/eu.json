@@ -12,6 +12,7 @@
     "lobby_options": "Aukerak",
     "lobby_random_questions": "Ausazko galderak",
     "lobby_random_answers": "Ausazko erantzunak",
+    "lobby_send_questions_to_devices": "Bidali galdera mugikorretara",
     "question_counter": "Galdera: {current} / {total}",
     "pause_button": "Pausatu",
     "resume_button": "Jarraitu",
@@ -168,6 +169,6 @@
     "footer_license": "Lizentzia CC BY-SA 4.0",
     "footer_suggestions": "Idatzi iruzkin edo iradokizun bat",
     "back_to_qplay_button": "Itzuli QPlay-ra",
-    "lobby_click_to_copy": "Egin klik kodean elkartzeko URLa kopiatzeko",
+    "lobby_click_to_copy": "Egin klik goiko kodean elkartzeko URLa kopiatzeko",
     "lobby_copied": "URLa kopiatu da!"
 }

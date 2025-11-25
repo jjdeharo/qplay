@@ -33,6 +33,7 @@ const modalUrlSitioEl = document.getElementById('modal-url-sitio');
 const modalCodigoPartidaEl = document.getElementById('modal-codigo-partida');
 const modalQrCodeEl = document.getElementById('modal-qrcode');
 const langSelectorEl = document.getElementById('lang-selector'); // Referencia añadida
+const opcionPreguntasJugadoresEl = document.getElementById('opcion-mostrar-preguntas-jugadores');
 const FULL_DASH_ARRAY = 283;
 // --- Referencias de audio ---
 const controlVolumenEl = document.getElementById('control-volumen');
@@ -57,6 +58,7 @@ let tiempoRestante;
 let tiempoPregunta;
 let isPaused = false;
 let gameId = '';
+let ultimoPayloadPregunta = null;
 // --- Estado del audio ---
 let audioContext;
 let audioElement;
@@ -312,6 +314,32 @@ function renderizarContenidoMixto(elemento, texto) {
     }
 }
 
+function debeEnviarPreguntaCompletaAJugadores() {
+    return opcionPreguntasJugadoresEl ? opcionPreguntasJugadoresEl.checked : false;
+}
+
+function contarRespuestasVisibles(pregunta) {
+    if (!pregunta || !Array.isArray(pregunta.respuestas)) return 0;
+    return pregunta.respuestas.filter(resp => resp && resp.trim() !== '').length;
+}
+
+function construirPayloadPreguntaParaJugadores(pregunta, numRespuestasVisibles, respuestasParaJugador = null) {
+    const payload = {
+        numRespuestas: numRespuestasVisibles,
+        tipo: pregunta.tipo
+    };
+
+    if (debeEnviarPreguntaCompletaAJugadores() && Array.isArray(respuestasParaJugador)) {
+        payload.texto = pregunta.pregunta || '';
+        payload.respuestas = respuestasParaJugador;
+        if (pregunta.imagen_url && pregunta.imagen_url.trim() !== '') {
+            payload.imagenUrl = pregunta.imagen_url.trim();
+        }
+    }
+
+    return payload;
+}
+
 function mostrarPantalla(id) {
     pantallas.forEach(p => p.classList.remove('activa'));
     document.getElementById(id).classList.add('activa');
@@ -406,16 +434,11 @@ function reenviarEstadoActual(conn) {
     if (!pregunta) return;
 
     if (estadoJuego === 'jugando' || estadoJuego === 'mostrando_correcta') {
-         let numRespuestasVisibles = 0;
-         pregunta.respuestas.forEach((respuesta) => {
-            if (respuesta.trim() !== '') numRespuestasVisibles++;
-         });
+        const numRespuestasVisibles = contarRespuestasVisibles(pregunta);
+        const payload = ultimoPayloadPregunta || construirPayloadPreguntaParaJugadores(pregunta, numRespuestasVisibles);
         conn.send({
             tipo: 'pregunta',
-            payload: {
-                numRespuestas: numRespuestasVisibles,
-                tipo: pregunta.tipo
-            }
+            payload: payload
         });
     } else if (estadoJuego === 'leaderboard') {
         conn.send({ tipo: 'partida_iniciada' }); 
@@ -463,6 +486,7 @@ function avanzarPregunta() {
         return;
     }
     respuestasRonda = {};
+    ultimoPayloadPregunta = null;
     Object.values(jugadores).forEach(j => j.haVotado = false);
     estadoJuego = 'jugando';
     guardarEstadoJuego();
@@ -584,11 +608,13 @@ function mostrarPregunta() {
     // --- FIN DE LA MODIFICACIÓN ---
 
     let numRespuestasVisibles = 0;
+    const respuestasParaJugador = [];
     
     // Usar el array (potencialmente desordenado) para crear los elementos
     respuestasParaMostrar.forEach((respuesta, index) => {
         if (respuesta.texto.trim() !== '') {
             numRespuestasVisibles++;
+            respuestasParaJugador.push(respuesta.texto);
             const respuestaDiv = document.createElement('div');
             respuestaDiv.className = `respuesta-color-${index} text-white p-6 rounded-lg flex items-center text-3xl text-shadow`;
             
@@ -604,6 +630,9 @@ function mostrarPregunta() {
             respuestasGrid.appendChild(respuestaDiv);
         }
     });
+    
+    const payloadPregunta = construirPayloadPreguntaParaJugadores(pregunta, numRespuestasVisibles, respuestasParaJugador);
+    ultimoPayloadPregunta = payloadPregunta;
     
     tiempoPregunta = pregunta.tiempo;
     tiempoRestante = tiempoPregunta;
@@ -627,10 +656,7 @@ function mostrarPregunta() {
         if (jugador.conectado && jugador.conn) {
             jugador.conn.send({
                 tipo: 'pregunta',
-                payload: {
-                    numRespuestas: numRespuestasVisibles,
-                    tipo: pregunta.tipo
-                }
+                payload: payloadPregunta
             });
         }
     });

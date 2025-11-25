@@ -10,6 +10,10 @@
       tailwind.config = { darkMode: 'class' };
     </script>
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
@@ -107,6 +111,10 @@
         </div>
 
         <div id="pantalla-pregunta" class="pantalla w-full h-screen flex-col">
+            <div id="pregunta-jugador-contenedor" class="glass-card w-full p-4 rounded-xl mb-4 hidden">
+                <h2 id="pregunta-jugador-texto" class="text-2xl font-bold text-center leading-snug"></h2>
+                <img id="pregunta-jugador-imagen" src="" alt="" class="mt-3 max-h-56 mx-auto rounded-lg shadow-lg hidden">
+            </div>
             <div id="respuestas-grid" class="grid grid-cols-2 grid-rows-2 gap-3 w-full flex-grow">
             </div>
             <button id="confirmar-respuesta-btn" class="w-full mt-4 font-bold py-4 text-xl rounded-lg bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hidden" data-i18n-key="player_confirm_button">
@@ -188,6 +196,46 @@
         const emojiTabsContainer = document.getElementById('emoji-tabs');
         const emojiContentContainer = document.getElementById('emoji-content');
         const abrirEmojisBtn = document.getElementById('abrir-emojis-btn');
+        const preguntaJugadorContenedor = document.getElementById('pregunta-jugador-contenedor');
+        const preguntaJugadorTexto = document.getElementById('pregunta-jugador-texto');
+        const preguntaJugadorImagen = document.getElementById('pregunta-jugador-imagen');
+        const langSelector = document.getElementById('lang-selector');
+
+        function renderizarContenidoMixto(elemento, texto) {
+            if (!elemento) return;
+            const src = String(texto || '');
+            const PLACE_LP = '%%KATEX_LP%%';
+            const PLACE_RP = '%%KATEX_RP%%';
+            const PLACE_LB = '%%KATEX_LB%%';
+            const PLACE_RB = '%%KATEX_RB%%';
+            const protegido = src
+                .replace(/\\\(/g, PLACE_LP)
+                .replace(/\\\)/g, PLACE_RP)
+                .replace(/\\\[/g, PLACE_LB)
+                .replace(/\\\]/g, PLACE_RB);
+
+            let html = marked.parse(protegido, { breaks: true, gfm: true });
+            html = html
+                .replace(new RegExp(PLACE_LP, 'g'), '\\(')
+                .replace(new RegExp(PLACE_RP, 'g'), '\\)')
+                .replace(new RegExp(PLACE_LB, 'g'), '\\[')
+                .replace(new RegExp(PLACE_RB, 'g'), '\\]');
+
+            elemento.innerHTML = html;
+
+            if (window.renderMathInElement) {
+                renderMathInElement(elemento, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false,
+                    ignoredTags: ["code", "pre", "script", "style", "textarea"]
+                });
+            }
+        }
 
         // --- Emoji Data ---
         const emojis = {
@@ -242,6 +290,9 @@
         function mostrarPantalla(id) {
             pantallas.forEach(p => p.classList.remove('activa'));
             document.getElementById(id).classList.add('activa');
+            if (langSelector) {
+                langSelector.style.display = id === 'pantalla-conexion' ? 'flex' : 'none';
+            }
         }
         
         // --- Emoji Picker Logic ---
@@ -393,18 +444,56 @@
         }
 
         function mostrarPantallaPregunta(pregunta) {
+            if (!pregunta) return;
             const grid = document.getElementById('respuestas-grid');
             grid.innerHTML = '';
             const simbolos = ['▲', '◆', '●', '■'];
             respuestasSeleccionadas = [];
+
+            const mostrarTextoPregunta = (pregunta.texto && pregunta.texto.trim() !== '') || (pregunta.imagenUrl && pregunta.imagenUrl.trim() !== '');
+            if (preguntaJugadorContenedor) {
+                if (preguntaJugadorTexto) {
+                    preguntaJugadorTexto.innerHTML = '';
+                    if (mostrarTextoPregunta) {
+                        renderizarContenidoMixto(preguntaJugadorTexto, pregunta.texto || '');
+                    }
+                }
+                if (preguntaJugadorImagen) {
+                    if (pregunta.imagenUrl && pregunta.imagenUrl.trim() !== '') {
+                        preguntaJugadorImagen.src = pregunta.imagenUrl;
+                        preguntaJugadorImagen.classList.remove('hidden');
+                    } else {
+                        preguntaJugadorImagen.src = '';
+                        preguntaJugadorImagen.classList.add('hidden');
+                    }
+                }
+                if (mostrarTextoPregunta) {
+                    preguntaJugadorContenedor.classList.remove('hidden');
+                } else {
+                    preguntaJugadorContenedor.classList.add('hidden');
+                }
+            }
             
             const esMultiple = pregunta.tipo === 'multiple';
             confirmarRespuestaBtn.classList.toggle('hidden', !esMultiple);
 
             for (let i = 0; i < pregunta.numRespuestas; i++) {
+                const textoRespuesta = Array.isArray(pregunta.respuestas) ? (pregunta.respuestas[i] || '') : '';
+                const tieneTextoRespuesta = textoRespuesta.trim() !== '';
                 const btn = document.createElement('button');
-                btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center justify-center rounded-lg shadow-lg transform hover:scale-105 transition-transform`;
-                btn.innerHTML = `<span class="text-6xl text-shadow">${simbolos[i]}</span>`;
+                btn.className = `respuesta-btn respuesta-color-${i} text-white flex items-center rounded-lg shadow-lg transform hover:scale-105 transition-transform ${tieneTextoRespuesta ? 'justify-start text-left px-4' : 'justify-center'}`;
+                const simboloSpan = document.createElement('span');
+                simboloSpan.className = `${tieneTextoRespuesta ? 'text-4xl mr-3 flex-shrink-0' : 'text-6xl'} text-shadow`;
+                simboloSpan.textContent = simbolos[i];
+                btn.appendChild(simboloSpan);
+
+                if (tieneTextoRespuesta) {
+                    const textoSpan = document.createElement('span');
+                    textoSpan.className = 'text-lg font-semibold leading-snug text-left break-words';
+                    renderizarContenidoMixto(textoSpan, textoRespuesta);
+                    btn.appendChild(textoSpan);
+                }
+
                 btn.dataset.indice = i;
                 btn.disabled = false;
 
