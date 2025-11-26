@@ -63,7 +63,7 @@
 
     <div id="pantalla-lobby" class="pantalla min-h-screen w-full flex-col p-4 md:p-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 flex-grow">
-            <div class="glass-card rounded-lg p-6 shadow-md hidden md:block">
+            <div class="glass-card rounded-lg p-6 shadow-md order-2 md:order-1">
                 <h2 class="text-2xl font-bold mb-4 border-b border-gray-200 border-opacity-30 pb-2" data-i18n-key="lobby_options">Opciones</h2>
                 <div class="space-y-4">
                     <label class="flex items-center justify-between cursor-pointer">
@@ -96,7 +96,7 @@
                     </label>
                 </div>
             </div>
-            <div class="flex flex-col items-center justify-center text-center">
+            <div class="flex flex-col items-center justify-center text-center order-1 md:order-2">
                 <p class="text-2xl mb-2 text-shadow"><span data-i18n-key="lobby_join_at">Únete en</span> <span id="url-sitio" class="font-bold"></span></p>
                 <div id="codigo-partida" class="text-8xl md:text-9xl font-extrabold tracking-widest my-4 p-4 rounded-lg game-code-text cursor-pointer select-none" title="">
                     ...
@@ -107,7 +107,7 @@
                     Empezar Juego
                 </button>
             </div>
-            <div class="glass-card rounded-lg p-6 shadow-md flex flex-col">
+            <div class="glass-card rounded-lg p-6 shadow-md flex flex-col order-3 md:order-3">
                  <h2 class="text-2xl font-bold mb-4"><span data-i18n-key="lobby_players">Jugadores</span> (<span id="contador-jugadores">0</span>)</h2>
                  <ul id="lista-jugadores" class="space-y-2 h-full overflow-y-auto pr-2">
                  </ul>
