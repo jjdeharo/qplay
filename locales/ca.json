@@ -13,6 +13,7 @@
     "lobby_random_questions": "Preguntes aleatòries",
     "lobby_random_answers": "Respostes aleatòries",
     "lobby_send_questions_to_devices": "Enviar la pregunta als mòbils",
+    "lobby_show_scores_between": "Mostrar puntuacions entre preguntes",
     "question_counter": "Pregunta {current} / {total}",
     "pause_button": "Pausa",
     "resume_button": "Reprèn",

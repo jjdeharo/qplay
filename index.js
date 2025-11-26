@@ -34,6 +34,7 @@ const modalCodigoPartidaEl = document.getElementById('modal-codigo-partida');
 const modalQrCodeEl = document.getElementById('modal-qrcode');
 const langSelectorEl = document.getElementById('lang-selector'); // Referencia añadida
 const opcionPreguntasJugadoresEl = document.getElementById('opcion-mostrar-preguntas-jugadores');
+const opcionPuntuacionesIntermediasEl = document.getElementById('opcion-puntuaciones-intermedias');
 const FULL_DASH_ARRAY = 283;
 // --- Referencias de audio ---
 const controlVolumenEl = document.getElementById('control-volumen');
@@ -316,6 +317,10 @@ function renderizarContenidoMixto(elemento, texto) {
 
 function debeEnviarPreguntaCompletaAJugadores() {
     return opcionPreguntasJugadoresEl ? opcionPreguntasJugadoresEl.checked : false;
+}
+
+function debeMostrarPuntuacionesIntermedias() {
+    return opcionPuntuacionesIntermediasEl ? opcionPuntuacionesIntermediasEl.checked : true;
 }
 
 function contarRespuestasVisibles(pregunta) {
@@ -670,6 +675,17 @@ function setCircleDashoffset() {
     temporizadorCirculo.style.strokeDashoffset = dashoffset;
 }
 
+function actualizarBotonPostPregunta() {
+    if (!irAPuntuacionesBtn) return;
+    const mostrarIntermedias = debeMostrarPuntuacionesIntermedias();
+    const labelKey = mostrarIntermedias ? 'view_scores_button' : 'next_question_button';
+    const textoBtn = irAPuntuacionesBtn.querySelector('span[data-i18n-key]') || irAPuntuacionesBtn;
+
+    textoBtn.setAttribute('data-i18n-key', labelKey);
+    textoBtn.textContent = t(labelKey);
+    irAPuntuacionesBtn.dataset.action = mostrarIntermedias ? 'scores' : 'skip';
+}
+
 function finalizarRonda() {
     if (temporizadorInterval) {
         clearInterval(temporizadorInterval);
@@ -679,6 +695,7 @@ function finalizarRonda() {
     gestionarMusicaPorEstado(); 
     controlesPostPregunta.classList.remove('hidden');
     saltarTiempoBtn.style.display = 'none';
+    actualizarBotonPostPregunta();
 
     const pregunta = cuestionario[preguntaActualIndex];
 
@@ -731,6 +748,14 @@ function finalizarRonda() {
     });
 
     guardarEstadoJuego();
+}
+
+function manejarAccionPostPregunta() {
+    if (debeMostrarPuntuacionesIntermedias()) {
+        mostrarLeaderboard();
+    } else {
+        avanzarPregunta();
+    }
 }
 
 
@@ -1204,6 +1229,14 @@ if(listaJugadoresEl) listaJugadoresEl.addEventListener('click', e => {
     }
 });
 
+if(opcionPuntuacionesIntermediasEl) {
+    opcionPuntuacionesIntermediasEl.addEventListener('change', () => {
+        if (estadoJuego === 'mostrando_correcta') {
+            actualizarBotonPostPregunta();
+        }
+    });
+}
+
 if(añadirJugadorBtn) añadirJugadorBtn.addEventListener('click', mostrarModalAñadirJugador);
 if(cerrarModalBtn) cerrarModalBtn.addEventListener('click', cerrarModalAñadirJugador);
 if(modalAñadirJugador) modalAñadirJugador.addEventListener('click', (e) => {
@@ -1217,7 +1250,7 @@ if(siguientePreguntaBtn) siguientePreguntaBtn.addEventListener('click', avanzarP
 if(pausaBtn) pausaBtn.addEventListener('click', gestionarPausa);
 if(saltarTiempoBtn) saltarTiempoBtn.addEventListener('click', finalizarRonda);
 if(mostrarCorrectaBtn) mostrarCorrectaBtn.addEventListener('click', revelarRespuestaCorrecta);
-if(irAPuntuacionesBtn) irAPuntuacionesBtn.addEventListener('click', mostrarLeaderboard);
+if(irAPuntuacionesBtn) irAPuntuacionesBtn.addEventListener('click', manejarAccionPostPregunta);
 
 if(reiniciarBtn) reiniciarBtn.addEventListener('click', () => {
     reiniciarJuegoCompleto();

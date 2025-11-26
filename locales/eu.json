@@ -13,6 +13,7 @@
     "lobby_random_questions": "Ausazko galderak",
     "lobby_random_answers": "Ausazko erantzunak",
     "lobby_send_questions_to_devices": "Bidali galdera mugikorretara",
+    "lobby_show_scores_between": "Galderen artean puntuazioak erakutsi",
     "question_counter": "Galdera: {current} / {total}",
     "pause_button": "Pausatu",
     "resume_button": "Jarraitu",

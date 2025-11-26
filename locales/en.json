@@ -13,6 +13,7 @@
     "lobby_random_questions": "Random questions",
     "lobby_random_answers": "Random answers",
     "lobby_send_questions_to_devices": "Send question to players' devices",
+    "lobby_show_scores_between": "Show scores between questions",
     "question_counter": "Question {current} / {total}",
     "pause_button": "Pause",
     "resume_button": "Resume",

@@ -13,6 +13,7 @@
     "lobby_random_questions": "Preguntas aleatorias",
     "lobby_random_answers": "Respuestas aleatorias",
     "lobby_send_questions_to_devices": "Enviar pregunta a los móviles",
+    "lobby_show_scores_between": "Mostrar puntuaciones entre preguntas",
     "question_counter": "Pregunta {current} / {total}",
     "pause_button": "Pausar",
     "resume_button": "Reanudar",
