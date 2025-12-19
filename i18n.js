@@ -88,7 +88,7 @@ function t(key, placeholders = {}) {
 
 // --- INICIALIZACIÓN ---
 document.addEventListener('DOMContentLoaded', () => {
-    const availableLangs = ['en', 'es', 'ca', 'gl', 'eu'];
+    const availableLangs = ['en', 'es', 'de', 'ca', 'gl', 'eu'];
     const defaultLang = 'es';
 
     const langSelectorContainer = document.getElementById('lang-selector');
