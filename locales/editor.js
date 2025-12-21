@@ -17,7 +17,6 @@ const sameOnly = document.getElementById('same-only');
 const statsEl = document.getElementById('stats');
 const footerStatus = document.getElementById('footer-status');
 const reloadButton = document.getElementById('reload-button');
-const saveButton = document.getElementById('save-button');
 const downloadButton = document.getElementById('download-button');
 const copyButton = document.getElementById('copy-button');
 
@@ -167,25 +166,6 @@ async function refresh() {
     footerStatus.textContent = `Editando: ${lang}`;
 }
 
-async function saveFile() {
-    const jsonText = `${JSON.stringify(buildOutput(), null, 2)}\n`;
-    const lang = languageSelect.value || BASE_LANG;
-    const suggestedName = `qplay_${lang}.json`;
-
-    if (window.showSaveFilePicker) {
-        const handle = await window.showSaveFilePicker({
-            suggestedName,
-            types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
-        });
-        const writable = await handle.createWritable();
-        await writable.write(jsonText);
-        await writable.close();
-        footerStatus.textContent = `Archivo guardado: ${suggestedName}`;
-    } else {
-        downloadJson(jsonText);
-    }
-}
-
 function downloadJson(jsonText) {
     const blob = new Blob([jsonText], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -209,7 +189,6 @@ function attachEvents() {
     missingOnly.addEventListener('change', applyFilters);
     sameOnly.addEventListener('change', applyFilters);
     reloadButton.addEventListener('click', refresh);
-    saveButton.addEventListener('click', saveFile);
     downloadButton.addEventListener('click', () => downloadJson(`${JSON.stringify(buildOutput(), null, 2)}\n`));
     copyButton.addEventListener('click', copyJson);
     languageSelect.addEventListener('change', refresh);
