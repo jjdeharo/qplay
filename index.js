@@ -66,10 +66,12 @@ let audioElement;
 let cancionActual = null;
 let tipoMusicaActual = null; // 'principal', 'juego', 'ganador'
 let ultimoVolumenActivo = 0.4;
+let heartbeatInterval;
 
 // --- Constantes de configuración de música (Simplificadas) ---
 const CANTIDAD_MUSICA_PRINCIPAL = 8;
 const CANTIDAD_MUSICA_GANADOR = 2;
+const HEARTBEAT_INTERVAL_MS = 15000;
 
 
 // --- LocalStorage Logic ---
@@ -450,10 +452,31 @@ function reenviarEstadoActual(conn) {
     }
 }
 
+function iniciarHeartbeat() {
+    detenerHeartbeat();
+    heartbeatInterval = setInterval(() => {
+        Object.values(jugadores).forEach(jugador => {
+            if (jugador.conectado && jugador.conn && jugador.conn.open) {
+                try {
+                    jugador.conn.send({ tipo: 'ping' });
+                } catch (_e) {}
+            }
+        });
+    }, HEARTBEAT_INTERVAL_MS);
+}
+
+function detenerHeartbeat() {
+    if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+    }
+}
+
 function reiniciarJuegoCompleto() {
     if (peer && !peer.destroyed) {
         peer.destroy();
     }
+    detenerHeartbeat();
     detenerMusica();
     if (controlVolumenEl) controlVolumenEl.style.display = 'none';
     
@@ -907,6 +930,7 @@ function inicializarPeer(existingGameId = null) {
     if (peer) {
         peer.destroy();
     }
+    detenerHeartbeat();
     gameId = existingGameId || generarCodigoCorto(5);
 
     const peerConfig = {
@@ -936,6 +960,7 @@ function inicializarPeer(existingGameId = null) {
     peer = new Peer(gameId, peerConfig);
     
     peer.on('open', id => {
+        iniciarHeartbeat();
         const urlUnion = new URL('jugador.html', window.location.href);
         if(urlSitioEl) urlSitioEl.textContent = urlUnion.origin + urlUnion.pathname;
         urlUnion.searchParams.set('partida', id);
@@ -1044,23 +1069,36 @@ function configurarNuevaConexion(conn) {
             gestionarConexionJugador(conn, data.nombre);
         } else if (data.tipo === 'respuesta' && estadoJuego === 'jugando') {
             gestionarRespuestaJugador(conn.peer, data.payload);
+        } else if (data.tipo === 'ping') {
+            conn.send({ tipo: 'pong' });
         }
     });
     conn.on('close', () => gestionarDesconexionJugador(conn.peer));
 }
 
 function gestionarConexionJugador(conn, nombre) {
-    if (Object.values(jugadores).some(j => j.nombre === nombre && j.conectado)) {
-        conn.send({
-            tipo: 'error',
-            payload: {
-                mensaje: t('error_name_in_use')
+    let jugador = jugadores[nombre];
+    if (jugador && jugador.conectado) {
+        const conexionVigente = jugador.conn && jugador.conn.open;
+        if (conexionVigente) {
+            conn.send({
+                tipo: 'error',
+                payload: {
+                    codigo: 'name_in_use',
+                    mensaje: t('error_name_in_use')
+                }
+            });
+            setTimeout(() => conn.close(), 100);
+            return;
+        }
+        jugador.conectado = false;
+        jugador.conn = null;
+        Object.keys(conexiones).forEach(peerId => {
+            if (conexiones[peerId] === nombre) {
+                delete conexiones[peerId];
             }
         });
-        setTimeout(() => conn.close(), 100);
-        return;
     }
-    let jugador = jugadores[nombre];
     if (jugador) {
         jugador.conectado = true;
         jugador.conn = conn;

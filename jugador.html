@@ -258,6 +258,11 @@
         let conn;
         let respuestasSeleccionadas = [];
         let iconoSeleccionado;
+        let reconexionIntentos = 0;
+        let reconexionTimeoutId = null;
+        let bloqueoReconexion = false;
+        const MAX_RECONEXION_INTENTOS = 5;
+        const RECONEXION_BASE_MS = 2000;
 
         // --- Lógica de persistencia con LocalStorage ---
         function guardarDatosJugador() {
@@ -293,6 +298,24 @@
             if (langSelector) {
                 langSelector.style.display = id === 'pantalla-conexion' ? 'flex' : 'none';
             }
+        }
+
+        function programarReconexion(forzar = false) {
+            if (bloqueoReconexion) return;
+            const enPantallaConexion = document.getElementById('pantalla-conexion').classList.contains('activa');
+            if (!forzar && enPantallaConexion) return;
+            if (reconexionIntentos >= MAX_RECONEXION_INTENTOS) return;
+
+            if (reconexionTimeoutId) {
+                clearTimeout(reconexionTimeoutId);
+                reconexionTimeoutId = null;
+            }
+
+            const espera = Math.min(15000, RECONEXION_BASE_MS * Math.pow(2, reconexionIntentos));
+            reconexionIntentos += 1;
+            reconexionTimeoutId = setTimeout(() => {
+                unirseAlJuego(true);
+            }, espera);
         }
         
         // --- Emoji Picker Logic ---
@@ -336,20 +359,27 @@
         }
 
         // --- Game Logic ---
-        function unirseAlJuego() {
+        function unirseAlJuego(esReconexion = false) {
             const nombreTexto = nombreInput.value.trim();
             const codigo = codigoInput.value.trim().toUpperCase();
 
             if (!nombreTexto || !codigo) {
-                errorConexionEl.textContent = t('error_name_code_required');
+                if (!esReconexion) {
+                    errorConexionEl.textContent = t('error_name_code_required');
+                }
                 return;
             }
             
             const nombreCompleto = `${iconoSeleccionado} ${nombreTexto}`;
+            if (!esReconexion) {
+                bloqueoReconexion = false;
+            }
 
-            errorConexionEl.textContent = "";
-            unirseBtn.disabled = true;
-            unirseBtn.textContent = t('status_connecting');
+            if (!esReconexion || document.getElementById('pantalla-conexion').classList.contains('activa')) {
+                errorConexionEl.textContent = "";
+                unirseBtn.disabled = true;
+                unirseBtn.textContent = t('status_connecting');
+            }
 
             if (peer) peer.destroy();
             
@@ -373,7 +403,14 @@
 
             peer.on('open', id => {
                 conn = peer.connect(codigo, { reliable: true });
-                conn.on('open', () => conn.send({ tipo: 'join', nombre: nombreCompleto }));
+                conn.on('open', () => {
+                    reconexionIntentos = 0;
+                    if (reconexionTimeoutId) {
+                        clearTimeout(reconexionTimeoutId);
+                        reconexionTimeoutId = null;
+                    }
+                    conn.send({ tipo: 'join', nombre: nombreCompleto });
+                });
                 conn.on('data', gestionarDatosDelServidor);
                 conn.on('close', () => {
                     if(document.getElementById('pantalla-conexion').classList.contains('activa')) return;
@@ -381,10 +418,12 @@
                     mostrarPantalla('pantalla-conexion');
                     unirseBtn.disabled = false;
                     unirseBtn.textContent = t('player_join_button');
+                    programarReconexion(true);
                 });
                  conn.on('error', (err) => {
                     console.error("Error de conexión:", err);
                     errorConexionEl.textContent = t('error_connection_failed');
+                    programarReconexion(true);
                 });
             });
 
@@ -398,6 +437,7 @@
                 unirseBtn.disabled = false;
                 unirseBtn.textContent = t('player_join_button');
                 if(peer) peer.destroy();
+                programarReconexion(true);
             });
         }
 
@@ -431,13 +471,27 @@
                     unirseBtn.disabled = false;
                     unirseBtn.textContent = t('player_join_button');
                     limpiarDatosJugador();
+                    bloqueoReconexion = true;
                     if(conn) conn.close();
+                    break;
+                case 'ping':
+                    if (conn && conn.open) {
+                        conn.send({ tipo: 'pong' });
+                    }
+                    break;
+                case 'pong':
                     break;
                 case 'error':
                     errorConexionEl.textContent = data.payload.mensaje;
                     mostrarPantalla('pantalla-conexion');
                     unirseBtn.disabled = false;
                     unirseBtn.textContent = t('player_join_button');
+                    if (data.payload && data.payload.codigo === 'name_in_use') {
+                        bloqueoReconexion = false;
+                        programarReconexion(true);
+                        break;
+                    }
+                    bloqueoReconexion = true;
                     if(conn) conn.close();
                     break;
             }
