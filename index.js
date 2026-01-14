@@ -1159,12 +1159,45 @@ function gestionarDesconexionJugador(peerId) {
     guardarEstadoJuego();
 }
 
+function detectarDelimitador(lineaCabecera) {
+    if (lineaCabecera.includes(';')) return ';';
+    if (lineaCabecera.includes(',')) return ',';
+    return ';';
+}
+
+function parsearLineaCSV(linea, delimitador) {
+    const campos = [];
+    let actual = '';
+    let enComillas = false;
+
+    for (let i = 0; i < linea.length; i++) {
+        const char = linea[i];
+        if (char === '"') {
+            if (enComillas && linea[i + 1] === '"') {
+                actual += '"';
+                i++;
+            } else {
+                enComillas = !enComillas;
+            }
+        } else if (char === delimitador && !enComillas) {
+            campos.push(actual.trim());
+            actual = '';
+        } else {
+            actual += char;
+        }
+    }
+    campos.push(actual.trim());
+    return campos;
+}
+
 function procesarYEmpezar(csvText) {
-    const lineas = csvText.split('\n').filter(l => l.trim() !== '');
-    const regex = /"([^"]*)"|([^;]+)/g;
+    const lineas = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim() !== '');
+    const delimitador = detectarDelimitador(lineas[0] || '');
+    const normalizarCabecera = (linea) => (linea || '').replace(/"/g, '').trim().toLowerCase();
+    const tieneCabecera = lineas[0] && normalizarCabecera(lineas[0]).includes(`tipo${delimitador}pregunta`);
     cuestionario = [];
-    for (let i = 1; i < lineas.length; i++) {
-        const campos = Array.from(lineas[i].matchAll(regex), m => m[1] || m[2]);
+    for (let i = tieneCabecera ? 1 : 0; i < lineas.length; i++) {
+        const campos = parsearLineaCSV(lineas[i], delimitador);
         if (campos.length >= 8) {
             let correcta;
             const correctaRaw = campos[7] || '';

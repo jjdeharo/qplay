@@ -540,13 +540,45 @@
             };
             
             // --- CSV AND URL PROCESSING ---
+            const detectarDelimitador = (lineaCabecera = '') => {
+                if (lineaCabecera.includes(';')) return ';';
+                if (lineaCabecera.includes(',')) return ',';
+                return ';';
+            };
+
+            const parsearLineaCSV = (linea, delimitador) => {
+                const campos = [];
+                let actual = '';
+                let enComillas = false;
+
+                for (let i = 0; i < linea.length; i++) {
+                    const char = linea[i];
+                    if (char === '"') {
+                        if (enComillas && linea[i + 1] === '"') {
+                            actual += '"';
+                            i++;
+                        } else {
+                            enComillas = !enComillas;
+                        }
+                    } else if (char === delimitador && !enComillas) {
+                        campos.push(actual.trim());
+                        actual = '';
+                    } else {
+                        actual += char;
+                    }
+                }
+                campos.push(actual.trim());
+                return campos;
+            };
+
             const procesarContenidoCSV = (csvText, origen) => {
-                const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
-                const lineas = csvText.split('\n').filter(l => l.trim() !== '');
-                const startIndex = lineas[0] && lineas[0].toLowerCase().includes('tipo;pregunta') ? 1 : 0;
+                const lineas = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim() !== '');
+                const delimitador = detectarDelimitador(lineas[0] || '');
+                const esCabecera = (linea) => (linea || '').replace(/"/g, '').trim().toLowerCase().includes(`tipo${delimitador}pregunta`);
+                const startIndex = lineas[0] && esCabecera(lineas[0]) ? 1 : 0;
                 
                 const nuevasPreguntas = lineas.slice(startIndex).map(linea => {
-                    const campos = Array.from(linea.matchAll(regex), m => (m[1]?.replace(/""/g, '"') || m[2] || '').trim());
+                    const campos = parsearLineaCSV(linea, delimitador);
                     if (campos.length < 8) return null;
 
                     let correcta;

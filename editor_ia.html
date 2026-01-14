@@ -222,6 +222,37 @@
                 }
             };
             
+            const detectarDelimitador = (lineaCabecera = '') => {
+                if (lineaCabecera.includes(';')) return ';';
+                if (lineaCabecera.includes(',')) return ',';
+                return ';';
+            };
+
+            const parsearLineaCSV = (linea, delimitador) => {
+                const campos = [];
+                let actual = '';
+                let enComillas = false;
+
+                for (let i = 0; i < linea.length; i++) {
+                    const char = linea[i];
+                    if (char === '"') {
+                        if (enComillas && linea[i + 1] === '"') {
+                            actual += '"';
+                            i++;
+                        } else {
+                            enComillas = !enComillas;
+                        }
+                    } else if (char === delimitador && !enComillas) {
+                        campos.push(actual.trim());
+                        actual = '';
+                    } else {
+                        actual += char;
+                    }
+                }
+                campos.push(actual.trim());
+                return campos;
+            };
+            
             // --- PREVIEW LOGIC ---
             const generatePreview = () => {
                 const csvText = csvPasteArea.value.trim();
@@ -230,10 +261,11 @@
                     return;
                 }
 
-                const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
-                
-                const lineasRaw = csvText.split('\n');
-                const headerIndex = lineasRaw.findIndex(l => l.toLowerCase().includes('tipo;pregunta'));
+                const lineasRaw = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+                const primeraLinea = lineasRaw.find(l => l.trim() !== '') || '';
+                const delimitador = detectarDelimitador(primeraLinea);
+                const esCabecera = (linea) => (linea || '').replace(/"/g, '').trim().toLowerCase().includes(`tipo${delimitador}pregunta`);
+                const headerIndex = lineasRaw.findIndex(l => esCabecera(l));
                 const lineas = headerIndex !== -1 ? lineasRaw.slice(headerIndex + 1) : lineasRaw;
                 
                 const preguntasValidas = lineas.filter(l => l.trim() !== '');
@@ -246,7 +278,7 @@
                 }
 
                 preguntasValidas.forEach((linea, index) => {
-                    const campos = Array.from(linea.matchAll(regex), m => (m[1]?.replace(/""/g, '"') || m[2] || '').trim());
+                    const campos = parsearLineaCSV(linea, delimitador);
                     if (campos.length < 8) return;
 
                     const pregunta = {
@@ -294,14 +326,16 @@
             // Simple CSV validation to enable Edit button without requiring preview
             const isValidCsv = (text) => {
                 if (!text) return false;
-                const regex = /"((?:[^"]|"")*)"|([^;]+)/g;
-                const lineasRaw = text.split('\n');
-                const headerIndex = lineasRaw.findIndex(l => l.toLowerCase().includes('tipo;pregunta'));
+                const lineasRaw = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+                const primeraLinea = lineasRaw.find(l => l.trim() !== '') || '';
+                const delimitador = detectarDelimitador(primeraLinea);
+                const esCabecera = (linea) => (linea || '').replace(/"/g, '').trim().toLowerCase().includes(`tipo${delimitador}pregunta`);
+                const headerIndex = lineasRaw.findIndex(l => esCabecera(l));
                 const lineas = headerIndex !== -1 ? lineasRaw.slice(headerIndex + 1) : lineasRaw;
                 const preguntasValidas = lineas
                     .map(l => l.trim())
                     .filter(l => l !== '')
-                    .map(l => Array.from(l.matchAll(regex), m => (m[1]?.replace(/""/g, '"') || m[2] || '').trim()))
+                    .map(l => parsearLineaCSV(l, delimitador))
                     .filter(campos => campos.length >= 8);
                 return preguntasValidas.length > 0;
             };
@@ -313,8 +347,10 @@
                     return;
                 }
 
-                const header = 'Tipo;Pregunta;R1;R2;R3;R4;Tiempo;Correcta;URL Imagen';
-                if (!csvText.toLowerCase().includes('tipo;pregunta')) {
+                const lineas = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim() !== '');
+                const delimitador = detectarDelimitador(lineas[0] || '');
+                const header = ['Tipo', 'Pregunta', 'R1', 'R2', 'R3', 'R4', 'Tiempo', 'Correcta', 'URL Imagen'].join(delimitador);
+                if (!csvText.toLowerCase().includes(`tipo${delimitador}pregunta`)) {
                     csvText = header + '\n' + csvText;
                 }
 
