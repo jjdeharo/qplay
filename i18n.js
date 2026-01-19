@@ -113,17 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA DE DETECCIÓN DE IDIOMA MODIFICADA ---
     const savedLang = localStorage.getItem('qplay_language');
     const browserLang = navigator.language.split('-')[0];
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
     
     let initialLang = defaultLang;
 
-    if (savedLang) {
-        // 1. Prioridad: el idioma guardado por el usuario.
+    if (urlLang && availableLangs.includes(urlLang)) {
+        // 1. Prioridad: idioma indicado en la URL.
+        initialLang = urlLang;
+    } else if (savedLang) {
+        // 2. Prioridad: el idioma guardado por el usuario.
         initialLang = savedLang;
     } else if (availableLangs.includes(browserLang)) {
-        // 2. Prioridad: el idioma del navegador, si está disponible.
+        // 3. Prioridad: el idioma del navegador, si está disponible.
         initialLang = browserLang;
     }
-    // 3. Si no, se usa el idioma por defecto ('es').
+    // 4. Si no, se usa el idioma por defecto ('es').
     
     setLanguage(initialLang);
 });
