@@ -169,6 +169,10 @@
     "footer_created_by": "Aplicación hecha por",
     "footer_license": "Licencia CC BY-SA 4.0",
     "footer_suggestions": "Escribe un comentario o sugerencia",
+    "footer_analytics_visits": "Visitas",
+    "footer_analytics_today": "Hoy",
+    "footer_privacy_link": "Privacidad",
+    "footer_privacy_notice": "El cuestionario se gestiona localmente en este navegador. La portada solo recoge estadísticas de uso agregadas propias y, durante la partida, los navegadores conectados comparten la información necesaria para que el juego funcione.",
     "back_to_qplay_button": "Volver a QPlay",
     "lobby_click_to_copy": "Haz clic en el código de arriba para copiar la URL de unión",
     "lobby_copied": "¡URL copiada!"

@@ -169,6 +169,10 @@
     "footer_created_by": "Application made by",
     "footer_license": "License CC BY-SA 4.0",
     "footer_suggestions": "Write a comment or suggestion",
+    "footer_analytics_visits": "Visits",
+    "footer_analytics_today": "Today",
+    "footer_privacy_link": "Privacy",
+    "footer_privacy_notice": "The quiz is managed locally in this browser. The home page only collects in-house aggregated usage statistics and, during the game, the connected browsers share the information needed for the game to work.",
     "back_to_qplay_button": "Back to QPlay",
     "lobby_click_to_copy": "Click the code above to copy the join URL",
     "lobby_copied": "URL copied!"

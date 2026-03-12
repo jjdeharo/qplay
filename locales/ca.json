@@ -169,6 +169,10 @@
     "footer_created_by": "Aplicació feta per",
     "footer_license": "Llicència CC BY-SA 4.0",
     "footer_suggestions": "Escriu un comentari o suggeriment",
+    "footer_analytics_visits": "Visites",
+    "footer_analytics_today": "Avui",
+    "footer_privacy_link": "Privadesa",
+    "footer_privacy_notice": "El qüestionari es gestiona localment en aquest navegador. La portada només recull estadístiques d'ús agregades pròpies i, durant la partida, els navegadors connectats comparteixen la informació necessària perquè el joc funcioni.",
     "back_to_qplay_button": "Tornar a QPlay",
     "lobby_click_to_copy": "Fes clic al codi de dalt per copiar l'URL d'unió",
     "lobby_copied": "URL copiada!"

@@ -169,6 +169,10 @@
     "footer_created_by": "Aplikazioa egilea:",
     "footer_license": "Lizentzia CC BY-SA 4.0",
     "footer_suggestions": "Idatzi iruzkin edo iradokizun bat",
+    "footer_analytics_visits": "Bisitaldiak",
+    "footer_analytics_today": "Gaur",
+    "footer_privacy_link": "Pribatutasuna",
+    "footer_privacy_notice": "Galdetegia lokalean kudeatzen da nabigatzaile honetan. Azalak erabilera-estatistika agregatu propioak baino ez ditu jasotzen, eta partidaren bitartean konektatutako nabigatzaileek jokoa funtzionatzeko behar den informazioa partekatzen dute.",
     "back_to_qplay_button": "Itzuli QPlay-ra",
     "lobby_click_to_copy": "Egin klik goiko kodean elkartzeko URLa kopiatzeko",
     "lobby_copied": "URLa kopiatu da!"

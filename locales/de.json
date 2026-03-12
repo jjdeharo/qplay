@@ -169,6 +169,10 @@
     "footer_created_by": "Anwendung erstellt von",
     "footer_license": "Lizenz CC BY-SA 4.0",
     "footer_suggestions": "Kommentar oder Vorschlag schreiben",
+    "footer_analytics_visits": "Besuche",
+    "footer_analytics_today": "Heute",
+    "footer_privacy_link": "Datenschutz",
+    "footer_privacy_notice": "Das Quiz wird lokal in diesem Browser verwaltet. Die Startseite erfasst nur eigene aggregierte Nutzungsstatistiken, und waehrend des Spiels teilen die verbundenen Browser die fuer die Funktion des Spiels noetigen Informationen.",
     "back_to_qplay_button": "Zurück zu QPlay",
     "lobby_click_to_copy": "Klicke den Code oben an, um die Beitritts-URL zu kopieren",
     "lobby_copied": "URL kopiert!"
