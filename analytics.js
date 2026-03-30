@@ -2,6 +2,7 @@
     const ANALYTICS_FALLBACK_ENDPOINT = 'https://bilateria.org/app/estadistica/qplay/track.php';
     const ANALYTICS_COOLDOWN_MS = 30 * 60 * 1000;
     const ANALYTICS_TIMEOUT_MS = 4000;
+    const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 
     function getMetaContent(name) {
         const node = document.querySelector(`meta[name="${name}"]`);
@@ -13,6 +14,17 @@
             endpoint: getMetaContent('analytics-endpoint') || ANALYTICS_FALLBACK_ENDPOINT,
             siteId: getMetaContent('analytics-site-id') || 'qplay'
         };
+    }
+
+    function shouldTrackAnalytics() {
+        if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') {
+            return false;
+        }
+        const host = String(window.location.hostname || '').toLowerCase();
+        if (LOCAL_HOSTS.has(host) || host.endsWith('.local')) {
+            return false;
+        }
+        return true;
     }
 
     function getStorageKey(siteId) {
@@ -41,57 +53,6 @@
         } catch (error) {
             // Analytics is optional and must never block the app.
         }
-    }
-
-    function updateSummary(payload) {
-        if (!payload || !payload.ok) {
-            return;
-        }
-
-        const summary = document.querySelector('[data-analytics-summary]');
-        const totalNode = document.querySelector('[data-analytics-total]');
-        const todayNode = document.querySelector('[data-analytics-today]');
-
-        if (!summary || !totalNode || !todayNode) {
-            return;
-        }
-
-        totalNode.textContent = String(payload.total);
-        todayNode.textContent = String(payload.today);
-        summary.hidden = false;
-    }
-
-    function initPrivacyToggle() {
-        const toggle = document.querySelector('[data-privacy-toggle]');
-        const message = document.querySelector('[data-privacy-message]');
-
-        if (!toggle || !message) {
-            return;
-        }
-
-        function hideMessage() {
-            message.hidden = true;
-            toggle.setAttribute('aria-expanded', 'false');
-        }
-
-        toggle.addEventListener('click', function (event) {
-            event.preventDefault();
-            const willShow = message.hidden;
-            message.hidden = !willShow;
-            toggle.setAttribute('aria-expanded', willShow ? 'true' : 'false');
-        });
-
-        document.addEventListener('click', function (event) {
-            if (!message.hidden && !message.contains(event.target) && !toggle.contains(event.target)) {
-                hideMessage();
-            }
-        });
-
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') {
-                hideMessage();
-            }
-        });
     }
 
     function requestSummary(config) {
@@ -127,7 +88,6 @@
             if (countVisit) {
                 rememberVisit(config.siteId);
             }
-            updateSummary(payload);
             cleanup();
         };
 
@@ -139,7 +99,9 @@
     }
 
     function initAnalytics() {
-        initPrivacyToggle();
+        if (!shouldTrackAnalytics()) {
+            return;
+        }
 
         const config = getAnalyticsConfig();
         const run = function () {
