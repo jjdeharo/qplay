@@ -108,10 +108,21 @@
             requestSummary(config);
         };
 
-        if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(run, { timeout: 2500 });
+        // Un <script async> inyectado antes de que se dispare «load» retrasa ese
+        // evento hasta que la peticion termina. Si el servidor de estadisticas se
+        // cuelga, «load» no llegaria a dispararse nunca. Por eso se espera siempre
+        // a «load» antes de programar nada.
+        const programar = function () {
+            if (typeof window.requestIdleCallback === 'function') {
+                window.requestIdleCallback(run, { timeout: 2500 });
+            } else {
+                window.setTimeout(run, 1200);
+            }
+        };
+        if (document.readyState === 'complete') {
+            programar();
         } else {
-            window.setTimeout(run, 1200);
+            window.addEventListener('load', programar, { once: true });
         }
     }
 
