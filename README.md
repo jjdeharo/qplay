@@ -48,7 +48,8 @@ Creado por **Juan José de Haro**.
 
 ## Licencia
 
-Este proyecto está bajo la Licencia [Creative Commons BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+* El **código fuente** está bajo la Licencia **[GNU Affero General Public License v3 (AGPL v3)](https://www.gnu.org/licenses/agpl-3.0.html)**.
+* Los **contenidos** (textos, documentación e imágenes) están bajo la Licencia **[Creative Commons Reconocimiento-CompartirIgual 4.0 Internacional (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/)**.
 
 ## Sugerencias y errores
 
